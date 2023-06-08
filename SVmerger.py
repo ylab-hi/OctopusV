@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import re
+
 def main():
     parser = argparse.ArgumentParser(description='SVmerger tool')
     parser.add_argument('mode', type=str, help='Mode of operation')
@@ -11,7 +13,14 @@ def main():
     args = parser.parse_args()
 
     if args.mode == 'convert':
-        convert_BND_to_INV(args.input, args.output)
+        # Parse the input VCF file
+        headers, events = parse_vcf(args.input)
+        # Initialize the EventTransformer with a list of transform strategies
+        transformer = EventTransformer([BND_to_INV_Converter()])
+        # Apply all transformation strategies to the events
+        transformed_events = transformer.apply_transforms(events)
+        # Write the transformed events to the output file
+        transformer.write_vcf(headers, transformed_events, args.output)
     else:
         print(f'Unknown mode: {args.mode}')
         parser.print_help()
@@ -33,12 +42,12 @@ def parse_vcf(vcf_file_path):
             event = SVEvent(*fields) # Unpack fields and send to SVEvent class
             events.append(event)
 
-    return events # A list of SV objects
+    return headers, events # A list of SV objects
         
 class SVEvent: # A class to represent each SV event
     def __init__(self, chrom, pos, id, ref, alt, qual, filter, info, format, sample):
         self.chrom = chrom
-        self.pos = pos
+        self.pos = int(pos)
         self.id = id
         self.ref = ref
         self.alt = alt
@@ -79,13 +88,6 @@ class SVEvent: # A class to represent each SV event
         #  Whether is BND
         return self.info['SVTYPE'] == 'BND' 
 
-    def convert_to_INV(self, end, svlen):
-        # Change BND event to INV event
-        self.alt = '<INV>'
-        self.info['SVTYPE'] = 'INV'
-        self.info['END'] = end
-        self.info['SVLEN'] = svlen
-
     def __str__(self):
         # enable you to output object as vcf string format
         return '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(
@@ -113,43 +115,78 @@ def get_BND_pattern(alt):
         return ']p]t'
     else:
         return None
- 
-def convert_BND_to_INV(input_file, output_file):
-    """
-    convert on-standard BND to standard inversion
-    """
-    try:
-        headers, events = parse_vcf(input_file)
-        
-        with open(output_file, 'w') as f:
-            for header in headers:  # Write headers to output file first
-                f.write(header + '\n')
 
-            for event in events:
-                if event.is_BND():
-                    pattern = event.get_BND_pattern()
-                    if pattern == 't]p]' or pattern == '[p[t':
-                        chrom_alt, pos_alt = re.split(r'[\[\]:]', event.alt)[1:3]  # Use regex to split and get the chrom and pos
+class Converter:
+    """
+    This is an abstract base class for all converter classes. It provides a common interface for all converters.
+    The `convert` method is a placeholder that needs to be overridden in each concrete converter class.
+    """
+    def convert(self, event):
+        """
+        This method should be overridden in a subclass. 
+        """
+        raise NotImplementedError
+
+class BND_to_INV_Converter(Converter):
+    """
+    This class inherits from the `Converter` base class and implements the conversion logic for BND to INV conversion.
+    """
+    def convert(self, event):  # Each converter has a convert function
+        try:
+            if event.is_BND():
+                pattern = get_BND_pattern(event.alt)
+                if pattern == 't]p]' or pattern == '[p[t':
+                    split_result = re.split(r'[\[\]:]', event.alt) # Use regex to split and get the chrom and pos
+                    if len(split_result) != 4:
+                        print(f"Unexpected ALT format, it should be something like N]chr10:69650962]: {split_result}")
+                    else:
+                        chrom_alt, pos_alt = split_result[1:3]
                         if event.chrom == chrom_alt: # Do this only when same chromosome 
                             pos_alt = int(pos_alt)
                             if pattern == 't]p]' and event.pos < pos_alt:
                                 end = pos_alt
                                 svlen = abs(event.pos - pos_alt)
-                                event.convert_to_INV(end, svlen)
+                                self.convert_to_INV(event, end, svlen) # self will be passed to convert_to_INV method.
                             elif pattern == '[p[t' and event.pos > pos_alt:
                                 end = event.pos
                                 event.pos = pos_alt
                                 svlen = abs(event.pos - end)
-                                event.convert_to_INV(end, svlen)
+                                self.convert_to_INV(event, end, svlen) 
 
+        except Exception as e:
+           print("Failed to convert BND to Inversion: ", e)
+           
+    def convert_to_INV(self, event, end, svlen):
+        # Detail logic changing BND event to INV event
+        event.alt = '<INV>'
+        event.info['SVTYPE'] = 'INV'
+        event.info['END'] = end
+        event.info['SVLEN'] = svlen
+ 
+# You can add more converter classes here...
+
+class EventTransformer:
+    # The EventTransformer class manages transforming events and output together.
+    # It is initialized with a list of transform strategies,
+    def __init__(self, transform_strategies):
+        # Initialize the EventTransformer with a list of transform strategies.
+        self.transform_strategies = transform_strategies
+
+    def apply_transforms(self, events):
+        # Apply all transformation strategies to a list of events.
+        for event in events:  # Try every converters for each event.
+            for strategy in self.transform_strategies:
+                strategy.convert(event) # Strategy is a converter instance, like BND_to_INV_Converter 
+        return events    # Returns: The transformed list of events.
+
+    def write_vcf(self, headers, events, output_file):
+        # Write the transformed events to a VCF file.
+        with open(output_file, 'w') as f:
+            for header in headers:
+                f.write(header + '\n')
+            for event in events:
                 f.write(str(event) + '\n')
-    
-    except Exception as e:
-        print("Failed to convert BND to Inversion: ", e)
 
 
 if __name__ == '__main__':
     main()
-
-
-下一步，写BND to TRA, BND to DUP的函数，解决顺序问题
