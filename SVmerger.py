@@ -9,25 +9,29 @@ def main():
     parser.add_argument('mode', type=str, help='Mode of operation')
     parser.add_argument('-i', '--input', type=str, required=True, help='Input VCF file')
     parser.add_argument('-o', '--output', type=str, required=True, help='Output converted VCF file')
-
+    parser.add_argument('-p', '--pos-tolerance', type=int, default=3, help='Position tolerance for identifying mate BND events, default=3, recommend not to set larger than 5')
+    
     args = parser.parse_args()
 
     if args.mode == 'convert':
         # Parse the input VCF file
-        headers, same_chr_bnd_events, diff_chr_bnd_events, non_bnd_events = parse_vcf(args.input)
+        headers, same_chr_bnd_events, diff_chr_bnd_events, non_bnd_events = parse_vcf(args.input) # non_bnd_events means DEL, INV, INS, DUP
         
-        # Initialize the EventTransformer with a list of transform strategies for each type of events
-        same_chr_bnd_transformer = EventTransformer([BND_to_INV_Converter(),BND_to_DUP_Converter(), BND_to_TRA_Forward_Converter(), BND_to_TRA_Reverse_Converter()])
-        diff_chr_bnd_transformer = EventTransformer([Your_Strategy_for_Diff_Chr_BND_Converter()])  # Replace with your strategy
+        # Extract mate BND and no mate events, they are all with different chromosomes
+        mate_bnd_pairs, no_mate_events = find_mate_bnd_and_no_mate_events(diff_chr_bnd_events, pos_tolerance=args.pos_tolerance)
+        
+        # Initialize the EventTransformer with a list of transform strategies for each type of events: one transformer and multiple-strategies
+        same_chr_bnd_transformer = SameChrBNDTransformer([BND_to_INV_Converter(),BND_to_DUP_Converter(), BND_to_TRA_Forward_Converter(), BND_to_TRA_Reverse_Converter()])
+        mate_bnd_pair_transformer = MatePairBNDTransformer([MatePairReciprocalTranslocationToTRAConverter(), MatePairIndependentToTRAConverter(), MatePairMergeToTRAConverter()])  # Replace with your strategy
         non_bnd_transformer = EventTransformer([])  # Assuming non-BND events are not to be transformed
 
         # Apply all transformation strategies to the events
         same_chr_bnd_transformed_events = same_chr_bnd_transformer.apply_transforms(same_chr_bnd_events)
-        diff_chr_bnd_transformed_events = diff_chr_bnd_transformer.apply_transforms(diff_chr_bnd_events)
+        mate_pair_transformed_events = mate_bnd_pair_transformer.apply_transforms(mate_bnd_pairs)
         non_bnd_transformed_events = non_bnd_transformer.apply_transforms(non_bnd_events)
 
         # Merge all transformed events
-        all_transformed_events = same_chr_bnd_transformed_events + diff_chr_bnd_transformed_events + non_bnd_transformed_events
+        all_transformed_events = same_chr_bnd_transformed_events + mate_pair_transformed_events + non_bnd_transformed_events
 
         # Write the transformed events to the output file
         same_chr_bnd_transformer.write_vcf(headers, all_transformed_events, args.output)
@@ -79,6 +83,78 @@ def check_vcf_format(vcf_file_path):
             except ValueError:
                 print(f"ERROR: Invalid VCF format. Quality score (field 6) should be a number or '.', but got {fields[5]}")
                 exit(1)
+
+
+def is_same_chr_bnd(event):
+    """
+    Check if the POS and ALT of an event are on the same chromosome.
+    """
+    if event.is_BND():
+        split_result = re.split(r'[\[\]:]', event.alt)
+        if len(split_result) != 4:
+            print(f"Unexpected ALT format, it should be something like N]chr10:69650962]: {split_result}")
+        else:
+            chrom_alt, _ = split_result[1:3]
+            return event.chrom == chrom_alt
+
+    return False  # For non-BND, we won't categorize them as same_chr_bnd or diff_chr_bnd events
+
+
+def get_BND_pattern(alt):
+    # Get the pattern of BND: t[p[, t]p], ]p]t, [p[t
+    if alt[0] in 'ATCGN' and alt[1] == '[':
+        return 't[p['
+    elif alt[0] in 'ATCGN' and alt[1] == ']':
+        return 't]p]'
+    elif alt[-1] in 'ATCGN' and alt[-2] == '[':
+        return '[p[t'
+    elif alt[-1] in 'ATCGN' and alt[-2] == ']':
+        return ']p]t'
+    else:
+        return None
+
+
+def get_alt_chrom_pos(alt):
+    """
+    Extract chromosome and position from alt field in VCF file.
+    """
+    split_result = re.split(r'[\[\]:]', alt)
+    if len(split_result) != 4:
+        print(f"Unexpected ALT format, it should be something like N]chr10:69650962]: {split_result}")
+        return None, None
+    else:
+        chrom_alt, pos_alt = split_result[1:3]
+        return chrom_alt, int(pos_alt)  # Convert pos_alt to integer.
+
+
+def find_mate_bnd_and_no_mate_events(events, pos_tolerance=3):
+    """
+    Extract mate BND and no mate events from diff_chr_bnd_events
+    """
+    event_dict = {}
+    mate_bnd_pairs = []
+    no_mate_events = []
+
+    for event in events:
+        chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
+        key = (event.chrom, event.pos, chrom_alt, pos_alt)
+
+        # Generate all possible reverse keys
+        possible_reverse_keys = [(chrom_alt, pos_alt + i, event.chrom, event.pos + j) for i in range(-pos_tolerance, pos_tolerance + 1) for j in range(-pos_tolerance, pos_tolerance + 1)]
+        
+        mate_found = False # This is a flag
+        for reverse_key in possible_reverse_keys:
+            if reverse_key in event_dict:
+                mate_bnd_pairs.append((event_dict.pop(reverse_key), event)) # event_dict.pop(reverse_key) will delete mate events from event_dic and output
+                mate_found = True
+                break
+
+        if not mate_found:
+            event_dict[key] = event
+
+    no_mate_events = list(event_dict.values())
+    
+    return mate_bnd_pairs, no_mate_events
 
 
 def parse_vcf(vcf_file_path):
@@ -186,62 +262,6 @@ class SVEvent: # A class to represent each SV event
             self.sample
         )    
 
-
-def get_BND_pattern(alt):
-    # Get the pattern of BND: t[p[, t]p], ]p]t, [p[t
-    if alt[0] in 'ATCGN' and alt[1] == '[':
-        return 't[p['
-    elif alt[0] in 'ATCGN' and alt[1] == ']':
-        return 't]p]'
-    elif alt[-1] in 'ATCGN' and alt[-2] == '[':
-        return '[p[t'
-    elif alt[-1] in 'ATCGN' and alt[-2] == ']':
-        return ']p]t'
-    else:
-        return None
-
-
-def get_alt_chrom_pos(alt):
-    """
-    Extract chromosome and position from alt field in VCF file.
-    """
-    split_result = re.split(r'[\[\]:]', alt)
-    if len(split_result) != 4:
-        print(f"Unexpected ALT format, it should be something like N]chr10:69650962]: {split_result}")
-        return None, None
-    else:
-        chrom_alt, pos_alt = split_result[1:3]
-        return chrom_alt, int(pos_alt)  # Convert pos_alt to integer.
-
-
-def find_mate_bnd_and_no_mate_events(events, pos_tolerance=3):
-    """
-    Extract mate BND and no mate events from diff_chr_bnd_events
-    """
-    event_dict = {}
-    mate_bnd_pairs = []
-    no_mate_events = []
-
-    for event in events:
-        chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
-        key = (event.chrom, event.pos, chrom_alt, pos_alt)
-
-        # Generate all possible reverse keys
-        possible_reverse_keys = [(chrom_alt, pos_alt + i, event.chrom, event.pos + j) for i in range(-pos_tolerance, pos_tolerance + 1) for j in range(-pos_tolerance, pos_tolerance + 1)]
-        
-        mate_found = False # This is a flag
-        for reverse_key in possible_reverse_keys:
-            if reverse_key in event_dict:
-                mate_bnd_pairs.append((event_dict.pop(reverse_key), event)) # event_dict.pop(reverse_key) will delete mate events from event_dic and output
-                mate_found = True
-                break
-
-        if not mate_found:
-            event_dict[key] = event
-
-    no_mate_events = list(event_dict.values())
-    
-    return mate_bnd_pairs, no_mate_events
 
 
 class Converter:
@@ -385,28 +405,23 @@ class BND_to_TRA_Reverse_Converter(Converter):
 # You can add more converter classes here...
 
 
-def is_same_chr_bnd(event):
-    """
-    Check if the POS and ALT of an event are on the same chromosome.
-    """
-    if event.is_BND():
-        split_result = re.split(r'[\[\]:]', event.alt)
-        if len(split_result) != 4:
-            print(f"Unexpected ALT format, it should be something like N]chr10:69650962]: {split_result}")
-        else:
-            chrom_alt, _ = split_result[1:3]
-            return event.chrom == chrom_alt
-
-    return False  # For non-BND, we won't categorize them as same_chr_bnd or diff_chr_bnd events
-
-
-class EventTransformer:  # The input is lists.
-    # The EventTransformer class manages transforming events and output together.
-    # It is initialized with a list of transform strategies,
+class EventTransformer:
+    """Base class for transforming events."""
     def __init__(self, transform_strategies):
-        # Initialize the EventTransformer with a list of transform strategies.
         self.transform_strategies = transform_strategies
 
+    def apply_transforms(self, events):
+        # The base implementation can be empty or provide a default behavior.
+        pass
+
+    def write_vcf(self, headers, transformed_events, output_file):
+        # The base implementation can be empty or provide a default behavior.
+        pass
+
+
+class SameChrBNDTransformer(EventTransformer):  # The input is lists.
+    """Class for transforming BND events on the same chromosome."""
+    # It is initialized with a list of transform strategies,
     def apply_transforms(self, events):
         # Apply all transformation strategies to a list of events.
         for event in events:  # Try every converters for each event.
@@ -422,6 +437,8 @@ class EventTransformer:  # The input is lists.
             for event in events:
                 f.write(str(event) + '\n')
 
+class MatePairBNDTransformer(EventTransformer):
+    """Class for transforming mate pair events."""
 
 if __name__ == '__main__':
     main()
@@ -438,3 +455,4 @@ if __name__ == '__main__':
 我现有的class EventTransformer名称更像一个基类，其实他是针对same_chr_bnd的，应该换名字
 
 """
+# 接下来主要写, MatePairBNDTransformer(EventTransformer):， 对应的三种策略类，MatePairReciprocalTranslocationToTRAConverter(), MatePairIndependentToTRAConverter(), MatePairMergeToTRAConverter()
