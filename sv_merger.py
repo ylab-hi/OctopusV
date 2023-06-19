@@ -3,6 +3,7 @@
 
 import argparse
 import re
+from natsort import natsorted
 
 def main():
     parser = argparse.ArgumentParser(description='SVmerger tool')
@@ -19,19 +20,32 @@ def main():
         
         # Extract mate BND and no mate events, they are all with different chromosomes
         mate_bnd_pairs, no_mate_events = find_mate_bnd_and_no_mate_events(diff_chr_bnd_events, pos_tolerance=args.pos_tolerance)
+
+        # Further classify no_mate_events into special_no_mate_diff_bnd_pair and other_single_TRA
+        special_no_mate_diff_bnd_pairs, other_single_TRA = find_special_no_mate_diff_bnd_pair_and_other_single_TRA(no_mate_events, pos_tolerance=args.pos_tolerance)
         
         # Initialize the EventTransformer with a list of transform strategies for each type of events: one transformer and multiple-strategies
         same_chr_bnd_transformer = SameChrBNDTransformer([BND_to_INV_Converter(),BND_to_DUP_Converter(), BND_to_TRA_Forward_Converter(), BND_to_TRA_Reverse_Converter()])
-        mate_bnd_pair_transformer = MatePairBNDTransformer([MatePairReciprocalTranslocationToTRAConverter(), MatePairIndependentToTRAConverter(), MatePairMergeToTRAConverter()])  # Replace with your strategy
+        mate_bnd_pair_transformer = MatePairBNDTransformer([MatePairReciprocalTranslocationToTRAConverter(), MatePairIndependentToTRAConverter(), MatePairMergeToTRAConverter()])
+        special_no_mate_diff_bnd_pair_transformer = SpecialNoMateDiffBNDPairTransformer([SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter(), SpecialNoMateDiffBNDPairIndependentToTRAConverter()])
+        single_TRA_transformer = SingleTRATransformer([SingleTRAToTRAConverter()])
         non_bnd_transformer = EventTransformer([])  # Assuming non-BND events are not to be transformed
 
         # Apply all transformation strategies to the events
         same_chr_bnd_transformed_events = same_chr_bnd_transformer.apply_transforms(same_chr_bnd_events)
         mate_pair_transformed_events = mate_bnd_pair_transformer.apply_transforms(mate_bnd_pairs)
+        special_no_mate_diff_bnd_pair_transformed_events = special_no_mate_diff_bnd_pair_transformer.apply_transforms(special_no_mate_diff_bnd_pairs)
+        single_TRA_transformed_events = single_TRA_transformer.apply_transforms(other_single_TRA)
         non_bnd_transformed_events = non_bnd_transformer.apply_transforms(non_bnd_events)
 
         # Merge all transformed events
-        all_transformed_events = same_chr_bnd_transformed_events + mate_pair_transformed_events + non_bnd_transformed_events
+        all_transformed_events = (
+            same_chr_bnd_transformed_events 
+            + mate_pair_transformed_events 
+            + special_no_mate_diff_bnd_pair_transformed_events 
+            + single_TRA_transformed_events 
+            + non_bnd_transformed_events
+            )
 
         # Write the transformed events to the output file
         same_chr_bnd_transformer.write_vcf(headers, all_transformed_events, args.output)
@@ -39,6 +53,9 @@ def main():
         print(f'Unknown mode: {args.mode}')
         parser.print_help()
 
+# ==============================
+# The following are auxiliary Functions. 
+# ==============================
 
 def check_vcf_format(vcf_file_path):
     """
@@ -157,6 +174,145 @@ def find_mate_bnd_and_no_mate_events(events, pos_tolerance=3):
     return mate_bnd_pairs, no_mate_events
 
 
+def is_MatePairReciprocalTranslocation(event1, event2):
+    # Define the set of qualified pairings of BND patterns, used by MatePairReciprocalTranslocationToTRAConverter
+    qualified_pairings = [
+        {']p]t', ']p]t'},
+        {'t[p[', 't[p['},
+        {'t]p]', '[p[t'},
+    ]
+    # Extract the patterns from each event
+    event1_pattern = get_BND_pattern(event1.alt)
+    event2_pattern = get_BND_pattern(event2.alt)
+
+    # Check if the patterns match one of the qualified pairings
+    for pairing in qualified_pairings:
+        if {event1_pattern, event2_pattern} == pairing:
+            return True
+
+    return False
+
+
+def is_same_bnd_event(event1, event2):
+    # Define whether the BND represent the same TRA events, used by MatePairMergeToTRAConverter
+    qualified_pairings = [
+        {']p]t', 't[p['}
+    ]
+    event1_pattern = get_BND_pattern(event1.alt)
+    event2_pattern = get_BND_pattern(event2.alt) 
+    
+    for pairing in qualified_pairings:
+        if {event1_pattern, event2_pattern} == pairing:
+            return True
+
+    return False 
+
+
+def compare_chromosomes(event1, event2):   # Used by MatePairMergeToTRAConverter 
+    """
+    Determine if the chromosome of event1 is smaller than the chromosome of event2 using natural sort order.
+
+    Returns:
+    A boolean value. True if the chromosome of event1 is smaller or equal to the chromosome of event2, False otherwise.
+    """
+    original_order = [event1.chrom, event2.chrom]
+
+    # Get the order when the chromosomes are naturally sorted
+    sorted_order = natsorted(original_order)
+
+    # it means the chromosome of event1 is smaller or equal to the chromosome of event2
+    return original_order == sorted_order
+
+
+def is_independent_bnd_event(event1, event2): # used by MatePairMergeToTRAConverter
+    """
+    Determine if two mate_pair_bnd events are independent events. 
+    """
+    qualified_pairings = [
+        {'t]p]', ']p]t'},
+        {'t]p]', 't]p]'},
+        {'[p[t', '[p[t'},
+        {'t[p[', 't]p]'},
+        {'t[p[', '[p[t'},
+        {']p]t', '[p[t'}
+    ]
+    event1_pattern = get_BND_pattern(event1.alt)
+    event2_pattern = get_BND_pattern(event2.alt)
+    
+    for pairing in qualified_pairings:
+        if {event1_pattern, event2_pattern} == pairing:
+            return True
+
+    return False
+
+
+def find_special_no_mate_diff_bnd_pair_and_other_single_TRA(events, pos_tolerance=3): # Process no_mate_events
+    """
+    Extract special no mate diff bnd pair and other single TRA events from no_mate_events.
+    """
+    event_dict = {}
+    special_no_mate_diff_bnd_pair = []
+    other_single_TRA = []
+
+    for event in events:
+        chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
+        key = (event.chrom, event.pos, chrom_alt, pos_alt)
+
+        # Generate all possible reverse keys
+        possible_reverse_keys = [(event.chrom, event.pos + i, chrom_alt, pos_alt + j) for i in range(-pos_tolerance, pos_tolerance + 1) for j in range(-pos_tolerance, pos_tolerance + 1)]
+        
+        mate_found = False # This is a flag
+        for reverse_key in possible_reverse_keys:
+            if reverse_key in event_dict:
+                special_no_mate_diff_bnd_pair.append((event_dict.pop(reverse_key), event)) # event_dict.pop(reverse_key) will delete mate events from event_dic and output
+                mate_found = True
+                break
+
+        if not mate_found:
+            event_dict[key] = event
+
+    other_single_TRA = list(event_dict.values())
+    
+    return special_no_mate_diff_bnd_pair, other_single_TRA
+
+
+def is_SpecialNoMateDiffBndPairReciprocalTranslocation(event1, event2):  # Used by SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter
+    qualified_pairings = [
+        {'t[p[', ']p]t'},
+        {'t]p]', '[p[t'}
+    ]
+    # Extract the patterns from each event
+    event1_pattern = get_BND_pattern(event1.alt)
+    event2_pattern = get_BND_pattern(event2.alt)
+
+    # Check if the patterns match one of the qualified pairings
+    for pairing in qualified_pairings:
+        if {event1_pattern, event2_pattern} == pairing:
+            return True
+
+    return False
+
+
+def is_independent_special_bnd_event(event1, event2): # Used by SpecialNoMateDiffBNDPairIndependentToTRAConverter
+    """
+    Determine if two special_no_mate_diff_bnd_pair events are independent events. 
+    """
+    qualified_pairings = [
+        {'t[p[', 't]p]'},
+        {'t[p[', '[p[t'},
+        {'t]p]', ']p]t'},
+        {']p]t', '[p[t'}
+    ]
+    event1_pattern = get_BND_pattern(event1.alt)
+    event2_pattern = get_BND_pattern(event2.alt)
+    
+    for pairing in qualified_pairings:
+        if {event1_pattern, event2_pattern} == pairing:
+            return True
+
+    return False
+
+
 def parse_vcf(vcf_file_path):
     """
     Parse VCF file into lists of SVEvent objects based on their type (same chromosome BND, different chromosome BND, non-BND) and return headers.
@@ -263,7 +419,6 @@ class SVEvent: # A class to represent each SV event
         )    
 
 
-
 class Converter:
     """
     This is an abstract base class for all converter classes. It provides a common interface for all converters.
@@ -275,6 +430,11 @@ class Converter:
         """
         raise NotImplementedError
 
+# ==============================
+# The following four strategies converts a single event and does not need to return it,
+# because the changes are made directly to the mutable event object.
+# They are used by SameChrBNDTransformer 
+# ==============================
 
 class BND_to_INV_Converter(Converter):
     """
@@ -403,6 +563,157 @@ class BND_to_TRA_Reverse_Converter(Converter):
         event.info['SVLEN'] = 0
  
 # You can add more converter classes here...
+# ==============================
+# The following strategies convert Mate pair bnd events to reciprocal translocation, independent translocation,
+# or merge the same events.
+# ==============================
+
+class MatePairReciprocalTranslocationToTRAConverter(Converter):
+    """
+    This class inherits from the `Converter` base class and implements 
+    the conversion logic for reciprocal translocation.
+    """
+    def convert(self, pair):
+        event1, event2 = pair
+        # Check if this pair satisfies the criteria for reciprocal translocation
+        if is_MatePairReciprocalTranslocation(event1, event2):
+            # Convert events
+            self.convert_to_TRA(event1, event2)
+            return [event1, event2]  # Return a list of transformed events
+        else:
+            return []  # If the pair doesn't satisfy the criteria, return an empty list
+
+    def convert_to_TRA(self, event1, event2):
+        # Convert a pair of events to reciprocal translocation
+        # Modify event1
+        event1.info['SVTYPE'] = 'TRA'
+        event1.info['RTID'] = event2.id
+        event1.info['SVLEN'] = 0
+        # Modify event2
+        event2.info['SVTYPE'] = 'TRA'
+        event2.info['RTID'] = event1.id
+        event2.info['SVLEN'] = 0
+        # No need to return anything as the states of event1 and event2 are modified in-place
+
+
+class MatePairMergeToTRAConverter(Converter):
+    """Class to transform a pair of identical BND events into a single TRA event."""
+    def convert(self, pair):
+        event1, event2 = pair
+        # Check if the pair of events has the same BND pattern
+        if is_same_bnd_event(event1, event2):
+            # Determine which event should be retained
+            if compare_chromosomes(event1, event2):  # If the first event is "smaller"
+                retained_event = event1
+            else:
+                retained_event = event2
+                
+            # Modify the SVTYPE to TRA
+            retained_event.info['SVTYPE'] = 'TRA'
+            retained_event.info['SVLEN'] = 0
+            
+            # Return the retained event only
+            return [retained_event]
+        else:
+            # If the pair of events does not have the same BND pattern, return an empty list
+            return []  
+
+
+class MatePairIndependentToTRAConverter(Converter):
+    """
+    the conversion logic for independent translocation.
+    """
+    def convert(self, pair):
+        event1, event2 = pair
+        # Check if this pair satisfies the criteria for independent translocation
+        if is_independent_bnd_event(event1, event2):
+            # Convert events
+            self.convert_to_TRA(event1, event2)
+            return [event1, event2]  # Return a list of transformed events
+        else:
+            return []  # If the pair doesn't satisfy the criteria, return an empty list
+
+    def convert_to_TRA(self, event1, event2):
+        # Convert a pair of independent events to TRA
+        # Modify event1
+        event1.info['SVTYPE'] = 'TRA'
+        event1.info['SVLEN'] = 0
+        # Modify event2
+        event2.info['SVTYPE'] = 'TRA'
+        event2.info['SVLEN'] = 0
+        # No need to return anything as the states of event1 and event2 are modified in-place
+
+
+# ==============================
+# The following strategies convert special_no_mate_diff_bnd_pair to reciprocal translocation, independent translocation 
+# ==============================
+class SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter(Converter):
+    """
+    This class inherits from the `Converter` base class and implements 
+    the conversion logic for reciprocal translocation.
+    """
+    def convert(self, pair):
+        event1, event2 = pair
+        # Check if this pair satisfies the criteria for reciprocal translocation
+        if is_SpecialNoMateDiffBndPairReciprocalTranslocation(event1, event2):
+            # Convert events
+            self.convert_to_TRA(event1, event2)
+            return [event1, event2]  # Return a list of transformed events
+        else:
+            return []  # If the pair doesn't satisfy the criteria, return an empty list
+
+    def convert_to_TRA(self, event1, event2):
+        # Convert a pair of events to reciprocal translocation
+        # Modify event1
+        event1.info['SVTYPE'] = 'TRA'
+        event1.info['RTID'] = event2.id
+        event1.info['SVLEN'] = 0
+        # Modify event2
+        event2.info['SVTYPE'] = 'TRA'
+        event2.info['RTID'] = event1.id
+        event2.info['SVLEN'] = 0
+        
+
+class SpecialNoMateDiffBNDPairIndependentToTRAConverter(Converter):
+    """
+    This class implements the conversion logic for independent translocation.
+    """
+    def convert(self, pair):
+        event1, event2 = pair
+        # Check if this pair satisfies the criteria for independent translocation
+        if is_independent_special_bnd_event(event1, event2):
+            # Convert events
+            self.convert_to_TRA(event1, event2)
+            return [event1, event2]  # Return a list of transformed events
+        else:
+            return []  # If the pair doesn't satisfy the criteria, return an empty list
+
+    def convert_to_TRA(self, event1, event2):
+        # Convert a pair of independent events to TRA
+        # Modify event1
+        event1.info['SVTYPE'] = 'TRA'
+        event1.info['SVLEN'] = 0
+        # Modify event2
+        event2.info['SVTYPE'] = 'TRA'
+        event2.info['SVLEN'] = 0
+
+
+# ==============================
+# The following strategies convert other_single_TRA to independent translocation. 
+# ==============================
+class SingleTRAToTRAConverter(Converter):
+    """
+    This class inherits from the `Converter` base class and implements 
+    the conversion logic for single TRA events.
+    """
+    def convert(self, event):
+        event.info['SVTYPE'] = 'TRA'
+        event.info['SVLEN'] = 0
+
+
+# ==============================
+# The following transformers receive different strategies and apply on the events and output the transformed events.
+# ==============================
 
 
 class EventTransformer:
@@ -419,7 +730,7 @@ class EventTransformer:
         pass
 
 
-class SameChrBNDTransformer(EventTransformer):  # The input is lists.
+class SameChrBNDTransformer(EventTransformer):  # The init input is list of strategies.
     """Class for transforming BND events on the same chromosome."""
     # It is initialized with a list of transform strategies,
     def apply_transforms(self, events):
@@ -437,8 +748,37 @@ class SameChrBNDTransformer(EventTransformer):  # The input is lists.
             for event in events:
                 f.write(str(event) + '\n')
 
+
 class MatePairBNDTransformer(EventTransformer):
-    """Class for transforming mate pair events."""
+    """Class for transforming mate pair BND events."""
+    def apply_transforms(self, mate_pairs):
+        transformed_events = []
+        for pair in mate_pairs:  # Pair is a tuple of mate events.
+            for strategy in self.transform_strategies:
+                transformed_events.extend(strategy.convert(pair))  # Strategy must be able to handle a tuple of events.
+        return transformed_events
+
+
+class SpecialNoMateDiffBNDPairTransformer(EventTransformer):
+    """
+    Class for transforming special_no_mate_diff_bnd_pair events.
+    """
+    def apply_transforms(self, event_pairs):
+        transformed_events = []
+        for pair in event_pairs:  # Pair is a tuple of two events.
+            for strategy in self.transform_strategies:
+                transformed_events.extend(strategy.convert(pair))  # Strategy must be able to handle a tuple of events.
+        return transformed_events
+
+
+class SingleTRATransformer(EventTransformer):
+    """Class for transforming other_single_TRA."""
+    def apply_transforms(self, events):
+        for event in events:  # Apply the conversion for each event.
+            for strategy in self.transform_strategies:
+                strategy.convert(event)  
+        return events  # Return the original list of events, which have been modified in-place.
+
 
 if __name__ == '__main__':
     main()
@@ -446,13 +786,4 @@ if __name__ == '__main__':
 # 每个软件内部要校正SVLEN的计算方式
 # 每个软件转换后要内部去冗余
 # 我的标准格式：INV用<INV>,DUP 用<DUP> INS, DEL最好保留真实序列
-# 针对mate_pair，是一个列表，里面是一个个元组，每个元组是一对SV对象， 单独写三个转换策略，也就是紫色 reciprocal, independent, same_merge
-"""
-我发现你意识到了，EventTransformer([BND_to_INV_Converter(),BND_to_DUP_Converter(), BND_to_TRA_Forward_Converter(), BND_to_TRA_Reverse_Converter()])，这里的EventTransformer最好换个名字，EventTransformer应该被定义为一个抽象类
-
-针对mate_pair，是一个列表，里面是一个个元组，每个元组是一对SV对象， 单独写三个转换策略，也就是紫色 reciprocal, independent, same_merge, 然后再为mate pair 单独定义一个transformer MatePairTransformer来实现这些转换策略
-
-我现有的class EventTransformer名称更像一个基类，其实他是针对same_chr_bnd的，应该换名字
-
-"""
-# 接下来主要写, MatePairBNDTransformer(EventTransformer):， 对应的三种策略类，MatePairReciprocalTranslocationToTRAConverter(), MatePairIndependentToTRAConverter(), MatePairMergeToTRAConverter()
+# 现在就剩non_bnd_events没处理了，他们其实是比较标准的INS, INV, DEL, DUP事件
