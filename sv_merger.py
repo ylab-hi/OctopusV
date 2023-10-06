@@ -38,13 +38,15 @@ def main():
         single_TRA_transformed_events = single_TRA_transformer.apply_transforms(other_single_TRA)
         non_bnd_transformed_events = non_bnd_transformer.apply_transforms(non_bnd_events)
 
+        non_bnd_transformed_events = []  # Temporary occupancy
+
         # Merge all transformed events
         all_transformed_events = (
             same_chr_bnd_transformed_events 
             + mate_pair_transformed_events 
             + special_no_mate_diff_bnd_pair_transformed_events 
             + single_TRA_transformed_events 
-            + non_bnd_transformed_events
+            + non_bnd_events
             )
 
         # Write the transformed events to the output file
@@ -532,6 +534,7 @@ class BND_to_TRA_Forward_Converter(Converter):
         event.info['SVTYPE'] = 'TRA'
         event.info['END'] = end
         event.info['SVLEN'] = 0
+        event.info['CHR2'] = event.chrom
 
 
 class BND_to_TRA_Reverse_Converter(Converter):
@@ -561,7 +564,8 @@ class BND_to_TRA_Reverse_Converter(Converter):
         event.info['SVTYPE'] = 'TRA'
         event.info['END'] = end
         event.info['SVLEN'] = 0
- 
+        event.info['CHR2'] = event.chrom
+
 # You can add more converter classes here...
 # ==============================
 # The following strategies convert Mate pair bnd events to reciprocal translocation, independent translocation,
@@ -587,10 +591,16 @@ class MatePairReciprocalTranslocationToTRAConverter(Converter):
         # Convert a pair of events to reciprocal translocation
         # Modify event1
         event1.info['SVTYPE'] = 'TRA'
+        chrom_alt, pos_alt = get_alt_chrom_pos(event1.alt)
+        event1.info['END'] = pos_alt
+        event1.info['CHR2'] = chrom_alt
         event1.info['RTID'] = event2.id
         event1.info['SVLEN'] = 0
         # Modify event2
         event2.info['SVTYPE'] = 'TRA'
+        chrom_alt, pos_alt = get_alt_chrom_pos(event2.alt)
+        event2.info['END'] = pos_alt
+        event2.info['CHR2'] = chrom_alt
         event2.info['RTID'] = event1.id
         event2.info['SVLEN'] = 0
         # No need to return anything as the states of event1 and event2 are modified in-place
@@ -611,6 +621,9 @@ class MatePairMergeToTRAConverter(Converter):
             # Modify the SVTYPE to TRA
             retained_event.info['SVTYPE'] = 'TRA'
             retained_event.info['SVLEN'] = 0
+            chrom_alt, pos_alt = get_alt_chrom_pos(retained_event.alt)
+            retained_event.info['END'] = pos_alt
+            retained_event.info['CHR2'] = chrom_alt
             
             # Return the retained event only
             return [retained_event]
@@ -638,9 +651,15 @@ class MatePairIndependentToTRAConverter(Converter):
         # Modify event1
         event1.info['SVTYPE'] = 'TRA'
         event1.info['SVLEN'] = 0
+        chrom_alt, pos_alt = get_alt_chrom_pos(event1.alt)
+        event1.info['END'] = pos_alt
+        event1.info['CHR2'] = chrom_alt
         # Modify event2
         event2.info['SVTYPE'] = 'TRA'
         event2.info['SVLEN'] = 0
+        chrom_alt, pos_alt = get_alt_chrom_pos(event2.alt)
+        event2.info['END'] = pos_alt
+        event2.info['CHR2'] = chrom_alt
         # No need to return anything as the states of event1 and event2 are modified in-place
 
 
@@ -666,10 +685,16 @@ class SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter(Converter):
         # Convert a pair of events to reciprocal translocation
         # Modify event1
         event1.info['SVTYPE'] = 'TRA'
+        chrom_alt, pos_alt = get_alt_chrom_pos(event1.alt)
+        event1.info['END'] = pos_alt
+        event1.info['CHR2'] = chrom_alt
         event1.info['RTID'] = event2.id
         event1.info['SVLEN'] = 0
         # Modify event2
         event2.info['SVTYPE'] = 'TRA'
+        chrom_alt, pos_alt = get_alt_chrom_pos(event2.alt)
+        event2.info['END'] = pos_alt
+        event2.info['CHR2'] = chrom_alt
         event2.info['RTID'] = event1.id
         event2.info['SVLEN'] = 0
         
@@ -693,9 +718,15 @@ class SpecialNoMateDiffBNDPairIndependentToTRAConverter(Converter):
         # Modify event1
         event1.info['SVTYPE'] = 'TRA'
         event1.info['SVLEN'] = 0
+        chrom_alt, pos_alt = get_alt_chrom_pos(event1.alt)
+        event1.info['END'] = pos_alt
+        event1.info['CHR2'] = chrom_alt
         # Modify event2
         event2.info['SVTYPE'] = 'TRA'
         event2.info['SVLEN'] = 0
+        chrom_alt, pos_alt = get_alt_chrom_pos(event2.alt)
+        event2.info['END'] = pos_alt
+        event2.info['CHR2'] = chrom_alt
 
 
 # ==============================
@@ -709,6 +740,9 @@ class SingleTRAToTRAConverter(Converter):
     def convert(self, event):
         event.info['SVTYPE'] = 'TRA'
         event.info['SVLEN'] = 0
+        chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
+        event.info['END'] = pos_alt
+        event.info['CHR2'] = chrom_alt
 
 
 # ==============================
@@ -783,7 +817,7 @@ class SingleTRATransformer(EventTransformer):
 if __name__ == '__main__':
     main()
 
-# 每个软件内部要校正SVLEN的计算方式
-# 每个软件转换后要内部去冗余
-# 我的标准格式：INV用<INV>,DUP 用<DUP> INS, DEL最好保留真实序列
-# 现在就剩non_bnd_events没处理了，他们其实是比较标准的INS, INV, DEL, DUP事件
+# Each software needs to calibrate the calculation method for SVLEN internally.
+# After each software's conversion, redundancy must be removed internally.
+# My standard format: Use <INV> for INV, use <DUP> for DUP, and for INS, DEL, it's best to keep the actual sequence.
+# Now, only the non_bnd_events haven't been processed. They are actually more standard events like INS, INV, DEL, and DUP.
