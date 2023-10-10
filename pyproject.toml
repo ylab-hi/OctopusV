@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "octopus-sv"
+version = "0.1.0"
+description = "sv merger"
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest-sugar = "^0.9.7"
+pytest = "^7.4.2"
+black = "^23.9.1"
+ruff = "^0.0.292"
+ipdb = "^0.13.13"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

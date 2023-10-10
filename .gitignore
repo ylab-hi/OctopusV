@@ -49,3 +49,4 @@ docs/apidocs/*
 docs/api/*
 !PxBLAT.ipynb
 .ltex
+.vscode
