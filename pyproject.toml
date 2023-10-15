@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "octopus-sv"
+name = "octopusv"
 version = "0.1.0"
 description = "sv merger"
 authors = ["Your Name <you@example.com>"]

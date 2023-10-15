@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import argparse
@@ -84,10 +83,7 @@ def main():
         single_TRA_transformed_events = single_TRA_transformer.apply_transforms(
             other_single_TRA
         )
-        non_bnd_transformer.apply_transforms(
-            non_bnd_events
-        )
-
+        non_bnd_transformer.apply_transforms(non_bnd_events)
 
         # Merge all transformed events
         all_transformed_events = (
