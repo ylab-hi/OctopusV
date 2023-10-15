@@ -1,0 +1,32 @@
+from .base import Converter, get_alt_chrom_pos, get_bnd_pattern
+
+
+class BND_to_TRA_Forward_Converter(Converter):
+    """This class inherits from the `Converter` base class and implements
+    the conversion logic for BND to TRA Forward translocation cut-paste.
+    """
+
+    def convert(self, event):
+        try:
+            if event.is_BND():
+                pattern = get_bnd_pattern(event.alt)
+                if pattern in ["t[p[", "]p]t"]:
+                    chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
+                    if chrom_alt is None:
+                        print("Failed to get ALT chrom and pos")
+                    else:
+                        if event.chrom == chrom_alt:
+                            if pattern == "t[p[" and event.pos < pos_alt:
+                                end = pos_alt
+                                self.convert_to_TRA_forward(event, end)
+                            elif pattern == "]p]t" and event.pos > pos_alt:
+                                end = pos_alt
+                                self.convert_to_TRA_forward(event, end)
+        except Exception as e:
+            print("Failed to convert BND to Translocation: ", e)
+
+    def convert_to_TRA_forward(self, event, end):
+        event.info["SVTYPE"] = "TRA"
+        event.info["END"] = end
+        event.info["SVLEN"] = 0
+        event.info["CHR2"] = event.chrom

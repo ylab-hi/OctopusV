@@ -21,6 +21,104 @@ ruff = "^0.0.292"
 ipdb = "^0.13.13"
 mypy = "^1.5.1"
 
+
+[tool.ruff]
+target-version = "py39"
+line-length = 120
+fix = true
+select = [
+    "ANN",
+    "D",
+    "A",
+    "F",
+    "E",
+    "W",
+    "C90",
+    "I",
+    "UP",
+    "N",
+    "YTT",
+    "TID",
+    "S",
+    "BLE",
+    "FBT",
+    "PLR",
+    "B",
+    "B9",
+    "A",
+    "C4",
+    "T10",
+    "EM",
+    "ICN",
+    "T20",
+    "Q",
+    "RET",
+    "SIM",
+    "ARG",
+    "DTZ",
+    "ERA",
+    "PD",
+    "PGH",
+    "PLC",
+    "PLE",
+    "PLW",
+    "RUF",
+    "PL",
+    "TD",
+    "FIX",
+    "PTH",
+    "TCH",
+    "SLOT",
+    "PT",
+    "PYI",
+    "PIE",
+    "ISC",
+    "FA",
+    "EXE",
+    "CPY",
+    "COM",
+]
+ignore = [
+    "E501",
+    "D203",
+    "D100",
+    "D401",
+    "ANN101",
+    "ANN102",
+    "ANN001",
+    "ANN002",
+    "ANN003",
+    "ANN201",
+    "ANN202",
+    "ANN204",
+    "ANN205",
+    "ANN206",
+    "PGH003",
+    "N802",
+    "N803",
+    "N806",
+    "N815",
+    "EM101",
+]
+exclude = [
+    "tasks.py",
+    "tests/*",
+    "build.py",
+    "scripts/*",
+    "noxfile.py",
+    "docs/conf.py",
+]
+
+
+[tool.ruff.flake8-annotations]
+allow-star-arg-any = true
+
+[tool.ruff.per-file-ignores]
+
+[tool.ruff.pydocstyle]
+convention = 'google'
+
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
