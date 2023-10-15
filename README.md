@@ -1,6 +1,7 @@
 # SVoctopus: A Tool for Comparing and Merging Structural Variant (SV) Results from Various SV Callers
 
 ## What is SVoctopus?
+
 SVoctopus is a toolkit for efficient manipulation and comparative analysis of structural variant (SV) callsets from multiple approaches. It streamlines SV analysis workflows by providing a standardized input/output interface and a comprehensive set of commands for filtration, merging, intersection, benchmarking and visualization of VCF from various SV callers. Octopus aims to offer a holistic solution for researchers venturing into the complex landscape of structural variations.
 
 ## Getting Started
@@ -8,6 +9,7 @@ SVoctopus is a toolkit for efficient manipulation and comparative analysis of st
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
+
 - Python 3
 - Required software/libraries: []
 
@@ -24,11 +26,11 @@ pip install octopus
 Convert VCFs from multiple callers to standardized SVCF format:
 
 ```
-svoctopus convert -i caller1.vcf -o caller1.svcf 
+svoctopus convert -i caller1.vcf -o caller1.svcf
 svoctopus convert -i caller2.vcf -o caller2.svcf
 ```
 
-### Merge callsets with `merge` 
+### Merge callsets with `merge`
 
 Extract intersection or union of multiple callsets:
 
@@ -87,4 +89,4 @@ svoctopus is licensed under MIT License.
 
 ## Acknowledgments
 
-- 
+-

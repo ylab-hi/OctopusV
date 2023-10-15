@@ -1,6 +1,6 @@
 ##fileformat=VCFv4.2
 ##fileDate=20231004
-##source=svaba(v1.1.0) run -t /projects/b1171/qgn1237/20230914_PC3_SV_golden_ground_truth_consensus/HiseqX_NGS/bwa_mem2_mapped/PC3_HiseqX_PRJNA361315.bam -p 8 -a PC3_HiseqX_PRJNA361315 -G /projects/b1171/qgn1237/1_my_database/GRCh38_p13/GRCh38.p13.genome.fa 
+##source=svaba(v1.1.0) run -t /projects/b1171/qgn1237/20230914_PC3_SV_golden_ground_truth_consensus/HiseqX_NGS/bwa_mem2_mapped/PC3_HiseqX_PRJNA361315.bam -p 8 -a PC3_HiseqX_PRJNA361315 -G /projects/b1171/qgn1237/1_my_database/GRCh38_p13/GRCh38.p13.genome.fa
 ##reference=/projects/b1171/qgn1237/1_my_database/GRCh38_p13/GRCh38.p13.genome.fa
 ##contig=<ID=chr1,length=248956422>
 ##contig=<ID=chr2,length=242193529>
