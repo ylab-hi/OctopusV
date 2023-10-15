@@ -83,6 +83,25 @@ svoctopus plot -i bench_statistics.txt -o plot
 
 We welcome contributions from the community. Feel free to submit issues, feature requests, and pull requests.
 
+- Install the library
+
+```bash
+poetry install
+```
+
+- Made and commit your changes
+
+```bash
+git add .
+git commit -m "feat: xxx"
+```
+
+- Execute pre-commit
+
+```bash
+pre-commit run -a
+```
+
 ## License
 
 svoctopus is licensed under MIT License.
