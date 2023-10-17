@@ -2,6 +2,8 @@ from enum import Enum
 
 
 class SVType(Enum):
+    """A class to represent the SV type."""
+
     DEL = "DEL"
     DUP = "DUP"
     INV = "INV"
@@ -10,7 +12,9 @@ class SVType(Enum):
     BND = "BND"
 
 
-class SVEvent:  # A class to represent each SV event
+class SVEvent:
+    """represent each SV event."""
+
     def __init__(self, chrom, pos, id, ref, alt, qual, filter, info, format, sample):
         self.chrom = chrom
         self.pos = int(pos)
@@ -33,6 +37,13 @@ class SVEvent:  # A class to represent each SV event
             else:
                 info_dict[parts[0]] = None
         return info_dict
+
+    def __getitem__(self, key):
+        # enable you to access object as dict
+        return self.info[key]
+
+    def __setitem__(self, key, value):
+        return self.info.__setitem__(key, value)
 
     def is_duplication(self):
         # Whether is duplication

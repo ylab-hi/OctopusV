@@ -11,8 +11,8 @@ class MatePairIndependentToTRAConverter(Converter):
             # Convert events
             self.convert_to_tra(event1, event2)
             return [event1, event2]  # Return a list of transformed events
-        else:
-            return []  # If the pair doesn't satisfy the criteria, return an empty list
+
+        return []  # If the pair doesn't satisfy the criteria, return an empty list
 
     def convert_to_tra(self, event1, event2):
         # Convert a pair of independent events to TRA

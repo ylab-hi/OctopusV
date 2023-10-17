@@ -10,7 +10,7 @@ class BND_to_INV_Converter(Converter):
                 return
 
             pattern = get_bnd_pattern(event.alt)
-            if pattern == "t]p]" or pattern == "[p[t":
+            if pattern in ("t]p]", "[p[t"):
                 chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
                 if chrom_alt is None:
                     print("Failed to get ALT chrom and pos")

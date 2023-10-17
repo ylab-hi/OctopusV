@@ -12,17 +12,16 @@ class BND_to_DUP_Converter(Converter):
                     chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
                     if chrom_alt is None:
                         print("Failed to get ALT chrom and pos")
-                    else:
-                        if event.chrom == chrom_alt:
-                            if pattern == "]p]t" and event.pos < pos_alt:
-                                end = pos_alt
-                                svlen = abs(end - event.pos)
-                                self.convert_to_DUP(event, end, svlen)
-                            elif pattern == "t[p[" and event.pos > pos_alt:
-                                end = event.pos
-                                svlen = abs(event.pos - pos_alt)
-                                event.pos = pos_alt
-                                self.convert_to_DUP(event, end, svlen)
+                    elif event.chrom == chrom_alt:
+                        if pattern == "]p]t" and event.pos < pos_alt:
+                            end = pos_alt
+                            svlen = abs(end - event.pos)
+                            self.convert_to_DUP(event, end, svlen)
+                        elif pattern == "t[p[" and event.pos > pos_alt:
+                            end = event.pos
+                            svlen = abs(event.pos - pos_alt)
+                            event.pos = pos_alt
+                            self.convert_to_DUP(event, end, svlen)
         except Exception as e:
             print("Failed to convert BND to Duplication: ", e)
 

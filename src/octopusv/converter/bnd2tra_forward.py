@@ -2,7 +2,8 @@ from .base import Converter, get_alt_chrom_pos, get_bnd_pattern
 
 
 class BND_to_TRA_Forward_Converter(Converter):
-    """This class inherits from the `Converter` base class and implements
+    """This class inherits from the `Converter` base class and implements.
+
     the conversion logic for BND to TRA Forward translocation cut-paste.
     """
 
@@ -14,14 +15,13 @@ class BND_to_TRA_Forward_Converter(Converter):
                     chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
                     if chrom_alt is None:
                         print("Failed to get ALT chrom and pos")
-                    else:
-                        if event.chrom == chrom_alt:
-                            if pattern == "t[p[" and event.pos < pos_alt:
-                                end = pos_alt
-                                self.convert_to_TRA_forward(event, end)
-                            elif pattern == "]p]t" and event.pos > pos_alt:
-                                end = pos_alt
-                                self.convert_to_TRA_forward(event, end)
+                    elif event.chrom == chrom_alt:
+                        if pattern == "t[p[" and event.pos < pos_alt:
+                            end = pos_alt
+                            self.convert_to_TRA_forward(event, end)
+                        elif pattern == "]p]t" and event.pos > pos_alt:
+                            end = pos_alt
+                            self.convert_to_TRA_forward(event, end)
         except Exception as e:
             print("Failed to convert BND to Translocation: ", e)
 

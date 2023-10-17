@@ -4,9 +4,9 @@ from .base import Converter, get_alt_chrom_pos, get_bnd_pattern
 def is_mate_pair_reciprocal_translocation(event1, event2):
     # Define the set of qualified pairings of BND patterns, used by MatePairReciprocalTranslocationToTRAConverter
     qualified_pairings = [
-        {"]p]t", "]p]t"},
-        {"t[p[", "t[p["},
-        {"t]p]", "[p[t"},
+        ("]p]t", "]p]t"),
+        ("t[p[", "t[p["),
+        ("t]p]", "[p[t"),
     ]
     # Extract the patterns from each event
     event1_pattern = get_bnd_pattern(event1.alt)
@@ -19,7 +19,8 @@ def is_mate_pair_reciprocal_translocation(event1, event2):
 
 
 class MatePairReciprocalTranslocationToTRAConverter(Converter):
-    """This class inherits from the `Converter` base class and implements
+    """This class inherits from the `Converter` base class and implements.
+
     the conversion logic for reciprocal translocation.
     """
 
@@ -30,8 +31,8 @@ class MatePairReciprocalTranslocationToTRAConverter(Converter):
             # Convert events
             self.convert_to_TRA(event1, event2)
             return [event1, event2]  # Return a list of transformed events
-        else:
-            return []  # If the pair doesn't satisfy the criteria, return an empty list
+
+        return []  # If the pair doesn't satisfy the criteria, return an empty list
 
     def convert_to_TRA(self, event1, event2):
         # Convert a pair of events to reciprocal translocation

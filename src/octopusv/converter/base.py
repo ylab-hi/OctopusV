@@ -2,7 +2,9 @@ import re
 
 
 class Converter:
-    """This is an abstract base class for all converter classes. It provides a common interface for all converters.
+    """This is an abstract base class for all converter classes.
+
+    It provides a common interface for all converters.
     The `convert` method is a placeholder that needs to be overridden in each concrete converter class.
     """
 
@@ -38,12 +40,12 @@ def is_same_bnd_event(event1, event2) -> bool:
 def is_independent_bnd_event(event1, event2):  # used by MatePairMergeToTRAConverter
     """Determine if two mate_pair_bnd events are independent events."""
     qualified_pairings = [
-        {"t]p]", "]p]t"},
-        {"t]p]", "t]p]"},
-        {"[p[t", "[p[t"},
-        {"t[p[", "t]p]"},
-        {"t[p[", "[p[t"},
-        {"]p]t", "[p[t"},
+        ("t]p]", "]p]t"),
+        ("t]p]", "t]p]"),
+        ("[p[t", "[p[t"),
+        ("t[p[", "t]p]"),
+        ("t[p[", "[p[t"),
+        ("]p]t", "[p[t"),
     ]
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
@@ -59,10 +61,10 @@ def is_independent_special_bnd_event(
 ):  # Used by SpecialNoMateDiffBNDPairIndependentToTRAConverter
     """Determine if two special_no_mate_diff_bnd_pair events are independent events."""
     qualified_pairings = [
-        {"t[p[", "t]p]"},
-        {"t[p[", "[p[t"},
-        {"t]p]", "]p]t"},
-        {"]p]t", "[p[t"},
+        ("t[p[", "t]p]"),
+        ("t[p[", "[p[t"),
+        ("t]p]", "]p]t"),
+        ("]p]t", "[p[t"),
     ]
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
@@ -76,7 +78,7 @@ def is_SpecialNoMateDiffBndPairReciprocalTranslocation(
     event1,
     event2,
 ):  # Used by SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter
-    qualified_pairings = [{"t[p[", "]p]t"}, {"t]p]", "[p[t"}]
+    qualified_pairings = [("t[p[", "]p]t"), ("t]p]", "[p[t")]
     # Extract the patterns from each event
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)

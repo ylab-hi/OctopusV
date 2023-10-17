@@ -1,6 +1,8 @@
 import re
 import sys
 
+from octopusv.sv import SVEvent
+
 
 def is_same_chr_bnd(event):
     """Check if the POS and ALT of an event are on the same chromosome."""
@@ -19,6 +21,7 @@ def is_same_chr_bnd(event):
 
 def check_vcf_format(vcf_file_path):
     """Check the format of a VCF file.
+
     Raise an error and exit if the format is incorrect.
     """
     with open(vcf_file_path) as f:

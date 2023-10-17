@@ -14,10 +14,7 @@ class MatePairMergeToTRAConverter(Converter):
         # Check if the pair of events has the same BND pattern
         if is_same_bnd_event(event1, event2):
             # Determine which event should be retained
-            if compare_chromosomes(event1, event2):  # If the first event is "smaller"
-                retained_event = event1
-            else:
-                retained_event = event2
+            retained_event = event1 if compare_chromosomes(event1, event2) else event2
 
             # Modify the SVTYPE to TRA
             retained_event.info["SVTYPE"] = "TRA"
