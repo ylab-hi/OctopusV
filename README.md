@@ -1,8 +1,8 @@
-# SVoctopus: A Tool for Comparing and Merging Structural Variant (SV) Results from Various SV Callers
+# octopusV: Correcting and Standardize benchmarking of Structural Variant (SV) Results from SV Callers
 
-## What is SVoctopus?
+## What is octopusV?
 
-SVoctopus is a toolkit for efficient manipulation and comparative analysis of structural variant (SV) callsets from multiple approaches. It streamlines SV analysis workflows by providing a standardized input/output interface and a comprehensive set of commands for filtration, merging, intersection, benchmarking and visualization of VCF from various SV callers. Octopus aims to offer a holistic solution for researchers venturing into the complex landscape of structural variations.
+octopusV is a toolkit for efficient manipulation and comparative analysis of structural variant (SV) callsets from multiple approaches. It streamlines SV analysis workflows by providing a standardized input/output interface and a comprehensive set of commands for filtration, merging, intersection, benchmarking and visualization of VCF from various SV callers. Octopus aims to offer a holistic solution for researchers venturing into the complex landscape of structural variations.
 
 ## Getting Started
 
@@ -11,7 +11,6 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 - Python 3
-- Required software/libraries: []
 
 ### Installation
 
@@ -104,8 +103,25 @@ pre-commit run -a
 
 ## License
 
-svoctopus is licensed under MIT License.
+octopusv is licensed under MIT License.
 
 ## Acknowledgments
 
 -
+
+## Anecdote
+
+Agent Octopus Code V: Dive deep into the structural variations' ocean! A state-of-the-art tool equipped with tentacles of precision to merge, correct, and visualize structural results from a multitude of callers
+
+In a world where structural variations are as vast and varied as the ocean, one sentinel rises from the depths to make sense of it all: Agent Octopus, codenamed octopusV.
+Imagine a vast digital sea where every wave represents a different structural variation caller, each with its own unique patterns and anomalies.
+Navigating through this maze, ensuring seamless merges, and pinpointing corrections used to be daunting tasks. That was until octopusV emerged.
+Endowed with eight intelligent tentacles, octopusV has an unparalleled ability to reach out to multiple structural results, embrace them, and bring them together.
+Each tentacle is designed to understand, analyze, and adapt to the nuances of different callers, ensuring that the merged structure is flawless.
+But the prowess of Agent Octopus doesn’t end there.
+Its core, Code V, is a visual marvel.
+It's not just correct; it also brings the results to life.
+Researchers can now see their structural variation results in vibrant visualizations, making comprehension and further analysis a breeze.
+In the expansive sea of structural variations, challenges may be as vast as the ocean, but with octopusV, clarity is but a tentacle touch away.
+With Agent Octopus Code V on their side, researchers now had a trusted ally, ensuring excellence in merging, correction, and visualization.
+A beacon in the vast ocean of structural variations
