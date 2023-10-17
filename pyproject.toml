@@ -20,7 +20,7 @@ octopusv = "octopusv.cli.cli:app"
 pytest-sugar = "^0.9.7"
 pytest = "^7.4.2"
 black = "^23.9.1"
-ruff = "^0.0.292"
+ruff = "^0.1.0"
 ipdb = "^0.13.13"
 mypy = "^1.5.1"
 
