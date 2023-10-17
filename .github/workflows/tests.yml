@@ -1,0 +1,223 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - release
+    paths:
+      - "**.py"
+      - "**/Dockerfile"
+      - ".github/workflows/*.yml"
+      - poetry.lock
+      - pyproject.toml
+
+  pull_request:
+    branches:
+      - release
+    paths:
+      - "**.py"
+      - "**/Dockerfile"
+      - ".github/workflows/*.yml"
+      - poetry.lock
+      - pyproject.toml
+
+jobs:
+  tests:
+    name: ${{ matrix.session }} ${{ matrix.python }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { python: "3.10", os: "ubuntu-latest", session: "pre-commit" }
+          - { python: "3.10", os: "ubuntu-latest", session: "safety" }
+          - { python: "3.10", os: "ubuntu-latest", session: "mypy" }
+          - { python: "3.9", os: "ubuntu-latest", session: "mypy" }
+          - { python: "3.10", os: "ubuntu-latest", session: "tests" }
+          - { python: "3.9", os: "ubuntu-latest", session: "tests" }
+          - { python: "3.10", os: "macos-latest", session: "tests" }
+          - { python: "3.9", os: "macos-latest", session: "tests" }
+          - { python: "3.10", os: "ubuntu-latest", session: "docs-build" }
+
+    env:
+      NOXSESSION: ${{ matrix.session }}
+      FORCE_COLOR: "1"
+      PRE_COMMIT_COLOR: "always"
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python }}-
+            ${{ runner.os }}-pip-
+
+      - name: Cache Poetry virtual environment
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ matrix.python }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-${{ matrix.python }}-
+            ${{ runner.os }}-poetry-
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Upgrade pip
+        run: |
+          pip install --constraint=.github/workflows/constraints.txt pip
+          pip --version
+
+      - name: Upgrade pip in virtual environments
+        shell: python
+        run: |
+          import os
+          import pip
+
+          with open(os.environ["GITHUB_ENV"], mode="a") as io:
+              print(f"VIRTUALENV_PIP={pip.__version__}", file=io)
+
+      - name: Install Dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -q --no-install-recommends --no-install-suggests libhts-dev  libssl-dev
+
+      - name: Cache macOS dependencies
+        if: matrix.os == 'macos-latest'
+        uses: actions/cache@v3
+        with:
+          path: ~/brew-cache
+          key: macos-brew-${{ hashFiles('**/Dockerfile') }}
+          restore-keys: |
+            macos-brew-
+
+      - name: Configure Homebrew
+        if: matrix.os == 'macos-latest'
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Install Dependencies
+        if: matrix.os == 'macos-latest'
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1 # Do not run brew cleanup automatically.
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1 # Do not automatically update packages.
+
+        run: |
+          brew install htslib
+          brew install openssl@3
+          ln -sf  $(brew --prefix openssl)/include/openssl /usr/local/include/openssl
+          ln -sf  $(brew --prefix openssl)/lib/*a /usr/local/lib/
+          ln -sf  $(brew --prefix openssl)/lib/*dylib /usr/local/lib/
+
+      - name: Install Poetry
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
+          poetry --version
+
+      - name: debug
+        if: matrix.os == 'macos-latest'
+        run: |
+          which python
+
+      - name: Install Nox
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
+          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
+          nox --version
+
+      - name: Compute pre-commit cache key
+        if: matrix.session == 'pre-commit'
+        id: pre-commit-cache
+        shell: python
+        run: |
+          import hashlib
+          import sys
+
+          python = "py{}.{}".format(*sys.version_info[:2])
+          payload = sys.version.encode() + sys.executable.encode()
+          digest = hashlib.sha256(payload).hexdigest()
+          result = "${{ runner.os }}-{}-{}-pre-commit".format(python, digest[:8])
+
+          print("::set-output name=result::{}".format(result))
+
+      - name: Restore pre-commit cache
+        uses: actions/cache@v3
+        if: matrix.session == 'pre-commit'
+        with:
+          path: ~/.cache/pre-commit
+          key: ${{ steps.pre-commit-cache.outputs.result }}-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            ${{ steps.pre-commit-cache.outputs.result }}-
+
+      - name: Run Nox
+        run: |
+          nox --force-color --python=${{ matrix.python }}
+
+      - name: Upload coverage data
+        if: always() && matrix.session == 'tests'
+        uses: "actions/upload-artifact@v3"
+        with:
+          name: coverage-data
+          path: ".coverage.*"
+
+      - name: Upload documentation
+        if: matrix.session == 'docs-build'
+        uses: actions/upload-artifact@v3
+        with:
+          name: docs
+          path: docs/_build
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Upgrade pip
+        run: |
+          pip install --constraint=.github/workflows/constraints.txt pip
+          pip --version
+
+      - name: Install Poetry
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
+          poetry --version
+
+      - name: Install Nox
+        run: |
+          pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
+          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
+          nox --version
+
+      - name: Download coverage data
+        uses: actions/download-artifact@v3.0.2
+        with:
+          name: coverage-data
+
+      - name: Combine coverage data and display human readable report
+        run: |
+          nox --force-color --session=coverage -v
+
+      - name: Create coverage report
+        run: |
+          nox --force-color --session=coverage -- xml
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
