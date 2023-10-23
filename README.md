@@ -78,43 +78,71 @@ octopusv plot -i sv_statistics.svcf -o plot
 octopusv plot -i bench_statistics.txt -o plot
 ```
 
-## Contribution
+## Contribution Guide
 
-We welcome contributions from the community. Feel free to submit issues, feature requests, and pull requests.
+We appreciate and welcome contributions from the community. Whether it's submitting issues, feature requests, or pull requests, we're always looking forward to your collaboration.
 
-- Install the library
+### Steps to Contribute:
 
-```bash
-poetry install
-```
+1. **Clone the Repository**
 
-- Made and commit your changes
+   Begin by cloning the repository to your local machine:
 
-```bash
-git add .
-git commit -m "feat: xxx"
-```
+   ```bash
+   git clone https://github.com/ylab-hi/octopusV.git
+   ```
 
-- Execute pre-commit
+2. **Create a New Branch**
 
-```bash
-pre-commit run -a
-```
+   Keep your work organized by creating a new branch for each contribution:
+
+   ```bash
+   git checkout -b feature/descriptive-branch-name
+   ```
+
+3. **Install Dependencies (if required)**
+
+   If you're adding new features or making changes that require additional dependencies, make sure to install them:
+
+   ```bash
+   poetry install
+   ```
+
+4. **Make Your Changes**
+
+5. **Run pre-commit Hooks**
+
+   ```bash
+   pre-commit run -a
+   ```
+
+   If all checks pass, proceed to the next step.
+
+6. **Commit and Push Your Changes**
+
+   ```bash
+   git add .
+   git commit -m "A descriptive message about your changes"
+   git push origin feature/descriptive-branch-name
+   ```
+
+7. **Create a Pull Request**
+
+   Head over to the `ylab-hi/octopusV` repository on GitHub and click "New Pull Request". Choose your branch from the dropdown and submit your PR with a clear description of the changes you've made.
 
 ## License
 
-octopusv is licensed under MIT License.
+octopusV is licensed under MIT License.
 
 ## Acknowledgments
 
 ## Anecdote
 
-**Agent Octopus Code V: The Sentinel of the Structural Variations Sea!**   
+**Agent Octopus Code V: The Sentinel of the Structural Variations Sea!**
 Plunge deep into the ocean of structural variations with the most advanced tool yet: Agent Octopus Code V. Equipped with precision tentacles, it's designed to merge, correct, and beautifully visualize results from diverse callers.
 
 In the vast realm of structural variations, where each wave symbolizes a unique caller with its distinct characteristics, navigating and deciphering these waves can be overwhelming. Enter OctopusV, the guardian of this intricate digital ocean. Boasting eight versatile tentacles, OctopusV has the unmatched capability to synchronize with a multitude of structural results, encapsulate them, and craft a coherent narrative. Every tentacle is meticulously engineered to grasp, dissect, and harmonize with the intricacies of each caller, ensuring that the final structure stands unblemished.
 
-But the genius of Agent Octopus doesn't halt there. Embedded within its core, Code V, lies a visual spectacle. It's not merely about precision; it's about illuminating your results. Dive into vivid visual representations of your structural variations, simplifying comprehension and paving the way for insightful analysis. In the vast expanse of structural variations, while the challenges are as deep and endless as the sea, with OctopusV, clarity is merely a tentacle's reach away. With the formidable Agent Octopus Code V by their side, researchers have found an unwavering ally, promising impeccable merging, meticulous correction, and dynamic visualization. 
+But the genius of Agent Octopus doesn't halt there. Embedded within its core, Code V, lies a visual spectacle. It's not merely about precision; it's about illuminating your results. Dive into vivid visual representations of your structural variations, simplifying comprehension and paving the way for insightful analysis. In the vast expanse of structural variations, while the challenges are as deep and endless as the sea, with OctopusV, clarity is merely a tentacle's reach away. With the formidable Agent Octopus Code V by their side, researchers have found an unwavering ally, promising impeccable merging, meticulous correction, and dynamic visualization.
 
 OctopusV - Your beacon in the boundless ocean of structural variations.
-

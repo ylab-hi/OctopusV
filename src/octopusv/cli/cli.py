@@ -12,12 +12,13 @@ app = typer.Typer(
 )
 
 
-app.command(convert) # Command to initiate convert functionality.
+app.command(convert)  # Command to initiate convert functionality.
+
 
 @app.callback()
 def display_version_info():
     """Display the version information."""
-    pass
+
 
 display_version_info.__doc__ = f"""{typer.style("Version", fg=typer.colors.YELLOW, bold=True)}: {typer.style(f"{__version__}", fg=typer.colors.GREEN, bold=True)}"""
 
