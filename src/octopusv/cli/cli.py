@@ -12,10 +12,7 @@ app = typer.Typer(
 )
 
 
-@app.command()
-def convert_cmd():
-    """Command to initiate convert functionality."""
-    convert()
+app.command(convert) # Command to initiate convert functionality.
 
 @app.callback()
 def display_version_info():
