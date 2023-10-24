@@ -1,5 +1,7 @@
 # octopusV: Correcting and Standardize benchmarking of Structural Variant (SV) Results from SV Callers
 
+![octopusV Logo](/imgs/octopusV_logo.png)
+
 ## What is octopusV?
 
 octopusV is a toolkit for efficient manipulation and comparative analysis of structural variant (SV) callsets from multiple approaches. It streamlines SV analysis workflows by providing a standardized input/output interface and a comprehensive set of commands for filtration, merging, intersection, benchmarking and visualization of VCF from various SV callers. Octopus aims to offer a holistic solution for researchers venturing into the complex landscape of structural variations.
