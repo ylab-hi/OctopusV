@@ -2,9 +2,9 @@ import sys
 
 import typer
 
-from src.octopusv import __version__
+from octopusv import __version__
 
-from .convert import convert
+from .convert import correct
 
 app = typer.Typer(
     epilog=f"{typer.style('Agent Octopus Code V helps you dive deep into the structural variations ocean!', fg=typer.colors.GREEN, bold=True)}",
@@ -12,7 +12,7 @@ app = typer.Typer(
 )
 
 
-app.command(convert)  # Command to initiate convert functionality.
+app.command()(correct)  # Command to initiate convert functionality.
 
 
 @app.callback()

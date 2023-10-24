@@ -11,6 +11,7 @@ python = "^3.9"
 typer = "^0.9.0"
 loguru = "^0.7.2"
 rich = "^13.6.0"
+natsort = "^8.4.0"
 
 
 [tool.poetry.scripts]
@@ -78,7 +79,7 @@ select = [
     "ISC",
     "FA",
     "EXE",
-    "CPY",
+    # "CPY",
     "COM",
 ]
 ignore = [
@@ -102,6 +103,16 @@ ignore = [
     "N806",
     "N815",
     "EM101",
+    # formater conflict
+    'COM812',
+    'COM819',
+    'D206',
+    'ISC001',
+    'Q000',
+    'Q001',
+    'Q002',
+    'Q003',
+    'W191',
 ]
 exclude = [
     "tasks.py",
@@ -110,8 +121,46 @@ exclude = [
     "scripts/*",
     "noxfile.py",
     "docs/conf.py",
+
+
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
 ]
 
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+# magic-trailing-comma = "respect"
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.ruff.flake8-bugbear]
+extend-immutable-calls = ["chr", "typer.Argument", "typer.Option"]
 
 [tool.ruff.flake8-annotations]
 allow-star-arg-any = true

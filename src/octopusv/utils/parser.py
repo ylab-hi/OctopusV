@@ -1,7 +1,7 @@
 import re
 import sys
 
-from src.octopusv.sv import SVEvent
+from octopusv.sv import SVEvent
 
 
 def is_same_chr_bnd(event):

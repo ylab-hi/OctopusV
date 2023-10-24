@@ -13,9 +13,7 @@ def is_mate_pair_reciprocal_translocation(event1, event2):
     event2_pattern = get_bnd_pattern(event2.alt)
 
     # Check if the patterns match one of the qualified pairings
-    return any(
-        {event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings
-    )
+    return any({event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings)
 
 
 class MatePairReciprocalTranslocationToTRAConverter(Converter):

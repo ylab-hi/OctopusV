@@ -2,29 +2,26 @@ from pathlib import Path
 
 import typer
 
-from ..converter.base import get_alt_chrom_pos
-from ..converter.bnd2dup import BND_to_DUP_Converter
-from ..converter.bnd2inv import BND_to_INV_Converter
-from ..converter.bnd2tra_forward import BND_to_TRA_Forward_Converter
-from ..converter.bnd2tra_reverse import BND_to_TRA_Reverse_Converter
-from ..converter.mpi2tra import MatePairIndependentToTRAConverter
-from ..converter.mpm2tra import MatePairMergeToTRAConverter
-from ..converter.mprtra2tra import MatePairReciprocalTranslocationToTRAConverter
-from ..converter.snmd_dndpi2tra import SpecialNoMateDiffBNDPairIndependentToTRAConverter
-from ..converter.snmd_dndpr_tra2tra import (
-    SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter,
-)
-from ..converter.stra2tra import SingleTRAToTRAConverter
-from ..transformer.base import EventTransformer
-from ..transformer.mp_bnd import MatePairBNDTransformer
-from ..transformer.same_chr_dnd import SameChrBNDTransformer
-from ..transformer.snmd_bndp import SpecialNoMateDiffBNDPairTransformer
-from ..transformer.stra import SingleTRATransformer
-from ..utils.parser import parse_vcf
+from octopusv.converter.base import get_alt_chrom_pos
+from octopusv.converter.bnd2dup import BND_to_DUP_Converter
+from octopusv.converter.bnd2inv import BND_to_INV_Converter
+from octopusv.converter.bnd2tra_forward import BND_to_TRA_Forward_Converter
+from octopusv.converter.bnd2tra_reverse import BND_to_TRA_Reverse_Converter
+from octopusv.converter.mpi2tra import MatePairIndependentToTRAConverter
+from octopusv.converter.mpm2tra import MatePairMergeToTRAConverter
+from octopusv.converter.mprtra2tra import MatePairReciprocalTranslocationToTRAConverter
+from octopusv.converter.snmd_dndpi2tra import SpecialNoMateDiffBNDPairIndependentToTRAConverter
+from octopusv.converter.snmd_dndpr_tra2tra import SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter
+from octopusv.converter.stra2tra import SingleTRAToTRAConverter
+from octopusv.transformer.base import EventTransformer
+from octopusv.transformer.mp_bnd import MatePairBNDTransformer
+from octopusv.transformer.same_chr_dnd import SameChrBNDTransformer
+from octopusv.transformer.snmd_bndp import SpecialNoMateDiffBNDPairTransformer
+from octopusv.transformer.stra import SingleTRATransformer
+from octopusv.utils.parser import parse_vcf
 
 
-# Main function
-def convert(
+def correct(
     input_vcf: Path = typer.Argument(
         ...,
         exists=True,
@@ -96,10 +93,8 @@ def convert(
     mate_pair_transformed_events = mate_bnd_pair_transformer.apply_transforms(
         mate_bnd_pairs,
     )
-    special_no_mate_diff_bnd_pair_transformed_events = (
-        special_no_mate_diff_bnd_pair_transformer.apply_transforms(
-            special_no_mate_diff_bnd_pairs,
-        )
+    special_no_mate_diff_bnd_pair_transformed_events = special_no_mate_diff_bnd_pair_transformer.apply_transforms(
+        special_no_mate_diff_bnd_pairs,
     )
     single_TRA_transformed_events = single_TRA_transformer.apply_transforms(
         other_single_TRA,

@@ -34,9 +34,7 @@ def is_same_bnd_event(event1, event2) -> bool:
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
 
-    return any(
-        {event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings
-    )
+    return any({event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings)
 
 
 def is_independent_bnd_event(event1, event2):  # used by MatePairMergeToTRAConverter
@@ -52,9 +50,7 @@ def is_independent_bnd_event(event1, event2):  # used by MatePairMergeToTRAConve
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
 
-    return any(
-        {event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings
-    )
+    return any({event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings)
 
 
 def is_independent_special_bnd_event(
@@ -71,9 +67,7 @@ def is_independent_special_bnd_event(
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
 
-    return any(
-        {event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings
-    )
+    return any({event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings)
 
 
 def is_SpecialNoMateDiffBndPairReciprocalTranslocation(
@@ -86,9 +80,7 @@ def is_SpecialNoMateDiffBndPairReciprocalTranslocation(
     event2_pattern = get_bnd_pattern(event2.alt)
 
     # Check if the patterns match one of the qualified pairings
-    return any(
-        {event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings
-    )
+    return any({event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings)
 
 
 def compare_chromosomes(event1, event2):  # Used by MatePairMergeToTRAConverter
