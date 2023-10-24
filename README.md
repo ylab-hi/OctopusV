@@ -1,6 +1,6 @@
 # octopusV: Correcting and Standardize benchmarking of Structural Variant (SV) Results from SV Callers
 
-![octopusV Logo](/imgs/octopusV_logo.png)
+<img src="https://github.com/ylab-hi/octopusV/blob/main/imgs/octopusV_logo.png" width=50% height=50%>
 
 ## What is octopusV?
 
