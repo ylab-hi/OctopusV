@@ -1,7 +1,8 @@
 import re
-
 from natsort import natsorted
+import logging
 
+logging.basicConfig(level=logging.INFO)
 
 class Converter:
     """This is an abstract base class for all converter classes.
@@ -16,7 +17,7 @@ class Converter:
 
 
 def get_bnd_pattern(alt):
-    # Get the pattern of BND: t[p[, t]p], ]p]t, [p[t
+    """Get the pattern of BND: t[p[, t]p], ]p]t, [p[t."""
     if alt[0] in "ATCGN" and alt[1] == "[":
         return "t[p["
     if alt[0] in "ATCGN" and alt[1] == "]":
@@ -29,7 +30,7 @@ def get_bnd_pattern(alt):
 
 
 def is_same_bnd_event(event1, event2) -> bool:
-    # Define whether the BND represent the same TRA events, used by MatePairMergeToTRAConverter
+    """Define whether the BND represent the same TRA events, used by MatePairMergeToTRAConverter."""
     qualified_pairings = [{"]p]t", "t[p["}]
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
@@ -37,21 +38,21 @@ def is_same_bnd_event(event1, event2) -> bool:
     return any({event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings)
 
 
-def is_independent_bnd_event(event1, event2):  # used by MatePairMergeToTRAConverter
+def is_independent_bnd_event(event1, event2):  # used by MatePairIndependentToTRAConverter
     """Determine if two mate_pair_bnd events are independent events."""
     qualified_pairings = [
-        ("t]p]", "]p]t"),
-        ("t]p]", "t]p]"),
-        ("[p[t", "[p[t"),
-        ("t[p[", "t]p]"),
-        ("t[p[", "[p[t"),
-        ("]p]t", "[p[t"),
+        {"t]p]", "]p]t"},
+        {"t]p]", "t]p]"},
+        {"[p[t", "[p[t"},
+        {"t[p[", "t]p]"},
+        {"t[p[", "[p[t"},
+        {"]p]t", "[p[t"},
     ]
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
 
+    # I change back since tuple can not be compared with set.
     return any({event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings)
-
 
 def is_independent_special_bnd_event(
     event1,
@@ -73,7 +74,10 @@ def is_independent_special_bnd_event(
 def is_SpecialNoMateDiffBndPairReciprocalTranslocation(
     event1,
     event2,
-):  # Used by SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter
+):
+    """Determine if SpecialNoMateDiffBndPairReciprocalTranslocation."""
+
+    """used by SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter."""
     qualified_pairings = [("t[p[", "]p]t"), ("t]p]", "[p[t")]
     # Extract the patterns from each event
     event1_pattern = get_bnd_pattern(event1.alt)
@@ -98,14 +102,17 @@ def compare_chromosomes(event1, event2):  # Used by MatePairMergeToTRAConverter
     return original_order == sorted_order
 
 
+ALT_PARTS_EXPECTED_COUNT = 4 # Magic number for get_alt_chrom_pos()
+
+
 def get_alt_chrom_pos(alt):
     """Extract chromosome and position from alt field in VCF file."""
     split_result = re.split(r"[\[\]:]", alt)
-    if len(split_result) != 4:
-        print(
+    if len(split_result) != ALT_PARTS_EXPECTED_COUNT:
+        logging.info(
             f"Unexpected ALT format, it should be something like N]chr10:69650962]: {split_result}",
         )
         return None, None
-    else:
-        chrom_alt, pos_alt = split_result[1:3]
-        return chrom_alt, int(pos_alt)  # Convert pos_alt to integer.
+
+    chrom_alt, pos_alt = split_result[1:3]
+    return chrom_alt, int(pos_alt)  # Convert pos_alt to integer.

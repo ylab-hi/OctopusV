@@ -13,11 +13,13 @@ from octopusv.converter.mprtra2tra import MatePairReciprocalTranslocationToTRACo
 from octopusv.converter.snmd_dndpi2tra import SpecialNoMateDiffBNDPairIndependentToTRAConverter
 from octopusv.converter.snmd_dndpr_tra2tra import SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter
 from octopusv.converter.stra2tra import SingleTRAToTRAConverter
+from octopusv.converter.nobnd import NonBNDConverter
 from octopusv.transformer.base import EventTransformer
 from octopusv.transformer.mp_bnd import MatePairBNDTransformer
 from octopusv.transformer.same_chr_dnd import SameChrBNDTransformer
 from octopusv.transformer.snmd_bndp import SpecialNoMateDiffBNDPairTransformer
 from octopusv.transformer.stra import SingleTRATransformer
+from octopusv.transformer.no_bnd import NonBNDTransformer
 from octopusv.utils.parser import parse_vcf
 
 
@@ -82,9 +84,9 @@ def correct(
         ],
     )
     single_TRA_transformer = SingleTRATransformer([SingleTRAToTRAConverter()])
-    non_bnd_transformer = EventTransformer(
-        [],
-    )  # Assuming non-BND events are not to be transformed
+    non_bnd_transformer = NonBNDTransformer(
+        [NonBNDConverter()],
+    )  # Assuming non-BND events are not to be transformed for now
 
     # Apply all transformation strategies to the events
     same_chr_bnd_transformed_events = same_chr_bnd_transformer.apply_transforms(

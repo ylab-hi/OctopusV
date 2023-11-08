@@ -101,15 +101,8 @@ The INFO field contains several subfields separated by semicolons, including:
 - **RTID**: Identifier for reciprocal translocations, if applicable.
 - **AF**: Allele frequency of the SV.
 - **STRAND**: Strand orientation of the SV.
-- **SC**: Source caller, often the VCF file name or a user-defined string. 
 
 Each tag in the INFO field would be used to annotate a structural variant in the SVCF file, providing a quick reference for key details of each event.
-
-variant. For insertions, this will be positive. For deletions, it will be negative.
-- **SUPPORT**: The number of pieces of evidence supporting the variant.
-- **SVMETHOD**: The method used to determine the structural variant.
-- **STRAND**: The orientation of the variant; it can be ++, +-, -+, or --.
-- **ADDITIONAL INFO**: Any additional subfields specific to the SV discovery method.
 
 ## 8. FORMAT Field
 
@@ -122,7 +115,7 @@ The FORMAT field includes:
 - **QV**: Quality Value for the SV event.
 - **TY**: The type of SV event.
 - **ID**: A unique identifier for the SV event.
-- **SC**: The source caller for the SV event.
+- **SC**: Source caller, often the VCF file name or a user-defined string.
 - **REF**: The reference bases for the SV event.
 - **ALT**: The alternate bases for the SV event (or `.` if none). It can also be BND pattern.
 - **CO**: Coordinates for the SV event indicating the affected region.
@@ -171,16 +164,19 @@ The `SVLEN` field reflects the length of the structural variation and is calcula
 Here is the corrected representation:
 
 - For `DEL`:
+
   ```
   SVLEN = END - POS
   ```
 
 - For `DUP` and `INV`:
+
   ```
   SVLEN = END - POS
   ```
 
 - For `TRA`:
+
   ```
   SVLEN = .
   ```
