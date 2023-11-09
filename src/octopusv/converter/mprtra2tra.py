@@ -4,9 +4,9 @@ from .base import Converter, get_alt_chrom_pos, get_bnd_pattern
 def is_mate_pair_reciprocal_translocation(event1, event2):
     # Define the set of qualified pairings of BND patterns, used by MatePairReciprocalTranslocationToTRAConverter
     qualified_pairings = [
-        ("]p]t", "]p]t"),
-        ("t[p[", "t[p["),
-        ("t]p]", "[p[t"),
+        {"]p]t", "]p]t"},
+        {"t[p[", "t[p["},
+        {"t]p]", "[p[t"},
     ]
     # Extract the patterns from each event
     event1_pattern = get_bnd_pattern(event1.alt)

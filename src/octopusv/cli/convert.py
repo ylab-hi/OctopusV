@@ -10,16 +10,15 @@ from octopusv.converter.bnd2tra_reverse import BND_to_TRA_Reverse_Converter
 from octopusv.converter.mpi2tra import MatePairIndependentToTRAConverter
 from octopusv.converter.mpm2tra import MatePairMergeToTRAConverter
 from octopusv.converter.mprtra2tra import MatePairReciprocalTranslocationToTRAConverter
+from octopusv.converter.nobnd import NonBNDConverter
 from octopusv.converter.snmd_dndpi2tra import SpecialNoMateDiffBNDPairIndependentToTRAConverter
 from octopusv.converter.snmd_dndpr_tra2tra import SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter
 from octopusv.converter.stra2tra import SingleTRAToTRAConverter
-from octopusv.converter.nobnd import NonBNDConverter
-from octopusv.transformer.base import EventTransformer
 from octopusv.transformer.mp_bnd import MatePairBNDTransformer
+from octopusv.transformer.no_bnd import NonBNDTransformer
 from octopusv.transformer.same_chr_dnd import SameChrBNDTransformer
 from octopusv.transformer.snmd_bndp import SpecialNoMateDiffBNDPairTransformer
 from octopusv.transformer.stra import SingleTRATransformer
-from octopusv.transformer.no_bnd import NonBNDTransformer
 from octopusv.utils.parser import parse_vcf
 
 
@@ -129,11 +128,11 @@ def find_mate_bnd_and_no_mate_events(events, pos_tolerance=3):
 
     for event in events:
         chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
-        key = (event.chrom, event.pos, chrom_alt, pos_alt)
+        key = (event.chrom, event.pos, event.id, chrom_alt, pos_alt)
 
         # Generate all possible reverse keys
         possible_reverse_keys = [
-            (chrom_alt, pos_alt + i, event.chrom, event.pos + j)
+            (chrom_alt, pos_alt + i, event.id, event.chrom, event.pos + j)
             for i in range(-pos_tolerance, pos_tolerance + 1)
             for j in range(-pos_tolerance, pos_tolerance + 1)
         ]

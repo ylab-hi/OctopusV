@@ -60,10 +60,10 @@ def is_independent_special_bnd_event(
 ):  # Used by SpecialNoMateDiffBNDPairIndependentToTRAConverter
     """Determine if two special_no_mate_diff_bnd_pair events are independent events."""
     qualified_pairings = [
-        ("t[p[", "t]p]"),
-        ("t[p[", "[p[t"),
-        ("t]p]", "]p]t"),
-        ("]p]t", "[p[t"),
+        {"t[p[", "t]p]"},  # Be sure to use set here.
+        {"t[p[", "[p[t"},
+        {"t]p]", "]p]t"},
+        {"]p]t", "[p[t"},
     ]
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
@@ -78,7 +78,7 @@ def is_SpecialNoMateDiffBndPairReciprocalTranslocation(
     """Determine if SpecialNoMateDiffBndPairReciprocalTranslocation."""
 
     """used by SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter."""
-    qualified_pairings = [("t[p[", "]p]t"), ("t]p]", "[p[t")]
+    qualified_pairings = [{"t[p[", "]p]t"}, {"t]p]", "[p[t"}]
     # Extract the patterns from each event
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
