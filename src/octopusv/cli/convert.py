@@ -45,7 +45,12 @@ def correct(
     )
 
     # Extract mate BND and no mate events, they are all with different chromosomes
-    mate_bnd_pairs, no_mate_events = find_mate_bnd_and_no_mate_events(
+    mate_bnd_pairs = find_mate_bnd_events(
+        diff_chr_bnd_events,
+        pos_tolerance=pos_tolerance,
+    )
+
+    no_mate_events = find_no_mate_events(
         diff_chr_bnd_events,
         pos_tolerance=pos_tolerance,
     )
@@ -118,40 +123,80 @@ def correct(
 # ==============================
 # The following are auxiliary Functions.
 # ==============================
-
-
-def find_mate_bnd_and_no_mate_events(events, pos_tolerance=3):
-    """Extract mate BND and no mate events from diff_chr_bnd_events."""
+def find_mate_bnd_events(events, pos_tolerance=3):
+    """Find mate BND events."""
     event_dict = {}
     mate_bnd_pairs = []
-    no_mate_events = []
 
     for event in events:
         chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
-        key = (event.chrom, event.pos, event.id, chrom_alt, pos_alt)
+        key_for_searching = (event.chrom, event.pos, chrom_alt, pos_alt)
 
         # Generate all possible reverse keys
         possible_reverse_keys = [
-            (chrom_alt, pos_alt + i, event.id, event.chrom, event.pos + j)
+            (chrom_alt, pos_alt + i, event.chrom, event.pos + j)
             for i in range(-pos_tolerance, pos_tolerance + 1)
             for j in range(-pos_tolerance, pos_tolerance + 1)
         ]
 
-        mate_found = False  # This is a flag
         for reverse_key in possible_reverse_keys:
             if reverse_key in event_dict:
-                mate_bnd_pairs.append(
-                    (event_dict.pop(reverse_key), event),
-                )  # event_dict.pop(reverse_key) will delete mate events from event_dic and output
-                mate_found = True
+                mate_bnd_pairs.append((event_dict.pop(reverse_key), event))
                 break
+        else:
+            event_dict[key_for_searching] = event
+            # It will override for no_mate_events due to the same key, but does matter.
+            # We only output mate_bnd_pairs here
+
+    return mate_bnd_pairs
+
+
+def find_no_mate_events(events, pos_tolerance=3):
+    """Find no mate events. The main idea is to store events in list to avoid overriding in event_dict."""
+    event_dict = {}
+    no_mate_events = []
+    mate_bnd_pairs = []
+
+    for event in events:
+        chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
+        key = (event.chrom, event.pos, chrom_alt, pos_alt)
+
+        # Generate all possible reverse keys
+        possible_reverse_keys = [
+            (chrom_alt, pos_alt + i, event.chrom, event.pos + j)
+            for i in range(-pos_tolerance, pos_tolerance + 1)
+            for j in range(-pos_tolerance, pos_tolerance + 1)
+        ]
+
+        mate_found = False  # A flag to indicate if a matching mate has been found for the event.
+
+        # Check each reverse key to see if a mate exists in event_dict.
+        for reverse_key in possible_reverse_keys:
+            if reverse_key in event_dict:   # Means got a mate.
+                # Now iterating through all events associated with the reverse_key
+                for mate_event in event_dict[reverse_key]:
+                    # If a mate is found, add the pair to the mate_bnd_pairs list.
+                    mate_bnd_pairs.append((mate_event, event))
+                    # Remove the found mate event from the dictionary.
+                    event_dict[reverse_key].remove(mate_event)
+                    mate_found = True
+                    break  # Stop searching once a mate is found.
+                # If a mate was found and no events are left under the reverse key, remove the key.
+                if mate_found:
+                    if len(event_dict[reverse_key]) == 0:
+                        # Remove the key if no events are left
+                        del event_dict[reverse_key]
+                    break
 
         if not mate_found:
-            event_dict[key] = event
+            if key not in event_dict:  # Create a new list if key doesn't exist.
+                event_dict[key] = []
+            event_dict[key].append(event)  # # Add the event to the list under its key.
 
-    no_mate_events = list(event_dict.values())
+    # Flattening the list of events from all keys
+    no_mate_events = [single_event for event_list in event_dict.values() for single_event in event_list]
 
-    return mate_bnd_pairs, no_mate_events
+    return no_mate_events
 
 
 def find_special_no_mate_diff_bnd_pair_and_other_single_tra(

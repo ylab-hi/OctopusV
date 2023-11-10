@@ -23,8 +23,8 @@ class MatePairReciprocalTranslocationToTRAConverter(Converter):
     """
 
     def convert(self, pair):
+        """Check if this pair satisfies the criteria for reciprocal translocation."""
         event1, event2 = pair
-        # Check if this pair satisfies the criteria for reciprocal translocation
         if is_mate_pair_reciprocal_translocation(event1, event2):
             # Convert events
             self.convert_to_TRA(event1, event2)
@@ -33,7 +33,7 @@ class MatePairReciprocalTranslocationToTRAConverter(Converter):
         return []  # If the pair doesn't satisfy the criteria, return an empty list
 
     def convert_to_TRA(self, event1, event2):
-        # Convert a pair of events to reciprocal translocation
+        """Convert a pair of events to reciprocal translocation."""
         # Modify event1
         event1.info["SVTYPE"] = "TRA"
         chrom_alt, pos_alt = get_alt_chrom_pos(event1.alt)

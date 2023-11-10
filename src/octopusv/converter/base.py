@@ -1,8 +1,10 @@
-import re
-from natsort import natsorted
 import logging
+import re
+
+from natsort import natsorted
 
 logging.basicConfig(level=logging.INFO)
+
 
 class Converter:
     """This is an abstract base class for all converter classes.
@@ -54,6 +56,7 @@ def is_independent_bnd_event(event1, event2):  # used by MatePairIndependentToTR
     # I change back since tuple can not be compared with set.
     return any({event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings)
 
+
 def is_independent_special_bnd_event(
     event1,
     event2,
@@ -76,9 +79,8 @@ def is_SpecialNoMateDiffBndPairReciprocalTranslocation(
     event2,
 ):
     """Determine if SpecialNoMateDiffBndPairReciprocalTranslocation."""
-
     """used by SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter."""
-    qualified_pairings = [{"t[p[", "]p]t"}, {"t]p]", "[p[t"}]
+    qualified_pairings = [{'t[p[', ']p]t'}, {'t]p]', '[p[t'}]
     # Extract the patterns from each event
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
@@ -102,7 +104,7 @@ def compare_chromosomes(event1, event2):  # Used by MatePairMergeToTRAConverter
     return original_order == sorted_order
 
 
-ALT_PARTS_EXPECTED_COUNT = 4 # Magic number for get_alt_chrom_pos()
+ALT_PARTS_EXPECTED_COUNT = 4  # Magic number for get_alt_chrom_pos()
 
 
 def get_alt_chrom_pos(alt):
