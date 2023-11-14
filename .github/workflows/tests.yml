@@ -3,7 +3,7 @@ name: Tests
 on:
   push:
     branches:
-      - release
+      - main
     paths:
       - "**.py"
       - "**/Dockerfile"
@@ -13,7 +13,7 @@ on:
 
   pull_request:
     branches:
-      - release
+      - main
     paths:
       - "**.py"
       - "**/Dockerfile"
@@ -163,6 +163,16 @@ jobs:
       - name: Run Nox
         run: |
           nox --force-color --python=${{ matrix.python }}
+
+      - name: Install dependencies with Poetry
+        if: matrix.session == 'tests'
+        run: |
+          poetry install
+
+      - name: Run pytest
+        if: matrix.session == 'tests'
+        run: |
+          poetry run pytest tests/test_correct_end_to_end.py
 
       - name: Upload coverage data
         if: always() && matrix.session == 'tests'
