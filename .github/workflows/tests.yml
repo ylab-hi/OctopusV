@@ -173,7 +173,7 @@ jobs:
         uses: "actions/upload-artifact@v3"
         with:
           name: coverage-data
-          path: "coverage.html"
+          path: "htmlcov/index.html"
 
       - name: Upload documentation
         if: matrix.session == 'docs-build'
