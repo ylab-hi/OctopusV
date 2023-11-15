@@ -13,4 +13,4 @@ def tests_310(session):
 @nox.session
 def coverage(session):
     session.install("coverage")
-    session.run("coverage", "html -i")
+    session.run("coverage", "html", "-i")
