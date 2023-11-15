@@ -160,10 +160,13 @@ jobs:
           restore-keys: |
             ${{ steps.pre-commit-cache.outputs.result }}-
 
-      - name: Run Nox for tests session
-        if: matrix.session == 'tests'
-        run: |
-          nox --force-color
+      - name: Run Nox for Python 3.9 tests session
+        if: matrix.session == 'tests' && matrix.python == '3.9'
+        run: nox --session tests_39 --force-color
+
+      - name: Run Nox for Python 3.10 tests session
+        if: matrix.session == 'tests' && matrix.python == '3.10'
+        run: nox --session tests_310 --force-color
 
       - name: Upload coverage data
         if: always() && matrix.session == 'tests'
