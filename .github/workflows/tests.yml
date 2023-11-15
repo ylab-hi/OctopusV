@@ -216,10 +216,8 @@ jobs:
           name: coverage-data
 
       - name: List files in the working directory
-        run:
-          pwd
+        run: |
           ls -la
-          ls -la /home/runner/work/octopusV/octopusV
 
       - name: Combine coverage data and display human readable report
         run: |
