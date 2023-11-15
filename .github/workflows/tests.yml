@@ -219,7 +219,11 @@ jobs:
         run: |
           ls -la
 
-      - name: Upload coverage HTML report
+      - name: Display human readable report
+        run: |
+          nox --force-color --session=coverage -v
+
+      - name: Upload coverage HTML report index
         uses: actions/upload-artifact@v2
         with:
           name: html-coverage-report-index
