@@ -219,9 +219,8 @@ jobs:
         run: |
           ls -la
 
-      - name: Combine coverage data and display human readable report
-        run: |
-          nox --force-color --session=coverage -v
-
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v3
+      - name: Upload coverage HTML report
+        uses: actions/upload-artifact@v2
+        with:
+          name: html-coverage-report-index
+          path: htmlcov/index.html
