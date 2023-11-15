@@ -160,19 +160,10 @@ jobs:
           restore-keys: |
             ${{ steps.pre-commit-cache.outputs.result }}-
 
-      - name: Run Nox
-        run: |
-          nox --force-color --python=${{ matrix.python }}
-
-      - name: Install dependencies with Poetry
+      - name: Run Nox for tests session
         if: matrix.session == 'tests'
         run: |
-          poetry install
-
-      - name: Run pytest
-        if: matrix.session == 'tests'
-        run: |
-          poetry run pytest tests/test_correct_end_to_end.py
+          nox --force-color
 
       - name: Upload coverage data
         if: always() && matrix.session == 'tests'
