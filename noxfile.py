@@ -13,8 +13,4 @@ def tests_310(session):
 @nox.session
 def coverage(session):
     session.install("coverage")
-    # Combine the downloaded coverage data.
-    session.run("coverage", "combine", "--append")
-    # Output report
-    session.run("coverage", "report")
-    session.run("coverage", "html")
+    session.run("coverage", "html", "-i", "--from-coverage=coverage.xml")
