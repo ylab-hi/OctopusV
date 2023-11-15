@@ -173,7 +173,7 @@ jobs:
         uses: "actions/upload-artifact@v3"
         with:
           name: coverage-data
-          path: "coverage.xml"
+          path: "coverage-${{ matrix.python }}-${{ matrix.os }}.xml"
 
       - name: Upload documentation
         if: matrix.session == 'docs-build'
@@ -218,10 +218,6 @@ jobs:
       - name: Combine coverage data and display human readable report
         run: |
           nox --force-color --session=coverage -v
-
-      - name: Create coverage report
-        run: |
-          nox --force-color --session=coverage -- xml
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v3
