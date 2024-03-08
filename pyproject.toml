@@ -24,7 +24,7 @@ pytest = "^8.0.2"
 black = "^24.2.0"
 ruff = "^0.3.0"
 ipdb = "^0.13.13"
-mypy = "^1.8.0"
+mypy = "^1.9.0"
 
 
 [tool.ruff]
