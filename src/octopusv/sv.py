@@ -66,22 +66,26 @@ class SVEvent:
         return self.info["SVTYPE"] == "BND"
 
     def __str__(self):
-        # enable you to output object as vcf string format
-        # Define your desired order
-        ordered_keys = ["SVTYPE", "END", "SVLEN", "SUPPORT", "COVERAGE", "STRAND"]
-        info_items = []
+        # Fixed order for INFO fields, using '.' as a placeholder for missing values
+        info_order = ["SVTYPE", "END", "SVLEN", "CHR2", "SUPPORT", "SVMETHOD", "RTID", "AF", "STRAND"]
+        info_str = ";".join(f"{key}={self.info.get(key, '.')}" for key in info_order)
 
-        # First add the ordered keys
-        for key in ordered_keys:
-            if key in self.info:
-                info_items.append(f"{key}={self.info[key]}")
+        # Fixed order for FORMAT fields
+        format_order = ["GT", "AD", "LN", "ST", "QV", "TY", "ID", "SC", "REF", "ALT", "CO"]
+        format_str = ":".join(format_order)
 
-        # Then add the remaining keys
-        for key in self.info:
-            if key not in ordered_keys:
-                info_items.append(f"{key}={self.info[key]}")
+        # Correcting the logic for processing self.sample to match the FORMAT field order
+        # Split the input format and sample strings into lists
+        input_format_parts = self.format.split(":")
+        input_sample_parts = self.sample.split(":")
 
-        info_str = ";".join(info_items)  # SVTYPE=INV;END=69650961;SVLEN=1835141
+        # Map the input sample to a dictionary for easy key access
+        sample_dict = dict(zip(input_format_parts, input_sample_parts))
+
+        # Generate the corresponding Sample string, filling in missing parts with '.'
+        # output_sample_parts is a list of new sample column
+        output_sample_parts = [sample_dict.get(part, '.') for part in format_order]
+        sample_str = ":".join(output_sample_parts)
 
         return "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
             self.chrom,
@@ -92,6 +96,6 @@ class SVEvent:
             self.qual,
             self.filter,
             info_str,
-            self.format,
-            self.sample,
+            format_str,
+            sample_str,
         )
