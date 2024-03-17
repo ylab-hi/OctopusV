@@ -43,7 +43,7 @@ class SVEvent:
         return self.info[key]
 
     def __setitem__(self, key, value):
-        return self.info.__setitem__(key, value)
+        self.info[key] = value
 
     def is_duplication(self):
         # Whether is duplication
