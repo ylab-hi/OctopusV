@@ -80,23 +80,22 @@ def parse_vcf(vcf_file_path):
     same_chr_bnd_events = []
     diff_chr_bnd_events = []
     non_bnd_events = []
-    headers = []
+    contig_lines = []  # Store ##contig lines here
 
     with open(vcf_file_path) as f:
         for line in f:
-            if line.startswith("#"):
-                headers.append(line.strip())
-                continue  # Skip header lines
+            if line.startswith("##contig"):
+                contig_lines.append(line.strip())
+            elif not line.startswith("#"):  # Skip all header lines except ##contig
+                fields = line.strip().split("\t")
+                event = SVEvent(*fields)  # Unpack fields and send to SVEvent class
 
-            fields = line.strip().split("\t")
-            event = SVEvent(*fields)  # Unpack fields and send to SVEvent class
-
-            if event.is_BND():
-                if is_same_chr_bnd(event):  # Check if the event is same chromosome
-                    same_chr_bnd_events.append(event)
+                if event.is_BND():
+                    if is_same_chr_bnd(event):  # Check if the event is same chromosome
+                        same_chr_bnd_events.append(event)
+                    else:
+                        diff_chr_bnd_events.append(event)  # Different chromosome
                 else:
-                    diff_chr_bnd_events.append(event)  # Different chromosome
-            else:
-                non_bnd_events.append(event)  # Non-BND events
+                    non_bnd_events.append(event)  # Non-BND events
 
-    return headers, same_chr_bnd_events, diff_chr_bnd_events, non_bnd_events
+    return contig_lines, same_chr_bnd_events, diff_chr_bnd_events, non_bnd_events

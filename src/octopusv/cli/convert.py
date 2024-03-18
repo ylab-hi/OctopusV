@@ -20,6 +20,7 @@ from octopusv.transformer.same_chr_dnd import SameChrBNDTransformer
 from octopusv.transformer.snmd_bndp import SpecialNoMateDiffBNDPairTransformer
 from octopusv.transformer.stra import SingleTRATransformer
 from octopusv.utils.parser import parse_vcf
+from octopusv.utils.svcf_utils import write_sv_vcf
 
 
 def correct(
@@ -40,7 +41,7 @@ def correct(
     """Correct SV events."""
     # Parse the input VCF file
     # non_bnd_events means DEL, INV, INS, DUP
-    headers, same_chr_bnd_events, diff_chr_bnd_events, non_bnd_events = parse_vcf(
+    contig_lines, same_chr_bnd_events, diff_chr_bnd_events, non_bnd_events = parse_vcf(
         input_vcf,
     )
 
@@ -117,8 +118,7 @@ def correct(
     )
 
     # Write the transformed events to the output file
-    same_chr_bnd_transformer.write_vcf(headers, all_transformed_events, output)
-
+    write_sv_vcf(contig_lines, all_transformed_events, output)
 
 # ==============================
 # The following are auxiliary Functions.

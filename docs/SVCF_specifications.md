@@ -27,9 +27,11 @@ The SVCF file is structured as follows:
 ##contig=<ID=GL000008.2,length=209709>
 ##contig=<ID=GL000194.1,length=191469>
 ##ALT=<ID=DEL,Description="Deletion">
+##ALT=<ID=INV,Description="Inversion">
 ##ALT=<ID=INS,Description="Insertion">
 ##ALT=<ID=DUP,Description="Duplication">
 ##ALT=<ID=TRA,Description="Translocation">
+##ALT=<ID=BND,Description="Breakend">
 ##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
 ##INFO=<ID=CHR2,Number=1,Type=String,Description="Chromosome for end">
 ##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
