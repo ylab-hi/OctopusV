@@ -16,17 +16,19 @@ class BND_to_DUP_Converter(Converter):
                         if pattern == "]p]t" and event.pos < pos_alt:
                             end = pos_alt
                             svlen = abs(end - event.pos)
-                            self.convert_to_DUP(event, end, svlen)
+                            self.convert_to_DUP(event, end, svlen, chrom_alt)
                         elif pattern == "t[p[" and event.pos > pos_alt:
                             end = event.pos
                             svlen = abs(event.pos - pos_alt)
                             event.pos = pos_alt
-                            self.convert_to_DUP(event, end, svlen)
+                            self.convert_to_DUP(event, end, svlen, chrom_alt)
         except Exception as e:
             print("Failed to convert BND to Duplication: ", e)
 
-    def convert_to_DUP(self, event, end, svlen):
+    def convert_to_DUP(self, event, end, svlen, chrom_alt):
         event.alt = "<DUP>"
         event.info["SVTYPE"] = "DUP"
         event.info["END"] = end
         event.info["SVLEN"] = svlen
+        event.info["CHR2"] = chrom_alt
+        event.info["SVMETHOD"] = "octopusV"

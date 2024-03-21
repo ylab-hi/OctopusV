@@ -68,7 +68,18 @@ class SVEvent:
     def __str__(self):
         # Fixed order for INFO fields, using '.' as a placeholder for missing values
         info_order = ["SVTYPE", "END", "SVLEN", "CHR2", "SUPPORT", "SVMETHOD", "RTID", "AF", "STRAND"]
-        info_str = ";".join(f"{key}={self.info.get(key, '.')}" for key in info_order)
+        info_str_parts = []
+        for key in info_order:
+            value = self.info.get(key, '.')
+            if key == "SVLEN" and value != '.':  # Check if SVLEN is present and not placeholder
+                try:
+                    # Ensure the value is an integer and take its absolute value
+                    value = str(abs(int(value)))
+                except ValueError:
+                    # In case value is not an integer, keep the original value (should not happen if your data is correct)
+                    pass
+            info_str_parts.append(f"{key}={value}")
+            info_str = ";".join(info_str_parts)
 
         # Fixed order for FORMAT fields
         format_order = ["GT", "AD", "LN", "ST", "QV", "TY", "ID", "SC", "REF", "ALT", "CO"]

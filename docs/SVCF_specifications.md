@@ -155,10 +155,6 @@ The `SC` subfield within the FORMAT field stands for "source" and is by default 
 
 ### SVLEN Calculation
 
-Certainly, I will adjust the specification for the `SVLEN` calculation to accurately reflect the conventions for each SV type:
-
-### SVLEN Calculation
-
 The `SVLEN` field reflects the length of the structural variation and is calculated as follows:
 
 - For `DEL`: `SVLEN` is the positive value calculated by subtracting the `POS` (start position) from the `END`, indicating a deletion from the reference genome. The length of the deletion is the number of base pairs lost.
