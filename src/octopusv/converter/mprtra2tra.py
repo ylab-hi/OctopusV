@@ -40,12 +40,14 @@ class MatePairReciprocalTranslocationToTRAConverter(Converter):
         event1.info["END"] = pos_alt
         event1.info["CHR2"] = chrom_alt
         event1.info["RTID"] = event2.id
-        event1.info["SVLEN"] = 0
+        event1.info["SVLEN"] = "."
+        event1.info["SVMETHOD"] = "octopusV"
         # Modify event2
         event2.info["SVTYPE"] = "TRA"
         chrom_alt, pos_alt = get_alt_chrom_pos(event2.alt)
         event2.info["END"] = pos_alt
         event2.info["CHR2"] = chrom_alt
         event2.info["RTID"] = event1.id
-        event2.info["SVLEN"] = 0
+        event2.info["SVLEN"] = "."
+        event2.info["SVMETHOD"] = "octopusV"
         # No need to return anything as the states of event1 and event2 are modified in-place

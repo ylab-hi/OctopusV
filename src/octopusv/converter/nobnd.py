@@ -2,8 +2,29 @@ from .base import Converter
 
 
 class NonBNDConverter(Converter):
-    """A converter for non-BND events that doesn't change the event."""
+    """A converter for non-BND events that enriches the event with additional info."""
 
     def convert(self, event):
-        """No conversion needed for non-BND events for now will be revised soon."""
-        pass
+        """Simplifies SVTYPE to one of the specified types and sets CHR2 and SVMETHOD for non-BND events."""
+
+        # Check and simplify SVTYPE
+        svtype = event.info.get("SVTYPE", "")
+        if ":" in svtype:
+            # Only take the part before the colon as SVTYPE
+            svtype = svtype.split(":")[0]
+        # Ensure the simplified SVTYPE is one of the allowed five types, otherwise keep the original SVTYPE unchanged
+        if svtype in ["INV", "INS", "DEL", "TRA", "DUP"]:
+            event.info["SVTYPE"] = svtype
+        else:
+            # If SVTYPE is not among the specified types, print a warning or keep it unchanged
+            print(f"Warning: Simplified SVTYPE '{svtype}' is not one of the allowed types. Keeping original SVTYPE.")
+
+        # Only set CHR2 if it does not already exist
+        if "CHR2" not in event.info:
+            event.info["CHR2"] = event.chrom
+
+        # Set SVMETHOD to "octopusV"
+        event.info["SVMETHOD"] = "octopusV"
+
+        if svtype == "TRA":
+            event.info["SVLEN"] = "."

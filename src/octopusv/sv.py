@@ -33,9 +33,17 @@ class SVEvent:
             parts = item.split("=")
             if len(parts) == 2:  # Just in case that the INFO doesn't contain = symbol
                 key, value = parts
+                if key.lower() == "strand":
+                    key = "STRAND"
                 info_dict[key] = value
             else:
                 info_dict[parts[0]] = None
+
+        for support_key in ['SUPP', 'SUPPREAD', 'WEIGHT']:
+            if support_key in info_dict:
+                info_dict['SUPPORT'] = info_dict[support_key]
+                break
+
         return info_dict
 
     def __getitem__(self, key):

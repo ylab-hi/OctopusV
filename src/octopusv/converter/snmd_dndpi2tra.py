@@ -18,13 +18,15 @@ class SpecialNoMateDiffBNDPairIndependentToTRAConverter(Converter):
         # Convert a pair of independent events to TRA
         # Modify event1
         event1.info["SVTYPE"] = "TRA"
-        event1.info["SVLEN"] = 0
+        event1.info["SVLEN"] = "."
         chrom_alt, pos_alt = get_alt_chrom_pos(event1.alt)
         event1.info["END"] = pos_alt
         event1.info["CHR2"] = chrom_alt
+        event1.info["SVMETHOD"] = "octopusV"
         # Modify event2
         event2.info["SVTYPE"] = "TRA"
-        event2.info["SVLEN"] = 0
+        event2.info["SVLEN"] = "."
         chrom_alt, pos_alt = get_alt_chrom_pos(event2.alt)
         event2.info["END"] = pos_alt
         event2.info["CHR2"] = chrom_alt
+        event2.info["SVMETHOD"] = "octopusV"

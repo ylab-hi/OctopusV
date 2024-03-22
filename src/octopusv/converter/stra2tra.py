@@ -8,7 +8,8 @@ class SingleTRAToTRAConverter(Converter):
 
     def convert(self, event):
         event.info["SVTYPE"] = "TRA"
-        event.info["SVLEN"] = 0
+        event.info["SVLEN"] = "."
         chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
         event.info["END"] = pos_alt
         event.info["CHR2"] = chrom_alt
+        event.info["SVMETHOD"] = "octopusV"

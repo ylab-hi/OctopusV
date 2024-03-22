@@ -28,5 +28,6 @@ class BND_to_TRA_Forward_Converter(Converter):
     def convert_to_TRA_forward(self, event, end):
         event.info["SVTYPE"] = "TRA"
         event.info["END"] = end
-        event.info["SVLEN"] = 0
+        event.info["SVLEN"] = "."
         event.info["CHR2"] = event.chrom
+        event.info["SVMETHOD"] = "octopusV"

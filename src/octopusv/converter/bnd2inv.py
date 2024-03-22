@@ -18,23 +18,21 @@ class BND_to_INV_Converter(Converter):
                     if pattern == "t]p]" and event.pos < pos_alt:
                         end = pos_alt
                         svlen = abs(event.pos - pos_alt)
-                        self.convert_to_inv(
-                            event,
-                            end,
-                            svlen,
-                        )  # self will be passed to convert_to_INV method.
+                        self.convert_to_inv(event, end, svlen, chrom_alt)  # self will be passed to convert_to_INV method.
                     elif pattern == "[p[t" and event.pos > pos_alt:
                         end = event.pos
                         event.pos = pos_alt
                         svlen = abs(event.pos - end)
-                        self.convert_to_inv(event, end, svlen)
+                        self.convert_to_inv(event, end, svlen, chrom_alt)
 
         except Exception as e:
             print("Failed to convert BND to Inversion: ", e)
 
-    def convert_to_inv(self, event, end, svlen):
+    def convert_to_inv(self, event, end, svlen, chrom_alt):
         # Detail logic changing BND event to INV event
         event.alt = "<INV>"
         event.info["SVTYPE"] = "INV"
         event.info["END"] = end
         event.info["SVLEN"] = svlen
+        event.info["CHR2"] = chrom_alt
+        event.info["SVMETHOD"] = "octopusV"
