@@ -26,5 +26,14 @@ class NonBNDConverter(Converter):
         # Set SVMETHOD to "octopusV"
         event.info["SVMETHOD"] = "octopusV"
 
+        # Calculate SVLEN if not present and event is not TRA
+        if "SVLEN" not in event.info and svtype in ["DEL", "DUP", "INV"]:
+            try:
+                pos = int(event.pos)
+                end = int(event.info["END"])
+                event.info["SVLEN"] = abs(end - pos)
+            except (ValueError, KeyError):
+                print(f"Error: Unable to calculate SVLEN for event {event.id}")
+
         if svtype == "TRA":
             event.info["SVLEN"] = "."
