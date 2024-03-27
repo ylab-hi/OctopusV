@@ -81,14 +81,27 @@ def parse_vcf(vcf_file_path):
     diff_chr_bnd_events = []
     non_bnd_events = []
     contig_lines = []  # Store ##contig lines here
+    is_svaba_output = False  # Flag to detect if it's SVABA output
 
     with open(vcf_file_path) as f:
         for line in f:
+            if line.startswith("##source=") and "svaba" in line.lower():
+                is_svaba_output = True
             if line.startswith("##contig"):
                 contig_lines.append(line.strip())
             elif not line.startswith("#"):  # Skip all header lines except ##contig
                 fields = line.strip().split("\t")
-                event = SVEvent(*fields)  # Unpack fields and send to SVEvent class
+
+                # Adjust for SVABA if it's detected by the source line and has 13 fields
+                if is_svaba_output and len(fields) == 13:
+                    adjusted_fields = fields[:8] + [fields[8], fields[12]]
+                elif not is_svaba_output and len(fields) == 13:
+                    raise ValueError("VCF format error: Detected 13 columns in the header.")
+                else:
+                    adjusted_fields = fields
+
+
+                event = SVEvent(*adjusted_fields)  # Unpack fields and send to SVEvent class
 
                 if event.is_BND():
                     if is_same_chr_bnd(event):  # Check if the event is same chromosome
