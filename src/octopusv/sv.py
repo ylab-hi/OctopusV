@@ -1,4 +1,5 @@
 from enum import Enum
+from octopusv.utils.construct_sample_string import construct_sample_string
 
 
 class SVType(Enum):
@@ -105,18 +106,8 @@ class SVEvent:
         format_order = ["GT", "AD", "LN", "ST", "QV", "TY", "ID", "SC", "REF", "ALT", "CO"]
         format_str = ":".join(format_order)
 
-        # Correcting the logic for processing self.sample to match the FORMAT field order
-        # Split the input format and sample strings into lists
-        input_format_parts = self.format.split(":")
-        input_sample_parts = self.sample.split(":")
-
-        # Map the input sample to a dictionary for easy key access
-        sample_dict = dict(zip(input_format_parts, input_sample_parts))
-
-        # Generate the corresponding Sample string, filling in missing parts with '.'
-        # output_sample_parts is a list of new sample column
-        output_sample_parts = [sample_dict.get(part, '.') for part in format_order]
-        sample_str = ":".join(output_sample_parts)
+        # Use construct_sample_string to build sample string
+        sample_str = construct_sample_string(self)
 
         return "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
             self.chrom,
