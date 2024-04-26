@@ -20,7 +20,7 @@ octopusv = "octopusv.cli.cli:app"
 
 [tool.poetry.group.dev.dependencies]
 pytest-sugar = "^1.0.0"
-pytest = "^8.0.2"
+pytest = "^8.1.2"
 black = "^24.2.0"
 ruff = "^0.4.2"
 ipdb = "^0.13.13"
