@@ -87,7 +87,7 @@ def parse_vcf(vcf_file_path):
     with open(vcf_file_path) as f:
         for line in f:
             if line.startswith("##source="):
-                source_info = line.split('=')[1].split(' ')[0].strip()
+                source_info = line.split("=")[1].split(" ")[0].strip()
                 if "svaba" in line.lower():
                     is_svaba_output = True
             elif line.startswith("##contig"):
@@ -102,7 +102,6 @@ def parse_vcf(vcf_file_path):
                     raise ValueError("VCF format error: Detected 13 columns in the header.")
                 else:
                     adjusted_fields = fields
-
 
                 event = SVEvent(*adjusted_fields)  # Unpack fields and send to SVEvent class
                 event.source = source_info  # Add source dynamically

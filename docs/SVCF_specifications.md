@@ -138,7 +138,7 @@ Within the SVCF specification, the `SVTYPE` field is restricted to five canonica
 
 ### Special Rules for `TRA`
 
-For translocations (`TRA`),  `SVLEN` is represented by a dot (`.`) to avoid erroneous length calculations that could potentially reduce the overall length of the reference sequence.
+For translocations (`TRA`), `SVLEN` is represented by a dot (`.`) to avoid erroneous length calculations that could potentially reduce the overall length of the reference sequence.
 
 ```plaintext
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	Sample

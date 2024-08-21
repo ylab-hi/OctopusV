@@ -6,6 +6,8 @@ from octopusv import __version__
 
 from .convert import correct
 
+from .merge import merge
+
 app = typer.Typer(
     epilog=f"{typer.style('Agent Octopus Code V helps you dive deep into the structural variations ocean!', fg=typer.colors.GREEN, bold=True)}",
     context_settings={"help_option_names": ["-h", "--help"]},
@@ -13,7 +15,7 @@ app = typer.Typer(
 
 
 app.command()(correct)  # Command to initiate convert functionality.
-
+app.command()(merge)  # Command to initiate merge functionality.
 
 @app.callback()
 def display_version_info():

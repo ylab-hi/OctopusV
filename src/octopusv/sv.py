@@ -1,4 +1,5 @@
 from enum import Enum
+
 from octopusv.utils.construct_sample_string import construct_sample_string
 
 
@@ -41,9 +42,9 @@ class SVEvent:
             else:
                 info_dict[parts[0]] = None
 
-        for support_key in ['SUPP', 'SUPPREAD', 'WEIGHT', 'RE']:
+        for support_key in ["SUPP", "SUPPREAD", "WEIGHT", "RE"]:
             if support_key in info_dict:
-                info_dict['SUPPORT'] = info_dict[support_key]
+                info_dict["SUPPORT"] = info_dict[support_key]
                 break
 
         return info_dict
@@ -77,23 +78,23 @@ class SVEvent:
 
     def __str__(self):
         # Process 'PR' for 'SUPPORT' if not already set
-        if 'SUPPORT' not in self.info:
-            format_parts = self.format.split(':')
-            sample_parts = self.sample.split(':')
+        if "SUPPORT" not in self.info:
+            format_parts = self.format.split(":")
+            sample_parts = self.sample.split(":")
             format_sample_dict = dict(zip(format_parts, sample_parts))
             # Handling both 'PR' only and 'PR:SR' cases.
-            pr_key = 'PR' if 'PR' in format_sample_dict else None
+            pr_key = "PR" if "PR" in format_sample_dict else None
             if pr_key:
-                pr_values = format_sample_dict[pr_key].split(',')
+                pr_values = format_sample_dict[pr_key].split(",")
                 if len(pr_values) > 1:
-                    self.info['SUPPORT'] = pr_values[1]  # Use the alt allele's paired-read count
+                    self.info["SUPPORT"] = pr_values[1]  # Use the alt allele's paired-read count
 
         # Fixed order for INFO fields, using '.' as a placeholder for missing values
         info_order = ["SVTYPE", "END", "SVLEN", "CHR2", "SUPPORT", "SVMETHOD", "RTID", "AF", "STRAND"]
         info_str_parts = []
         for key in info_order:
-            value = self.info.get(key, '.')
-            if key == "SVLEN" and value != '.':  # Check if SVLEN is present and not placeholder
+            value = self.info.get(key, ".")
+            if key == "SVLEN" and value != ".":  # Check if SVLEN is present and not placeholder
                 try:
                     # Ensure the value is an integer and take its absolute value
                     value = str(abs(int(value)))
