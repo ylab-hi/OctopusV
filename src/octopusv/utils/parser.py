@@ -82,12 +82,15 @@ def parse_vcf(vcf_file_path):
     non_bnd_events = []
     contig_lines = []  # Store ##contig lines here
     is_svaba_output = False  # Flag to detect if it's SVABA output
+    source_info = "."  # Default value of source
 
     with open(vcf_file_path) as f:
         for line in f:
-            if line.startswith("##source=") and "svaba" in line.lower():
-                is_svaba_output = True
-            if line.startswith("##contig"):
+            if line.startswith("##source="):
+                source_info = line.split('=')[1].split(' ')[0].strip()
+                if "svaba" in line.lower():
+                    is_svaba_output = True
+            elif line.startswith("##contig"):
                 contig_lines.append(line.strip())
             elif not line.startswith("#"):  # Skip all header lines except ##contig
                 fields = line.strip().split("\t")
@@ -102,6 +105,7 @@ def parse_vcf(vcf_file_path):
 
 
                 event = SVEvent(*adjusted_fields)  # Unpack fields and send to SVEvent class
+                event.source = source_info  # Add source dynamically
 
                 if event.is_BND():
                     if is_same_chr_bnd(event):  # Check if the event is same chromosome

@@ -26,9 +26,9 @@ def construct_sample_string(sv_event):
     qv = sv_event.qual
     ty = sv_event.info.get('SVTYPE', '.')
     id_ = sv_event.id
-    sc = "Unknown"  # To be revised
+    sc = sv_event.source  # The source is a dynamic attribute added in parse_vcf()
     ref = sv_event.ref
-    alt = sv_event.alt
+    alt = sv_event.orig_alt
     chr2 = sv_event.info.get('CHR2', '.')
     end = sv_event.info.get('END', '.')
 

@@ -22,6 +22,7 @@ class SVEvent:
         self.id = id
         self.ref = ref
         self.alt = alt
+        self.orig_alt = alt
         self.qual = qual
         self.filter = filter
         self.info = self._parse_info(info)  # self.info will be a dict
