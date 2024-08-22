@@ -19,7 +19,7 @@ from octopusv.transformer.no_bnd import NonBNDTransformer
 from octopusv.transformer.same_chr_dnd import SameChrBNDTransformer
 from octopusv.transformer.snmd_bndp import SpecialNoMateDiffBNDPairTransformer
 from octopusv.transformer.stra import SingleTRATransformer
-from octopusv.utils.parser import parse_vcf
+from octopusv.utils.normal_vcf_parser import parse_vcf
 from octopusv.utils.svcf_utils import write_sv_vcf
 
 
