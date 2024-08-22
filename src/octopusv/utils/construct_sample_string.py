@@ -32,6 +32,10 @@ def construct_sample_string(sv_event):
     chr2 = sv_event.info.get("CHR2", ".")
     end = sv_event.info.get("END", ".")
 
+    # Calculate the correct end position for insertions
+    if ty == "INS" and svlen.isdigit():
+        end = sv_event.pos + int(svlen)  # Adjust end based on the length of the insertion
+
     # Build CO
     if chr2 != "." and end != ".":
         co = f"{sv_event.chrom}_{sv_event.pos}-{chr2}_{end}"

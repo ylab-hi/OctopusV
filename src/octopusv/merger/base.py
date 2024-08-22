@@ -5,7 +5,7 @@ class SVMerger:
     def __init__(self):
         self.tree = SVIntervalTree()
 
-    def load_events(self, events):
+    def load_events_into_tree(self, events):
         """Load SV events into the interval tree."""
         for event in events:
             start = event.pos

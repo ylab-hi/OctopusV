@@ -19,11 +19,11 @@ def merge(
     specific: List[Path] = typer.Option(None, "--specific", help="Extract SVs that are specifically supported by provided files."),
     overlap: int = typer.Option(None, "--overlap", help="Minimum number of files that must support an SV to be included in the output."),
 ):
-    parser = SVCFParser([str(file) for file in input_files])
-    parser.parse()
+    svcf_parser = SVCFParser([str(file) for file in input_files]) # Create a lot of SVCF events
+    svcf_parser.parse()  # This function will add all the events to the event attribute.
 
     merger = SVMerger()
-    merger.load_events(parser.events)
+    merger.load_events_into_tree(svcf_parser.events)  # Feed the events into merger and load into interval tree
 
     if intersect:
         strategy = IntersectionStrategy()
