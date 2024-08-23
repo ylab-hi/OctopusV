@@ -1,6 +1,6 @@
 from octopusv.merger.interval_tree import SVIntervalTree
 
-class SVMerger:
+class SVIntervalTreeMerger:
     """Base class for merging structural variant (SV) events from multiple sources."""
     def __init__(self):
         self.tree = SVIntervalTree()

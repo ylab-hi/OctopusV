@@ -18,7 +18,7 @@ class SVCFEvent:
 
     def __init__(self, chrom, pos, sv_id, ref, alt, quality, filter, info, format, sample, source_file):
         self.chrom = chrom
-        self.pos = pos
+        self.pos = int(pos)
         self.sv_id = sv_id
         self.ref = ref
         self.alt = alt
@@ -26,8 +26,11 @@ class SVCFEvent:
         self.filter = filter
         self.info = self._parse_info(info)
         self.format = format
-        self.sample = sample
+        self.sample = self._parse_sample(sample)
         self.source_file = source_file  # Store the source file name for tracking
+
+        self.sv_type = self.info.get('SVTYPE', '')
+        self.start_chrom, self.start_pos, self.end_chrom, self.end_pos = self._parse_coordinates()
 
     def _parse_info(self, info_str):
         """
@@ -48,10 +51,28 @@ class SVCFEvent:
                 info[item] = True  # Flags without a value are stored as True
         return info
 
+    def _parse_sample(self, sample):
+        """
+        Parses the sample string based on the format to extract all relevant data.
+        """
+        parts = sample.split(':')
+        keys = self.format.split(':')
+        return dict(zip(keys, parts))
 
-class SVCFParser:
+    def _parse_coordinates(self):
+        """
+        Extracts and parses the coordinates of the SV from the sample info.
+        """
+        co = self.sample.get('CO', f"{self.chrom}_{self.pos}-{self.chrom}_{self.pos}")
+        start, end = co.split('-')
+        start_chrom, start_pos = start.split('_')
+        end_chrom, end_pos = end.split('_')
+        return start_chrom, int(start_pos), end_chrom, int(end_pos)
+
+
+class SVCFFileEventCreator:
     """
-    Parses SVCF files to create SVCFEvent instances.
+    Parses all SVCF files to create SVCFEvent instances.
 
     Attributes:
         filenames (list): List of filenames (strings) to be parsed.

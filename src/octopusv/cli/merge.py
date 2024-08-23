@@ -4,11 +4,11 @@ from typing import List
 
 import typer
 
-from octopusv.merger.base import SVMerger
+from octopusv.merger.sv_interval_tree_merger import SVIntervalTreeMerger
 
 from octopusv.merger.merge_strategies import UnionStrategy, IntersectionStrategy, SpecificMergeStrategy
 
-from octopusv.utils.svcf_parser import SVCFParser
+from octopusv.utils.svcf_parser import SVCFFileEventCreator
 
 
 def merge(
@@ -19,11 +19,11 @@ def merge(
     specific: List[Path] = typer.Option(None, "--specific", help="Extract SVs that are specifically supported by provided files."),
     overlap: int = typer.Option(None, "--overlap", help="Minimum number of files that must support an SV to be included in the output."),
 ):
-    svcf_parser = SVCFParser([str(file) for file in input_files]) # Create a lot of SVCF events
-    svcf_parser.parse()  # This function will add all the events to the event attribute.
+    sv_event_creator = SVCFFileEventCreator([str(file) for file in input_files]) # Create a lot of SVCF events
+    sv_event_creator.parse()  # This function will add all the events to the event attribute.
 
-    merger = SVMerger()
-    merger.load_events_into_tree(svcf_parser.events)  # Feed the events into merger and load into interval tree
+    sv_interval_tree_merger = SVIntervalTreeMerger()
+    sv_interval_tree_merger.load_events_into_tree(sv_event_creator.events)  # Feed the events into merger and load into interval tree
 
     if intersect:
         strategy = IntersectionStrategy()
@@ -34,5 +34,5 @@ def merge(
     else:
         strategy = SomeOverlapStrategy(overlap)  # This is hypothetical; you need to implement this
 
-    merged_tree = merger.merge_by_type("any", strategy)  # Replace "any" with actual SV type
-    merger.write_result_by_type(output_file, "any")  # Replace "any" with actual SV type or handle dynamically
+    merged_tree = sv_interval_tree_merger.merge_by_type("any", strategy)  # Replace "any" with actual SV type
+    sv_interval_tree_merger.write_result_by_type(output_file, "any")  # Replace "any" with actual SV type or handle dynamically
