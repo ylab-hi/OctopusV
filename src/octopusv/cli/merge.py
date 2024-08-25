@@ -1,15 +1,10 @@
 from pathlib import Path
-
 from typing import List
-
 import typer
-
 from octopusv.merger.sv_interval_tree_merger import SVIntervalTreeMerger
-
 from octopusv.merger.merge_strategies import UnionStrategy, IntersectionStrategy, SpecificMergeStrategy
-
 from octopusv.utils.svcf_parser import SVCFFileEventCreator
-
+from octopusv.utils.SV_classifier_by_type import SVClassifierByType
 
 def merge(
     input_files: List[Path] = typer.Argument(..., help="List of input SVCF files to merge."),
@@ -21,6 +16,10 @@ def merge(
 ):
     sv_event_creator = SVCFFileEventCreator([str(file) for file in input_files]) # Create a lot of SVCF events
     sv_event_creator.parse()  # This function will add all the events to the event attribute.
+
+    # Classify events by type
+    classifier = SVClassifierByType(sv_event_creator.events)
+    classifier.classify()
 
     sv_interval_tree_merger = SVIntervalTreeMerger()
     sv_interval_tree_merger.load_events_into_tree(sv_event_creator.events)  # Feed the events into merger and load into interval tree
