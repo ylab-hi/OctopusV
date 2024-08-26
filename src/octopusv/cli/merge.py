@@ -5,6 +5,7 @@ from octopusv.merger.sv_interval_tree_merger import SVIntervalTreeMerger
 from octopusv.merger.merge_strategies import UnionStrategy, IntersectionStrategy, SpecificMergeStrategy
 from octopusv.utils.svcf_parser import SVCFFileEventCreator
 from octopusv.utils.SV_classifier_by_type import SVClassifierByType
+from octopusv.utils.SV_classified_by_chromosome import SVClassifiedByChromosome
 
 def merge(
     input_files: List[Path] = typer.Argument(..., help="List of input SVCF files to merge."),
@@ -21,8 +22,17 @@ def merge(
     classifier = SVClassifierByType(sv_event_creator.events)
     classifier.classify()
 
+    # Further classify events by chromosome
+    chromosome_classifier = SVClassifiedByChromosome(classifier.get_classified_events())
+    chromosome_classifier.classify()
+
     sv_interval_tree_merger = SVIntervalTreeMerger()
-    sv_interval_tree_merger.load_events_into_tree(sv_event_creator.events)  # Feed the events into merger and load into interval tree
+
+    # Load events into tree for each SV type and chromosome
+    for sv_type, chrom_events in chromosome_classifier.get_classified_events().items():
+        for chrom, events in chrom_events.items():
+            sv_interval_tree_merger.load_events_into_tree(
+                events)  # Feed the events into merger and load into interval tree
 
     if intersect:
         strategy = IntersectionStrategy()
