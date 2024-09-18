@@ -22,7 +22,6 @@ class SVIntervalTree:
 
     def add_event(self, sv_type, chromosome, start, end, source_file): # Adding new events and updating overlapping interval data
         if sv_type not in self.trees:
-        if sv_type not in self.trees:
             self.trees[sv_type] = {}
         if chromosome not in self.trees[sv_type]:
             self.trees[sv_type][chromosome] = IntervalTree()

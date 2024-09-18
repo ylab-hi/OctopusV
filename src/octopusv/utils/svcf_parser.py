@@ -28,9 +28,16 @@ class SVCFEvent:
         self.format = format
         self.sample = self._parse_sample(sample)
         self.source_file = source_file  # Store the source file name for tracking
-
         self.sv_type = self.info.get('SVTYPE', '')
-        self.start_chrom, self.start_pos, self.end_chrom, self.end_pos = self._parse_coordinates()
+
+        try:
+            self.start_chrom, self.start_pos, self.end_chrom, self.end_pos = self._parse_coordinates()
+        except Exception as e:
+            print(f"Warning: Error parsing coordinates for {sv_id} in {source_file}: {e}")
+            # # Use default values as fallback options
+            self.start_chrom, self.start_pos = chrom, int(pos)
+            self.end_chrom = self.info.get('CHR2', chrom)
+            self.end_pos = int(self.info.get('END', pos))
 
     def _parse_info(self, info_str):
         """
@@ -54,20 +61,63 @@ class SVCFEvent:
     def _parse_sample(self, sample):
         """
         Parses the sample string based on the format to extract all relevant data.
+        Handles fields that may contain colons (like ALT and CO).
         """
-        parts = sample.split(':')
-        keys = self.format.split(':')
-        return dict(zip(keys, parts))
+        format_keys = self.format.split(':')
+        sample_parts = sample.split(':')
+        result = {}
+
+        # Special handling of fields that may contain colons
+        special_fields = ['ALT', 'CO', 'REF']  # Fields that might need special handling.
+        special_field_index = None
+
+        for i, key in enumerate(format_keys):
+            if key in special_fields:
+                special_field_index = i
+                break
+
+        if special_field_index is not None:
+            # Regular fields
+            for i in range(special_field_index):
+                result[format_keys[i]] = sample_parts[i]
+
+            # Process the special field and all fields after it
+            result[format_keys[special_field_index]] = ':'.join(sample_parts[special_field_index:])
+        else:
+            # If there are no special fields, handle them in the usual way
+            result = dict(zip(format_keys, sample_parts))
+
+        return result
+
 
     def _parse_coordinates(self):
         """
-        Extracts and parses the coordinates of the SV from the sample info.
+        Extracts and parses the coordinates of the SV from the sample info or INFO field.
         """
-        co = self.sample.get('CO', f"{self.chrom}_{self.pos}-{self.chrom}_{self.pos}")
-        start, end = co.split('-')
-        start_chrom, start_pos = start.split('_')
-        end_chrom, end_pos = end.split('_')
-        return start_chrom, int(start_pos), end_chrom, int(end_pos)
+        if self.sv_type == 'BND':
+            # For BND types, resolve the second position from the ALT field
+            alt_parts = self.alt.split(':')
+            if len(alt_parts) > 1:
+                end_chrom = alt_parts[0].split(']')[-1].split('[')[-1]
+                end_pos = alt_parts[1].rstrip('[]')
+            else:
+                # If the ALT field format is not as expected, try to get the information from the INFO field
+                end_chrom = self.info.get('CHR2', self.chrom)
+                end_pos = self.info.get('END', self.pos)
+            return self.chrom, int(self.pos), end_chrom, int(end_pos)
+        else:
+            # For other types try to use CO field, if not then use INFO field
+            co = self.sample.get('CO')
+            if co and '-' in co:
+                start, end = co.split('-')
+                start_chrom, start_pos = start.split('_')
+                end_chrom, end_pos = end.split('_')
+            else:
+                start_chrom = self.chrom
+                start_pos = self.pos
+                end_chrom = self.info.get('CHR2', self.chrom)
+                end_pos = self.info.get('END', self.pos)
+            return start_chrom, int(start_pos), end_chrom, int(end_pos)
 
 
 class SVCFFileEventCreator:
