@@ -1,14 +1,6 @@
 from intervaltree import Interval, IntervalTree
 
-class SVInterval(Interval):
-    """Defines an interval. The interval tree consists of many intervals, and 'data' is the annotation attribute."""
-    def __init__(self, begin, end, data):
-        super().__init__(begin, end, data)
-
-    def __repr__(self):
-        return f"SVInterval({self.begin}, {self.end}, {self.data})"
-
-class SVIntervalTree:
+class SVIntervalTree: # Interval object is unchangable, so you can not directly edit it.
     def __init__(self):
         self.trees = {} # {sv_type: {chromosome: IntervalTree()}}, for the same type and chromosome, there is one tree
 
@@ -37,14 +29,18 @@ class SVIntervalTree:
             # If an overlapping interval exists, update its data
             for interval in existing:
                 if isinstance(interval.data, set):  # If data is already a set, directly add the new source
-                    interval.data.add(
-                        source_file)  # Can directly use the set's add method to quickly add new source file, which is a very efficient operation
+                    new_data = interval.data.copy()
+                    new_data.add(source_file)
                 else:  # If not a set (possibly a single value), create a new set containing the original value and the new source
-                    interval.data = {interval.data, source_file}
+                    new_data = {interval.data, source_file}
+
+                # Remove the old interval and add the new one with updated data (source file)
+                self.trees[sv_type][chromosome].remove(interval)
+                self.trees[sv_type][chromosome].add(Interval(interval.begin, interval.end, new_data))
 
         # Regardless of overlap, add a new interval object to the interval tree, facilitating later merge_overlaps to merge intervals and take the union
         self.trees[sv_type][chromosome].add(
-            SVInterval(start, end, {source_file}))  # Created a new SVInterval object and added it to the interval tree
+            Interval(start, end, {source_file}))  # Created a new SVInterval object and added it to the interval tree
 
     def merge_overlaps(self):  # Responsible for updating and merging overlapping interval ranges
         for sv_type in self.trees:
