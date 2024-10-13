@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 import typer
 
@@ -24,13 +25,34 @@ from octopusv.utils.svcf_utils import write_sv_vcf
 
 
 def correct(
-    input_vcf: Path = typer.Argument(
-        ...,
+    input_vcf: Optional[Path] = typer.Argument(
+        None,
         exists=True,
         dir_okay=False,
         resolve_path=True,
+        help="Input VCF file to correct."
     ),
-    output: Path = typer.Argument(..., dir_okay=False, resolve_path=True),
+    output: Optional[Path] = typer.Argument(
+        None,
+        dir_okay=False,
+        resolve_path=True,
+        help="Output file path."
+    ),
+    input_option: Optional[Path] = typer.Option(
+        None,
+        "--input-file", "-i",
+        exists=True,
+        dir_okay=False,
+        resolve_path=True,
+        help="Input VCF file to correct."
+    ),
+    output_option: Optional[Path] = typer.Option(
+        None,
+        "--output-file", "-o",
+        dir_okay=False,
+        resolve_path=True,
+        help="Output file path."
+    ),
     pos_tolerance: int = typer.Option(
         3,
         "--pos-tolerance",
@@ -39,10 +61,43 @@ def correct(
     ),
 ):
     """Correct SV events."""
+
+    # Determine input file
+    if input_vcf and input_option:
+        typer.echo("Error: Please specify input file either as an argument or with -i/--input-file, not both.", err=True)
+        raise typer.Exit(code=1)
+    elif input_vcf:
+        input_file = input_vcf
+    elif input_option:
+        input_file = input_option
+    else:
+        typer.echo("Error: Input file is required.", err=True)
+        raise typer.Exit(code=1)
+
+    # Determine output file
+    if output and output_option:
+        typer.echo("Error: Please specify output file either as an argument or with -o/--output-file, not both.", err=True)
+        raise typer.Exit(code=1)
+    elif output:
+        output_file = output
+    elif output_option:
+        output_file = output_option
+    else:
+        typer.echo("Error: Output file is required.", err=True)
+        raise typer.Exit(code=1)
+
+    # Ensure input_file and output_file are not None
+    if input_file is None:
+        typer.echo("Error: Input file is not specified.", err=True)
+        raise typer.Exit(code=1)
+    if output_file is None:
+        typer.echo("Error: Output file is not specified.", err=True)
+        raise typer.Exit(code=1)
+
     # Parse the input VCF file
     # non_bnd_events means DEL, INV, INS, DUP
     contig_lines, same_chr_bnd_events, diff_chr_bnd_events, non_bnd_events = parse_vcf(
-        input_vcf,
+        input_file,
     )
 
     # Extract mate BND and no mate events, they are all with different chromosomes
@@ -118,7 +173,8 @@ def correct(
     )
 
     # Write the transformed events to the output file
-    write_sv_vcf(contig_lines, all_transformed_events, output)
+    write_sv_vcf(contig_lines, all_transformed_events, output_file)
+    typer.echo(f"Corrected SV events written to {output_file}")
 
 # ==============================
 # The following are auxiliary Functions.
