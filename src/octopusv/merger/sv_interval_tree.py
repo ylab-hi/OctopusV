@@ -20,19 +20,19 @@ class SVIntervalTree: # Interval object is unchangable, so you can not directly 
 
         """existing = self.trees[sv_type][chromosome][start:end] Here, [start:end] is not a traditional slicing operation. In IntervalTree,
                 this operation is used to query intervals within the given start and end range. If there are overlapping intervals, 
-                existing will be an iterable object containing SVInterval objects that meet the criteria,
-                each object indeed has three elements: start position, end position, and data. If there are no overlapping intervals, 
+                existing will be an iterable object containing single SVInterval objects that meet the criteria,
+                each single SVInterval object indeed has three elements: start position, end position, and data. If there are no overlapping intervals, 
                 existing will be an empty iterable object, such as an empty list.
                 """
         existing = self.trees[sv_type][chromosome][start:end]  # Check if the newly added single SV event (i.e., interval) overlaps with existing ones
         if existing:  # existing contains the overlapping intervals
-            # If an overlapping interval exists, update its data
+            # If an overlapping interval exists, update its data ("data" means the source_file)
             for interval in existing:
                 if isinstance(interval.data, set):  # If data is already a set, directly add the new source
                     new_data = interval.data.copy()
                     new_data.add(source_file)
                 else:  # If not a set (possibly a single value), create a new set containing the original value and the new source
-                    new_data = {interval.data, source_file}
+                    new_data = {interval.data, source_file} # interval.data is the original, source_file is the new
 
                 # Remove the old interval and add the new one with updated data (source file)
                 self.trees[sv_type][chromosome].remove(interval)

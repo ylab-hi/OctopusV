@@ -3,18 +3,18 @@ from .tra_merger import TRAMerger
 
 # SVMerger: A class for merging and managing structural variant (SV) events
 class SVMerger:
-    def __init__(self, classified_events):
+    def __init__(self, classified_events, tra_distance_threshold=100):
         # Store the classified events and initialize the interval tree
         self.classified_events = classified_events
         self.interval_tree = SVIntervalTree()
-        self.tra_merger = TRAMerger()
+        self.tra_merger = TRAMerger(tra_distance_threshold)
 
     def merge(self):
         for sv_type, chromosomes in self.classified_events.items():
             if sv_type == 'TRA':
                 for (chr1, chr2), events in chromosomes.items():
                     for event in events:
-                        self.tra_merger.add_event(chr1, event.start_pos, chr2, event.end_pos, event.source_file)
+                        self.tra_merger.add_event(chr1, event.start_pos, chr2, event.end_pos, event.source_file, event.bnd_pattern)
             else:
                 for chromosome, events in chromosomes.items():
                     # Merge all classified events (except TRA) into the interval tree
@@ -60,6 +60,6 @@ class SVMerger:
         with open(output_file, 'w') as f:
             for event in events:
                 if event[0] == 'TRA':
-                    f.write(f"{event[0]}\t{event[1]}\t{event[2]}\t{event[3]}\t{event[4]}\t{','.join(event[5])}\n")
+                    f.write(f"{event[0]}\t{event[1]}\t{event[2]}\t{event[3]}\t{event[4]}\t{','.join(event[5])}\t{event[6]}\n")
                 else:
                     f.write(f"{event[0]}\t{event[1]}\t{event[2]}\t{event[3]}\t{','.join(event[4])}\n")

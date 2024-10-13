@@ -37,3 +37,9 @@ class NonBNDConverter(Converter):
 
         if svtype == "TRA":
             event.info["SVLEN"] = "."
+
+        # Deal with the "END" problem in INS
+        if svtype == "INS":
+            pos = int(event.pos)
+            svlen = int(event.info.get("SVLEN", "0"))
+            event.info["END"] = str(pos + svlen)

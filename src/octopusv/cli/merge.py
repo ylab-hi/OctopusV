@@ -17,6 +17,9 @@ def merge(
     overlap: int = typer.Option(
         None, "--overlap", help="Minimum number of files that must support an SV to be included in the output."
     ),
+    tra_distance_threshold: int = typer.Option(
+        100, "--tra-threshold", help="Distance threshold for merging TRA events (in base pairs)."
+    ),
 ):
     if not input_files:
         typer.echo("Error: No input files provided.", err=True)
@@ -39,7 +42,7 @@ def merge(
     chromosome_classifier = SVClassifiedByChromosome(classifier.get_classified_events())
     chromosome_classifier.classify()
 
-    sv_merger = SVMerger(chromosome_classifier.get_classified_events())
+    sv_merger = SVMerger(chromosome_classifier.get_classified_events(), tra_distance_threshold)
     sv_merger.merge()
 
     if intersect:

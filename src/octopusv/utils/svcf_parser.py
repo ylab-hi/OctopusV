@@ -29,6 +29,7 @@ class SVCFEvent:
         self.sample = self._parse_sample(sample)
         self.source_file = source_file  # Store the source file name for tracking
         self.sv_type = self.info.get('SVTYPE', '')
+        self.bnd_pattern = self._extract_bnd_pattern()
 
         try:
             self.start_chrom, self.start_pos, self.end_chrom, self.end_pos = self._parse_coordinates()
@@ -38,6 +39,11 @@ class SVCFEvent:
             self.start_chrom, self.start_pos = chrom, int(pos)
             self.end_chrom = self.info.get('CHR2', chrom)
             self.end_pos = int(self.info.get('END', pos))
+
+    def _extract_bnd_pattern(self):
+        if self.sv_type == 'BND' or self.sv_type == 'TRA':
+            return self.alt
+        return None
 
     def _parse_info(self, info_str):
         """
