@@ -22,6 +22,15 @@ def merge(
         tra_distance_threshold: int = typer.Option(
             100, "--tra-threshold", help="Distance threshold for merging TRA events (in base pairs)."
         ),
+        max_distance: int = typer.Option(
+            50, "--max-distance", help="Maximum allowed distance between start or end positions for merging events."
+        ),
+        max_length_ratio: float = typer.Option(
+            1.3, "--max-length-ratio", help="Maximum allowed ratio between event lengths for merging events."
+        ),
+        min_jaccard: float = typer.Option(
+            0.7, "--min-jaccard", help="Minimum required Jaccard index for overlap to merge events."
+        ),
 ):
     """
     Merge multiple SVCF files based on specified strategy.
@@ -45,7 +54,7 @@ def merge(
     classifier.classify()
     chromosome_classifier = SVClassifiedByChromosome(classifier.get_classified_events())
     chromosome_classifier.classify()
-    sv_merger = SVMerger(chromosome_classifier.get_classified_events(), tra_distance_threshold)
+    sv_merger = SVMerger(chromosome_classifier.get_classified_events(), tra_distance_threshold, max_distance, max_length_ratio, min_jaccard)
     sv_merger.merge()
 
     if intersect:
