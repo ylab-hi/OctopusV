@@ -19,9 +19,6 @@ def merge(
         overlap: int = typer.Option(
             None, "--overlap", help="Minimum number of files that must support an SV to be included in the output."
         ),
-        tra_distance_threshold: int = typer.Option(
-            100, "--tra-threshold", help="Distance threshold for merging TRA events (in base pairs)."
-        ),
         max_distance: int = typer.Option(
             50, "--max-distance", help="Maximum allowed distance between start or end positions for merging events."
         ),
@@ -30,6 +27,15 @@ def merge(
         ),
         min_jaccard: float = typer.Option(
             0.7, "--min-jaccard", help="Minimum required Jaccard index for overlap to merge events."
+        ),
+        tra_delta: int = typer.Option(
+            50, "--tra-delta", help="Position uncertainty threshold for TRA events (in base pairs)."
+        ),
+        tra_min_overlap_ratio: float = typer.Option(
+            0.5, "--tra-min-overlap", help="Minimum overlap ratio for TRA events."
+        ),
+        tra_strand_consistency: bool = typer.Option(
+            True, "--tra-strand-consistency", help="Whether to require strand consistency for TRA events."
         ),
 ):
     """
@@ -54,7 +60,16 @@ def merge(
     classifier.classify()
     chromosome_classifier = SVClassifiedByChromosome(classifier.get_classified_events())
     chromosome_classifier.classify()
-    sv_merger = SVMerger(chromosome_classifier.get_classified_events(), tra_distance_threshold, max_distance, max_length_ratio, min_jaccard)
+
+    sv_merger = SVMerger(
+        chromosome_classifier.get_classified_events(),
+        tra_delta=tra_delta,
+        tra_min_overlap_ratio=tra_min_overlap_ratio,
+        tra_strand_consistency=tra_strand_consistency,
+        max_distance=max_distance,
+        max_length_ratio=max_length_ratio,
+        min_jaccard=min_jaccard
+    )
     sv_merger.merge()
 
     if intersect:
@@ -70,3 +85,7 @@ def merge(
 
     sv_merger.write_results(output_file, results)
     typer.echo(f"Merged results written to {output_file}")
+
+
+if __name__ == "__main__":
+    typer.run(merge)

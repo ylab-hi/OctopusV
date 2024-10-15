@@ -3,10 +3,11 @@ from .sv_merge_logic import should_merge
 from typing import List, Dict
 
 class SVMerger:
-    def __init__(self, classified_events, tra_distance_threshold=100, max_distance=50, max_length_ratio=1.3, min_jaccard=0.7):
+    def __init__(self, classified_events, tra_delta=50, tra_min_overlap_ratio=0.5, tra_strand_consistency=True,
+                max_distance=50, max_length_ratio=1.3, min_jaccard=0.7):
         self.classified_events = classified_events
         self.merged_events: Dict[str, Dict[str, List]] = {}
-        self.tra_merger = TRAMerger(tra_distance_threshold)
+        self.tra_merger = TRAMerger(tra_delta, tra_min_overlap_ratio, tra_strand_consistency)
         self.max_distance = max_distance
         self.max_length_ratio = max_length_ratio
         self.min_jaccard = min_jaccard
@@ -16,7 +17,8 @@ class SVMerger:
             if sv_type == 'TRA':
                 for (chr1, chr2), events in chromosomes.items():
                     for event in events:
-                        self.tra_merger.add_event(chr1, event.start_pos, chr2, event.end_pos, event.source_file, event.bnd_pattern)
+                        bnd_pattern = event.alt if event.alt != '<TRA>' else '<TRA>'
+                        self.tra_merger.add_event(event)
             else:
                 if sv_type not in self.merged_events:
                     self.merged_events[sv_type] = {}
@@ -37,7 +39,7 @@ class SVMerger:
     def merge_events(self, event1, event2):
         event1.start_pos = min(event1.start_pos, event2.start_pos)
         event1.end_pos = max(event1.end_pos, event2.end_pos)
-        event1.source_file = f"{event1.source_file},{event2.source_file}"
+        event1.source_file = ','.join(sorted(set(event1.source_file.split(',') + event2.source_file.split(','))))
 
     def get_events(self, sv_type, chromosome, start, end):
         if sv_type == 'TRA':
@@ -82,6 +84,7 @@ class SVMerger:
         with open(output_file, 'w') as f:
             for event in events:
                 if isinstance(event, tuple):  # TRA event
-                    f.write(f"{event[0]}\t{event[1]}\t{event[2]}\t{event[3]}\t{event[4]}\t{','.join(event[5])}\t{event[6]}\n")
+                    f.write(f"{event[0]}\t{event[1]}\t{event[2]}\t{event[3]}\t{event[4]}\t{event[5]}\t{event[6]}\n")
                 else:  # Other SV events
-                    f.write(f"{event.sv_type}\t{event.chrom}\t{event.start_pos}\t{event.end_pos}\t{event.source_file}\n")
+                    f.write(
+                        f"{event.sv_type}\t{event.chrom}\t{event.start_pos}\t{event.end_pos}\t{event.source_file}\n")
