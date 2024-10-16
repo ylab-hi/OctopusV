@@ -76,8 +76,8 @@ class SVMerger:
             for chromosome, events in chromosomes.items():
                 other_events.extend(events)
 
-        tra_filtered = [event for event in tra_events if len(event[5]) >= min_overlap]
-        other_filtered = [event for event in other_events if len(event.source_file.split(',')) >= min_overlap]
+        tra_filtered = [event for event in tra_events if len(set(event[5].split(','))) >= min_overlap]
+        other_filtered = [event for event in other_events if len(set(event.source_file.split(','))) >= min_overlap]
         return other_filtered + tra_filtered
 
     def write_results(self, output_file, events):
