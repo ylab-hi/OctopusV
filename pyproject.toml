@@ -13,7 +13,8 @@ loguru = "^0.7.2"
 rich = "^13.7.1"
 natsort = "^8.4.0"
 pytest-cov = "^4.1.0"
-intervaltree = "^3.1"
+matplotlib = "^3.9.2"
+seaborn = "^0.13.2"
 
 
 [tool.poetry.scripts]
