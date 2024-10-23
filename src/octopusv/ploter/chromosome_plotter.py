@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import logging
+import numpy as np
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -8,11 +9,40 @@ logging.basicConfig(level=logging.DEBUG)
 class ChromosomePlotter:
     def __init__(self, input_file):
         self.input_file = input_file
+        # GRCh38 chromosome lengths in base pairs
+        self.chromosome_lengths = {
+            'chr1': 248956422,
+            'chr2': 242193529,
+            'chr3': 198295559,
+            'chr4': 190214555,
+            'chr5': 181538259,
+            'chr6': 170805979,
+            'chr7': 159345973,
+            'chr8': 145138636,
+            'chr9': 138394717,
+            'chr10': 133797422,
+            'chr11': 135086622,
+            'chr12': 133275309,
+            'chr13': 114364328,
+            'chr14': 107043718,
+            'chr15': 101991189,
+            'chr16': 90338345,
+            'chr17': 83257441,
+            'chr18': 80373285,
+            'chr19': 58617616,
+            'chr20': 64444167,
+            'chr21': 46709983,
+            'chr22': 50818468,
+            'chrX': 156040895,
+            'chrY': 57227415
+        }
         self.data = self.parse_data()
 
     def parse_data(self):
+        """Parse the statistics file and extract chromosome data"""
         chromosome_order = [f'chr{i}' for i in range(1, 23)] + ['chrX', 'chrY']
-        chromosome_data = {chrom: 0 for chrom in chromosome_order}
+        chromosome_data = {chrom: {'count': 0, 'density': 0} for chrom in chromosome_order}
+
         parsing_chromosomes = False
         with open(self.input_file, 'r') as f:
             for line in f:
@@ -26,45 +56,82 @@ class ChromosomePlotter:
                     if len(parts) == 2:
                         chrom = parts[0].strip()
                         if chrom in chromosome_data:
-                            count = int(parts[1].split()[0])
-                            chromosome_data[chrom] = count
+                            try:
+                                count = int(parts[1].split()[0])
+                                # Calculate density per Mb
+                                length_mb = self.chromosome_lengths[chrom] / 1_000_000
+                                density = count / length_mb
+                                chromosome_data[chrom] = {
+                                    'count': count,
+                                    'density': round(density, 1)  # Round to 1 decimal place
+                                }
+                            except (ValueError, ZeroDivisionError) as e:
+                                logging.warning(f"Error processing chromosome {chrom}: {e}")
+                                chromosome_data[chrom] = {'count': 0, 'density': 0}
 
         logging.debug(f"Parsed chromosome data: {chromosome_data}")
         return chromosome_data
 
     def plot(self, output_prefix):
+        """Create and save the chromosome distribution plot"""
         if not self.data:
             logging.error("No data to plot")
             return
 
-        plt.figure(figsize=(20, 10))
-        sns.set_style("whitegrid")
-        colors = sns.color_palette("pastel")
-
+        # Prepare data
         chromosomes = [f'chr{i}' for i in range(1, 23)] + ['chrX', 'chrY']
-        sv_counts = [self.data[chrom] for chrom in chromosomes]
+        x = np.arange(len(chromosomes))  # x coordinates for the bars
+        raw_counts = [self.data[chrom]['count'] for chrom in chromosomes]
+        densities = [self.data[chrom]['density'] for chrom in chromosomes]
 
-        bars = plt.bar(chromosomes, sv_counts, color=colors[0])
-        plt.xlabel("Chromosome", fontsize=14)
-        plt.ylabel("Number of SVs", fontsize=14)
-        plt.title("SV Distribution Across Chromosomes", fontsize=18)
-        plt.xticks(rotation=0, ha='center', fontsize=12)
-        plt.yticks(fontsize=12)
+        # Create figure with two subplots
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 16), height_ratios=[1, 1])
+        fig.suptitle('SV Distribution Across Chromosomes', fontsize=20, y=0.95)
 
-        # Add value labels on top of each bar
-        for bar in bars:
-            height = bar.get_height()
-            plt.text(bar.get_x() + bar.get_width() / 2., height, f'{int(height)}', ha='center', va='bottom', fontsize=10)
+        # Set the style for both plots
+        for ax in [ax1, ax2]:
+            ax.grid(True, axis='y', linestyle='--', alpha=0.7)
+            ax.set_axisbelow(True)
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.set_xticks(x)
+            ax.tick_params(axis='both', which='major', labelsize=12)
 
-        # Adjust y-axis limit to add some space at the top
-        plt.ylim(0, max(sv_counts) * 1.1)
+        # Plot 1: Raw counts
+        bars1 = ax1.bar(x, raw_counts, color='#5B9BD5', width=0.8)
+        ax1.set_title('Raw SV Counts', fontsize=16, pad=20)
+        ax1.set_ylabel('Number of SVs', fontsize=14)
+        ax1.set_xticklabels(chromosomes, rotation=0)
 
-        # Add a light grid
-        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        # Plot 2: Normalized densities
+        bars2 = ax2.bar(x, densities, color='#70AD47', width=0.8)
+        ax2.set_title('Normalized SV Density', fontsize=16, pad=20)
+        ax2.set_xlabel('Chromosome', fontsize=14)
+        ax2.set_ylabel('SVs per Mb', fontsize=14)
+        ax2.set_xticklabels(chromosomes, rotation=0)
 
+        # Add value labels on bars
+        def add_value_labels(axis, bars):
+            for bar in bars:
+                height = bar.get_height()
+                axis.text(
+                    bar.get_x() + bar.get_width() / 2.,
+                    height,
+                    f'{height:,.1f}' if height % 1 else f'{int(height):,}',
+                    ha='center',
+                    va='bottom',
+                    fontsize=10
+                )
+
+        add_value_labels(ax1, bars1)
+        add_value_labels(ax2, bars2)
+
+        # Adjust layout
         plt.tight_layout()
-        plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches='tight')
-        plt.savefig(f"{output_prefix}.svg", bbox_inches='tight')
+
+        # Save plots
+        plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches='tight', facecolor='white')
+        plt.savefig(f"{output_prefix}.svg", bbox_inches='tight', facecolor='white')
         plt.close()
 
         logging.info(f"Plot saved as {output_prefix}.png and {output_prefix}.svg")
