@@ -1,3 +1,5 @@
+import re
+
 class SVCFEvent:
     """
     Represents a structural variant (SV) event parsed from an SVCF file.
@@ -14,6 +16,12 @@ class SVCFEvent:
         format (str): Format of the sample data related to the SV event.
         sample (str): Sample-specific data for the SV event.
         source_file (str): The source file from which this SV event was parsed.
+        sv_type (str): The SV type of the event.
+        bnd_pattern (str): The BND pattern from the ALT field, if applicable.
+        start_chrom (str): Start chromosome of the SV.
+        start_pos (int): Start position of the SV.
+        end_chrom (str): End chromosome of the SV.
+        end_pos (int): End position of the SV.
     """
 
     def __init__(self, chrom, pos, sv_id, ref, alt, quality, filter, info, format, sample, source_file):
@@ -27,20 +35,29 @@ class SVCFEvent:
         self.info = self._parse_info(info)
         self.format = format
         self.sample = self._parse_sample(sample)
-        self.source_file = source_file  # Store the source file name for tracking
+        self.source_file = source_file
         self.sv_type = self.info.get('SVTYPE', '')
         self.bnd_pattern = self._extract_bnd_pattern()
 
         try:
             self.start_chrom, self.start_pos, self.end_chrom, self.end_pos = self._parse_coordinates()
         except Exception as e:
-            print(f"Warning: Error parsing coordinates for {sv_id} in {source_file}: {e}")
-            # # Use default values as fallback options
-            self.start_chrom, self.start_pos = chrom, int(pos)
-            self.end_chrom = self.info.get('CHR2', chrom)
-            self.end_pos = int(self.info.get('END', pos))
+            print(f"Warning: Error parsing coordinates for {self.sv_id} in {self.source_file}: {e}")
+            # Use default values as fallback options
+            self.start_chrom, self.start_pos = self.chrom, self.pos
+            self.end_chrom = self.info.get('CHR2', self.chrom)
+            end_value = self.info.get('END', self.pos)
+            if end_value == '.' or end_value is None:
+                self.end_pos = self.start_pos
+            else:
+                try:
+                    self.end_pos = int(end_value)
+                except ValueError:
+                    print(f"Invalid END value: {end_value}, setting end_pos to start_pos")
+                    self.end_pos = self.start_pos
 
     def _extract_bnd_pattern(self):
+        """Extract the breakend pattern from ALT field if present."""
         if self.sv_type == 'BND' or self.sv_type == 'TRA':
             return self.alt
         return None
@@ -58,7 +75,7 @@ class SVCFEvent:
         info = {}
         for item in info_str.split(';'):
             if '=' in item:
-                key, value = item.split('=')
+                key, value = item.split('=', 1)  # Only split at the first '='
                 info[key] = value
             else:
                 info[item] = True  # Flags without a value are stored as True
@@ -74,7 +91,7 @@ class SVCFEvent:
         result = {}
 
         # Special handling of fields that may contain colons
-        special_fields = ['ALT', 'CO', 'REF']  # Fields that might need special handling.
+        special_fields = ['ALT', 'CO', 'REF']  # Fields that might need special handling
         special_field_index = None
 
         for i, key in enumerate(format_keys):
@@ -95,36 +112,63 @@ class SVCFEvent:
 
         return result
 
-
     def _parse_coordinates(self):
         """
-        Extracts and parses the coordinates of the SV from the sample info or INFO field.
+        Extracts and parses the coordinates of the SV from the ALT field or INFO field.
         """
-        if self.sv_type == 'BND':
-            # For BND types, resolve the second position from the ALT field
-            alt_parts = self.alt.split(':')
-            if len(alt_parts) > 1:
-                end_chrom = alt_parts[0].split(']')[-1].split('[')[-1]
-                end_pos = alt_parts[1].rstrip('[]')
+        if self.sv_type == 'BND' or self.sv_type == 'TRA':
+            alt = self.alt
+            # 定义一个正则表达式，匹配可能的 ALT 格式
+            pattern = re.compile(r'([ACGTNacgtn]*)([\[\]])([^:\[\]]+):(\d+)([\[\]])([ACGTNacgtn]*)')
+            match = pattern.match(alt)
+            if match:
+                seq_before, bracket1, end_chrom, end_pos_str, bracket2, seq_after = match.groups()
+                try:
+                    end_pos = int(end_pos_str)
+                except ValueError:
+                    print(f"Warning: Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos.")
+                    end_pos = self.pos
+                return self.chrom, self.pos, end_chrom, end_pos
             else:
-                # If the ALT field format is not as expected, try to get the information from the INFO field
+                # 无法匹配，尝试从 INFO 字段获取
                 end_chrom = self.info.get('CHR2', self.chrom)
-                end_pos = self.info.get('END', self.pos)
-            return self.chrom, int(self.pos), end_chrom, int(end_pos)
+                end_pos_str = self.info.get('END', self.pos)
+                try:
+                    end_pos = int(end_pos_str)
+                except ValueError:
+                    print(f"Warning: Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos.")
+                    end_pos = self.pos
+                return self.chrom, self.pos, end_chrom, end_pos
         else:
-            # For other types try to use CO field, if not then use INFO field
+            # 其他类型的处理方式保持不变
             co = self.sample.get('CO')
             if co and '-' in co:
                 start, end = co.split('-')
                 start_chrom, start_pos = start.split('_')
                 end_chrom, end_pos = end.split('_')
+                return start_chrom, int(start_pos), end_chrom, int(end_pos)
             else:
                 start_chrom = self.chrom
                 start_pos = self.pos
                 end_chrom = self.info.get('CHR2', self.chrom)
-                end_pos = self.info.get('END', self.pos)
-            return start_chrom, int(start_pos), end_chrom, int(end_pos)
-
+                end_pos_str = self.info.get('END', self.pos)
+                if end_pos_str == '.' or end_pos_str is None:
+                    # 尝试使用 SVLEN
+                    svlen = self.info.get('SVLEN', None)
+                    if svlen and svlen != '.':
+                        try:
+                            end_pos = self.pos + abs(int(svlen))
+                        except ValueError:
+                            end_pos = self.pos
+                    else:
+                        end_pos = self.pos
+                else:
+                    try:
+                        end_pos = int(end_pos_str)
+                    except ValueError:
+                        print(f"Warning: Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos.")
+                        end_pos = self.pos
+                return start_chrom, start_pos, end_chrom, end_pos
 
 class SVCFFileEventCreator:
     """
@@ -148,8 +192,8 @@ class SVCFFileEventCreator:
                 for line in file:
                     if line.startswith('#'):
                         continue  # Skip comment lines that start with '#'
-                    parts = line.strip().split()
+                    parts = line.strip().split('\t')
                     if len(parts) < 10:
                         continue  # Ensure that there are enough parts to form a complete SV event
-                    sv_event = SVCFEvent(*parts, source_file=filename)  # Create an SV event object
+                    sv_event = SVCFEvent(*parts[:10], source_file=filename)  # Create an SV event object
                     self.events.append(sv_event)  # Add the event to the list of events
