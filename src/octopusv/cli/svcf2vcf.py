@@ -16,7 +16,7 @@ def svcf2vcf(
         sv_event_creator.parse()
 
         # Convert to VCF
-        converter = SVCFtoVCFConverter(sv_event_creator.events)
+        converter = SVCFtoVCFConverter(sv_event_creator.events, str(input_file.resolve()))
         vcf_content = converter.convert()
 
         # Write to output file

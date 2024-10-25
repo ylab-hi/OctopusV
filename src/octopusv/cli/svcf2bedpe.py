@@ -7,23 +7,42 @@ from octopusv.formatter.svcf_to_bedpe_converter import SVCFtoBEDPEConverter
 def svcf2bedpe(
     input_file: Path = typer.Option(..., "--input-file", "-i", exists=True, help="Input SVCF file to convert."),
     output_file: Path = typer.Option(..., "--output-file", "-o", help="Output BEDPE file."),
+    minimal: bool = typer.Option(False, "--minimal", help="Output minimal BEDPE format (only coordinate columns)")
 ):
     """
     Convert SVCF file to BEDPE format.
+
+    The output BEDPE file will contain paired-end structural variants.
+    If --minimal is specified, only coordinate columns will be included.
     """
-    # Parse SVCF file
-    sv_event_creator = SVCFFileEventCreator(str(input_file))
-    sv_event_creator.parse()
+    try:
+        # Parse SVCF file
+        typer.echo(f"Reading SVCF file: {input_file}")
+        sv_event_creator = SVCFFileEventCreator([str(input_file.resolve())])
+        sv_event_creator.parse()
 
-    # Convert to BEDPE
-    converter = SVCFtoBEDPEConverter(sv_event_creator.events)
-    bedpe_content = converter.convert()
+        if not sv_event_creator.events:
+            typer.echo("Warning: No events found in SVCF file", err=True)
+            raise typer.Exit(code=1)
 
-    # Write to output file
-    with open(output_file, 'w') as f:
-        f.write(bedpe_content)
+        # Convert to BEDPE
+        converter = SVCFtoBEDPEConverter(sv_event_creator.events, minimal=minimal)
+        bedpe_content = converter.convert()
 
-    typer.echo(f"Converted SVCF to BEDPE. Output written to {output_file}")
+        # Write to output file
+        with open(output_file, 'w') as f:
+            f.write(bedpe_content)
 
-if __name__ == "__main__":
-    typer.run(svcf2bedpe)
+        typer.echo(f"Successfully converted SVCF to {'minimal ' if minimal else ''}BEDPE format")
+        typer.echo(f"Output written to {output_file}")
+        typer.echo(f"Total events converted: {len(sv_event_creator.events)}")
+
+    except FileNotFoundError:
+        typer.echo(f"Error: Input file '{input_file}' not found.", err=True)
+        raise typer.Exit(code=1)
+    except PermissionError:
+        typer.echo(f"Error: Permission denied when writing to '{output_file}'", err=True)
+        raise typer.Exit(code=1)
+    except Exception as e:
+        typer.echo(f"Error occurred: {str(e)}", err=True)
+        raise typer.Exit(code=1)

@@ -1,6 +1,7 @@
 class SVCFtoVCFConverter:
-    def __init__(self, events):
+    def __init__(self, events, input_svcf_file):
         self.events = events
+        self.input_svcf_file = input_svcf_file
 
     def convert(self):
         vcf_content = self._generate_vcf_header()
@@ -9,8 +10,17 @@ class SVCFtoVCFConverter:
         return vcf_content
 
     def _generate_vcf_header(self):
-        header = """##fileformat=VCFv4.2
-##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+        # 读取输入 SVCF 文件中的 contig 信息
+        contig_lines = ""
+        with open(self.input_svcf_file, 'r') as f:
+            for line in f:
+                if line.startswith('##contig'):
+                    contig_lines += line
+                elif line.startswith('#CHROM'):
+                    break  # 到达列名，停止读取头部
+
+        header = f"""##fileformat=VCFv4.2
+{contig_lines}##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
 ##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
 ##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">
 ##INFO=<ID=CHR2,Number=1,Type=String,Description="Chromosome for end coordinate">
@@ -38,17 +48,37 @@ class SVCFtoVCFConverter:
         qual = event.quality if hasattr(event, 'quality') else '.'
         filter = event.filter if hasattr(event, 'filter') else 'PASS'
 
-        info = f"SVTYPE={event.sv_type};END={event.end_pos}"
+        # 调整插入的 END
+        if event.sv_type == 'INS':
+            end_pos = event.pos
+        else:
+            end_pos = event.end_pos
+
+        info_fields = [f"SVTYPE={event.sv_type}", f"END={end_pos}"]
+
+        # 调整删除和插入的 SVLEN
         if 'SVLEN' in event.info:
-            info += f";SVLEN={event.info['SVLEN']}"
+            svlen_str = event.info['SVLEN']
+            try:
+                svlen = int(svlen_str.strip())
+                if event.sv_type == 'DEL':
+                    svlen = -abs(svlen)
+                elif event.sv_type == 'INS':
+                    svlen = abs(svlen)
+                info_fields.append(f"SVLEN={svlen}")
+            except ValueError:
+                pass  # 如果 SVLEN 不是有效的整数，跳过
+
         if 'CHR2' in event.info:
-            info += f";CHR2={event.info['CHR2']}"
+            info_fields.append(f"CHR2={event.info['CHR2']}")
         if 'SUPPORT' in event.info:
-            info += f";SUPPORT={event.info['SUPPORT']}"
+            info_fields.append(f"SUPPORT={event.info['SUPPORT']}")
         if 'SVMETHOD' in event.info:
-            info += f";SVMETHOD={event.info['SVMETHOD']}"
+            info_fields.append(f"SVMETHOD={event.info['SVMETHOD']}")
         if 'STRAND' in event.info:
-            info += f";STRAND={event.info['STRAND']}"
+            info_fields.append(f"STRAND={event.info['STRAND']}")
+
+        info = ';'.join(info_fields)
 
         format = "GT:AD:DP:LN"
         gt = event.sample.get('GT', './.')
@@ -61,17 +91,13 @@ class SVCFtoVCFConverter:
         return f"{chrom}\t{pos}\t{id}\t{ref}\t{alt}\t{qual}\t{filter}\t{info}\t{format}\t{sample}\n"
 
     def _get_alt(self, event):
-        if event.sv_type == 'INS':
-            return event.sample.get('ALT', '<INS>')
-        elif event.sv_type in ['DEL', 'INV', 'DUP']:
-            return f"<{event.sv_type}>"
-        elif event.sv_type == 'TRA':
+        if event.alt and event.alt != 'N' and event.alt != '.':
             return event.alt
         else:
-            return event.alt if event.alt != 'N' else '.'
+            return f"<{event.sv_type}>"
 
     def _calculate_dp(self, ad):
         try:
-            return sum(int(x) for x in ad.split(',') if x != '.')
+            return sum(int(x) for x in ad.split(',') if x != '.' and x.strip().isdigit())
         except ValueError:
             return '.'
