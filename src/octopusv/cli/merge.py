@@ -5,7 +5,41 @@ from octopusv.merger.sv_merger import SVMerger
 from octopusv.utils.SV_classifier_by_chromosome import SVClassifiedByChromosome
 from octopusv.utils.SV_classifier_by_type import SVClassifierByType
 from octopusv.utils.svcf_parser import SVCFFileEventCreator
+import datetime
+import os
 
+def get_contigs_from_svcf(filenames):
+    """
+    Extract contig information from SVCF files.
+
+    Args:
+        filenames (list): List of SVCF filenames.
+
+    Returns:
+        dict: Dictionary of contig IDs and their lengths.
+    """
+    contigs = {}
+    for filename in filenames:
+        with open(filename, 'r') as f:
+            for line in f:
+                if line.startswith('##contig'):
+                    # Parse contig information
+                    line = line.strip()
+                    if line.startswith('##contig=<') and line.endswith('>'):
+                        content = line[len('##contig=<'):-1]
+                        parts = content.split(',')
+                        contig_id = ''
+                        contig_length = ''
+                        for part in parts:
+                            if part.startswith('ID='):
+                                contig_id = part.split('=', 1)[1]
+                            elif part.startswith('length='):
+                                contig_length = part.split('=', 1)[1]
+                        if contig_id and contig_length:
+                            contigs[contig_id] = contig_length
+                elif not line.startswith('##'):
+                    break
+    return contigs
 
 def merge(
         input_files: Optional[List[Path]] = typer.Argument(None, help="List of input SVCF files to merge."),
@@ -54,7 +88,11 @@ def merge(
         typer.echo("Error: --overlap must be a positive integer.", err=True)
         raise typer.Exit(code=1)
 
-    sv_event_creator = SVCFFileEventCreator([str(file) for file in all_input_files])
+    # Get contig information from input files
+    input_filenames = [str(file) for file in all_input_files]
+    contigs = get_contigs_from_svcf(input_filenames)
+
+    sv_event_creator = SVCFFileEventCreator(input_filenames)
     sv_event_creator.parse()
     classifier = SVClassifierByType(sv_event_creator.events)
     classifier.classify()
@@ -83,7 +121,8 @@ def merge(
     else:
         raise ValueError("No merge strategy specified. Please use --intersect, --union, --specific, or --overlap.")
 
-    sv_merger.write_results(output_file, results)
+    # Write results with contig information
+    sv_merger.write_results(output_file, results, contigs)
     typer.echo(f"Merged results written to {output_file}")
 
 

@@ -1,4 +1,5 @@
 import re
+import os
 
 class SVCFEvent:
     """
@@ -14,7 +15,7 @@ class SVCFEvent:
         filter (str): Filter status of the SV event.
         info (dict): Dictionary containing additional information about the SV event.
         format (str): Format of the sample data related to the SV event.
-        sample (str): Sample-specific data for the SV event.
+        sample (dict): Sample-specific data for the SV event.
         source_file (str): The source file from which this SV event was parsed.
         sv_type (str): The SV type of the event.
         bnd_pattern (str): The BND pattern from the ALT field, if applicable.
@@ -22,9 +23,10 @@ class SVCFEvent:
         start_pos (int): Start position of the SV.
         end_chrom (str): End chromosome of the SV.
         end_pos (int): End position of the SV.
+        sample_name (str): Name of the sample.
     """
 
-    def __init__(self, chrom, pos, sv_id, ref, alt, quality, filter, info, format, sample, source_file):
+    def __init__(self, chrom, pos, sv_id, ref, alt, quality, filter, info, format, sample, source_file, sample_name):
         self.chrom = chrom
         self.pos = int(pos)
         self.sv_id = sv_id
@@ -36,6 +38,7 @@ class SVCFEvent:
         self.format = format
         self.sample = self._parse_sample(sample)
         self.source_file = source_file
+        self.sample_name = sample_name
         self.sv_type = self.info.get('SVTYPE', '')
         self.bnd_pattern = self._extract_bnd_pattern()
 
@@ -118,7 +121,7 @@ class SVCFEvent:
         """
         if self.sv_type == 'BND' or self.sv_type == 'TRA':
             alt = self.alt
-            # 定义一个正则表达式，匹配可能的 ALT 格式
+            # Define regex pattern to match ALT field for BND/TRA events
             pattern = re.compile(r'([ACGTNacgtn]*)([\[\]])([^:\[\]]+):(\d+)([\[\]])([ACGTNacgtn]*)')
             match = pattern.match(alt)
             if match:
@@ -130,7 +133,7 @@ class SVCFEvent:
                     end_pos = self.pos
                 return self.chrom, self.pos, end_chrom, end_pos
             else:
-                # 无法匹配，尝试从 INFO 字段获取
+                # If ALT field parsing fails, try to get coordinates from INFO
                 end_chrom = self.info.get('CHR2', self.chrom)
                 end_pos_str = self.info.get('END', self.pos)
                 try:
@@ -140,7 +143,7 @@ class SVCFEvent:
                     end_pos = self.pos
                 return self.chrom, self.pos, end_chrom, end_pos
         else:
-            # 其他类型的处理方式保持不变
+            # For other SV types
             co = self.sample.get('CO')
             if co and '-' in co:
                 start, end = co.split('-')
@@ -153,7 +156,7 @@ class SVCFEvent:
                 end_chrom = self.info.get('CHR2', self.chrom)
                 end_pos_str = self.info.get('END', self.pos)
                 if end_pos_str == '.' or end_pos_str is None:
-                    # 尝试使用 SVLEN
+                    # Try to use SVLEN
                     svlen = self.info.get('SVLEN', None)
                     if svlen and svlen != '.':
                         try:
@@ -189,11 +192,19 @@ class SVCFFileEventCreator:
         """
         for filename in self.filenames:
             with open(filename, 'r') as file:
+                sample_name = None
                 for line in file:
+                    if line.startswith('#CHROM'):
+                        header_parts = line.strip().split('\t')
+                        if len(header_parts) > 9:
+                            sample_name = header_parts[9]
+                        else:
+                            sample_name = os.path.basename(filename)  # Use filename as sample name if not provided
+                        continue
                     if line.startswith('#'):
                         continue  # Skip comment lines that start with '#'
                     parts = line.strip().split('\t')
                     if len(parts) < 10:
                         continue  # Ensure that there are enough parts to form a complete SV event
-                    sv_event = SVCFEvent(*parts[:10], source_file=filename)  # Create an SV event object
+                    sv_event = SVCFEvent(*parts[:10], source_file=filename, sample_name=sample_name)  # Create an SV event object
                     self.events.append(sv_event)  # Add the event to the list of events
