@@ -10,7 +10,7 @@ class QCAnalyzer:
     def _safe_float_convert(self, value, default=0):
         """Safely convert a value to float, returning default if conversion fails."""
         try:
-            if value == '.' or value == '':
+            if value == "." or value == "":
                 return default
             return float(value)
         except (ValueError, TypeError):
@@ -19,7 +19,7 @@ class QCAnalyzer:
     def _safe_int_convert(self, value, default=0):
         """Safely convert a value to integer, returning default if conversion fails."""
         try:
-            if value == '.' or value == '':
+            if value == "." or value == "":
                 return default
             return int(value)
         except (ValueError, TypeError):
@@ -28,41 +28,27 @@ class QCAnalyzer:
     def _calculate_statistics(self, values):
         """Calculate statistics safely handling empty lists."""
         if not values:
-            return {
-                'mean': 0,
-                'median': 0,
-                'min': 0,
-                'max': 0,
-                'q1': 0,
-                'q3': 0
-            }
+            return {"mean": 0, "median": 0, "min": 0, "max": 0, "q1": 0, "q3": 0}
 
         try:
             return {
-                'mean': statistics.mean(values),
-                'median': statistics.median(values),
-                'min': min(values),
-                'max': max(values),
-                'q1': statistics.quantiles(values, n=4)[0] if len(values) >= 4 else values[0],
-                'q3': statistics.quantiles(values, n=4)[2] if len(values) >= 4 else values[-1]
+                "mean": statistics.mean(values),
+                "median": statistics.median(values),
+                "min": min(values),
+                "max": max(values),
+                "q1": statistics.quantiles(values, n=4)[0] if len(values) >= 4 else values[0],
+                "q3": statistics.quantiles(values, n=4)[2] if len(values) >= 4 else values[-1],
             }
         except statistics.StatisticsError:
-            return {
-                'mean': 0,
-                'median': 0,
-                'min': 0,
-                'max': 0,
-                'q1': 0,
-                'q3': 0
-            }
+            return {"mean": 0, "median": 0, "min": 0, "max": 0, "q1": 0, "q3": 0}
 
     def _parse_info_field(self, info_str):
         """Safely parse the INFO field."""
         info_dict = {}
         try:
-            for item in info_str.split(';'):
-                if '=' in item:
-                    key, value = item.split('=', 1)
+            for item in info_str.split(";"):
+                if "=" in item:
+                    key, value = item.split("=", 1)
                     info_dict[key] = value
                 else:
                     info_dict[item] = True
@@ -76,13 +62,13 @@ class QCAnalyzer:
         support_counts = []
 
         try:
-            with open(self.input_file, 'r') as f:
+            with open(self.input_file) as f:
                 for line in f:
-                    if line.startswith('#'):
+                    if line.startswith("#"):
                         continue
 
                     try:
-                        fields = line.strip().split('\t')
+                        fields = line.strip().split("\t")
                         if len(fields) < 8:  # Ensure minimum required fields
                             continue
 
@@ -92,13 +78,13 @@ class QCAnalyzer:
                             qual_scores.append(qual)
 
                         # Handle filter status
-                        filter_val = fields[6] if len(fields) > 6 else 'UNKNOWN'
+                        filter_val = fields[6] if len(fields) > 6 else "UNKNOWN"
                         filter_status[filter_val] += 1
 
                         # Handle support count from INFO field
                         if len(fields) > 7:
                             info = self._parse_info_field(fields[7])
-                            support = self._safe_int_convert(info.get('SUPPORT', '0'))
+                            support = self._safe_int_convert(info.get("SUPPORT", "0"))
                             if support > 0:  # Only append non-zero values
                                 support_counts.append(support)
 
@@ -108,7 +94,7 @@ class QCAnalyzer:
         except FileNotFoundError:
             return "Error: Input file not found"
         except Exception as e:
-            return f"Error: Failed to analyze file: {str(e)}"
+            return f"Error: Failed to analyze file: {e!s}"
 
         # Calculate statistics
         qual_stats = self._calculate_statistics(qual_scores)

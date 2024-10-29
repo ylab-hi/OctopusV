@@ -14,10 +14,14 @@ def should_merge_tra(event1, event2, delta=50, min_overlap_ratio=0.5, strand_con
         return False
 
     # 计算重叠区间的相似性
-    overlap1 = max(0, min(event1.start_pos + delta, event2.start_pos + delta) - max(event1.start_pos - delta,
-                                                                                    event2.start_pos - delta))
-    overlap2 = max(0, min(event1.end_pos + delta, event2.end_pos + delta) - max(event1.end_pos - delta,
-                                                                                event2.end_pos - delta))
+    overlap1 = max(
+        0,
+        min(event1.start_pos + delta, event2.start_pos + delta)
+        - max(event1.start_pos - delta, event2.start_pos - delta),
+    )
+    overlap2 = max(
+        0, min(event1.end_pos + delta, event2.end_pos + delta) - max(event1.end_pos - delta, event2.end_pos - delta)
+    )
 
     ratio1 = overlap1 / (2 * delta)
     ratio2 = overlap2 / (2 * delta)
@@ -28,19 +32,19 @@ def should_merge_tra(event1, event2, delta=50, min_overlap_ratio=0.5, strand_con
 def _is_compatible_bnd_pattern(pattern1, pattern2):
     if pattern1 is None or pattern2 is None:
         return True  # 如果任一模式缺失，我们假设它们兼容
-    if pattern1 == '<TRA>' and pattern2 == '<TRA>':
+    if pattern1 == "<TRA>" and pattern2 == "<TRA>":
         return True
 
     def classify_pattern(pattern):
-        if pattern == '<TRA>':
+        if pattern == "<TRA>":
             return 5  # Special case for <TRA>
-        elif pattern.startswith(']') and pattern.endswith('N'):
+        elif pattern.startswith("]") and pattern.endswith("N"):
             return 1  # ]chr:pos]N
-        elif pattern.startswith('N[') and pattern.endswith('['):
+        elif pattern.startswith("N[") and pattern.endswith("["):
             return 2  # N[chr:pos[
-        elif pattern.startswith('N]') and pattern.endswith(']'):
+        elif pattern.startswith("N]") and pattern.endswith("]"):
             return 3  # N]chr:pos]
-        elif pattern.startswith('[') and pattern.endswith('N'):
+        elif pattern.startswith("[") and pattern.endswith("N"):
             return 4  # [chr:pos[N
         else:
             return 0  # Unknown pattern

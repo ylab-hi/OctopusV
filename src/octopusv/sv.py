@@ -81,7 +81,7 @@ class SVEvent:
         if "SUPPORT" not in self.info:
             format_parts = self.format.split(":")
             sample_parts = self.sample.split(":")
-            format_sample_dict = dict(zip(format_parts, sample_parts))
+            format_sample_dict = dict(zip(format_parts, sample_parts, strict=False))
             # Handling both 'PR' only and 'PR:SR' cases.
             pr_key = "PR" if "PR" in format_sample_dict else None
             if pr_key:
@@ -111,15 +111,4 @@ class SVEvent:
         # Use construct_sample_string to build sample string
         sample_str = construct_sample_string(self)
 
-        return "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
-            self.chrom,
-            self.pos,
-            self.id,
-            self.ref,
-            self.alt,
-            self.qual,
-            self.filter,
-            info_str,
-            format_str,
-            sample_str,
-        )
+        return f"{self.chrom}\t{self.pos}\t{self.id}\t{self.ref}\t{self.alt}\t{self.qual}\t{self.filter}\t{info_str}\t{format_str}\t{sample_str}"

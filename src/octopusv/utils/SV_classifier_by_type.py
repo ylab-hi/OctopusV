@@ -1,6 +1,5 @@
 class SVClassifierByType:
-    """
-    Classifies SVCF events by their SV type into separate categories.
+    """Classifies SVCF events by their SV type into separate categories.
 
     Attributes:
         events (list): List of SVCFEvent objects to be classified.
@@ -10,18 +9,11 @@ class SVClassifierByType:
     def __init__(self, events):
         self.events = events
         # Predefine categories with empty lists
-        self.classified_events = {
-            'INS': [],
-            'DEL': [],
-            'DUP': [],
-            'INV': [],
-            'TRA': []
-        }
-        self.valid_types = {'INS', 'DEL', 'DUP', 'INV', 'TRA'}  # Defined valid SV types
+        self.classified_events = {"INS": [], "DEL": [], "DUP": [], "INV": [], "TRA": []}
+        self.valid_types = {"INS", "DEL", "DUP", "INV", "TRA"}  # Defined valid SV types
 
     def classify(self):
-        """
-        Classifies events based on their SV type. Only includes events whose types are in the valid_types set.
+        """Classifies events based on their SV type. Only includes events whose types are in the valid_types set.
         Raises an error if an event has an undefined or invalid SV type.
         """
         for event in self.events:
@@ -32,8 +24,7 @@ class SVClassifierByType:
             self.classified_events[event.sv_type].append(event)
 
     def get_classified_events(self):
-        """
-        Returns the dictionary containing classified events.
+        """Returns the dictionary containing classified events.
 
         Returns:
             dict: A dictionary with SV types as keys and lists of corresponding events as values.

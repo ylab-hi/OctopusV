@@ -1,34 +1,32 @@
 def get_caller_name(sample_dict):
-    """
-    Get standardized caller name from sample dictionary.
+    """Get standardized caller name from sample dictionary.
     Handles different formats of caller names.
     """
-    caller = sample_dict.get('SC', 'unknown')
+    caller = sample_dict.get("SC", "unknown")
     # Standardize caller names
-    if 'svim' in caller.lower():
-        return 'SVIM'
-    elif 'pbsv' in caller.lower():
-        return 'PBSV'
-    elif 'cutesv' in caller.lower():
-        return 'cuteSV'
-    elif 'sniffles' in caller.lower():
-        return 'sniffles'
-    elif 'debreak' in caller.lower():
-        return 'debreak'
-    elif 'manta' in caller.lower():
-        return 'manta'
-    elif 'delly' in caller.lower():
-        return 'delly'
-    elif 'svaba' in caller.lower():
-        return 'svaba'
-    elif 'svdss' in caller.lower():
-        return 'svdss'
+    if "svim" in caller.lower():
+        return "SVIM"
+    elif "pbsv" in caller.lower():
+        return "PBSV"
+    elif "cutesv" in caller.lower():
+        return "cuteSV"
+    elif "sniffles" in caller.lower():
+        return "sniffles"
+    elif "debreak" in caller.lower():
+        return "debreak"
+    elif "manta" in caller.lower():
+        return "manta"
+    elif "delly" in caller.lower():
+        return "delly"
+    elif "svaba" in caller.lower():
+        return "svaba"
+    elif "svdss" in caller.lower():
+        return "svdss"
     return caller
 
 
 def get_caller_score(caller_name, caller_priority_list):
-    """
-    Calculate a score for a structural variant caller based on its priority ranking.
+    """Calculate a score for a structural variant caller based on its priority ranking.
     """
     try:
         rank = caller_priority_list.index(caller_name) + 1
@@ -41,24 +39,23 @@ def get_caller_score(caller_name, caller_priority_list):
 
 
 def select_representative_sv(sv_group, weights=None, max_support=30, max_qual=100):
-    """
-    Select a representative SV record from a group of overlapping structural variants
+    """Select a representative SV record from a group of overlapping structural variants
     using a comprehensive scoring system.
     """
     if weights is None:
-        weights = {'support': 0.5, 'quality': 0.3, 'caller': 0.2}
+        weights = {"support": 0.5, "quality": 0.3, "caller": 0.2}
 
     # Predefined priority list for SV callers
     caller_priority_list = [
-        'SVIM',  # SVIM has highest priority
-        'PBSV',
-        'cuteSV',
-        'sniffles',
-        'debreak',
-        'manta',
-        'delly',
-        'svaba',
-        'svdss'
+        "SVIM",  # SVIM has highest priority
+        "PBSV",
+        "cuteSV",
+        "sniffles",
+        "debreak",
+        "manta",
+        "delly",
+        "svaba",
+        "svdss",
     ]
 
     max_score = -1
@@ -68,7 +65,7 @@ def select_representative_sv(sv_group, weights=None, max_support=30, max_qual=10
 
     for sv in sv_group:
         # Add source file
-        source_files = sv.source_file.split(',')
+        source_files = sv.source_file.split(",")
         all_source_files.update(source_files)
 
         # Add sample information
@@ -76,8 +73,8 @@ def select_representative_sv(sv_group, weights=None, max_support=30, max_qual=10
         merged_samples_list.append(sample_info)
 
         # Calculate support score
-        support_value = sv.info.get('SUPPORT', '0')
-        if support_value in [None, '.', '']:
+        support_value = sv.info.get("SUPPORT", "0")
+        if support_value in [None, ".", ""]:
             support = 0
         else:
             try:
@@ -88,7 +85,7 @@ def select_representative_sv(sv_group, weights=None, max_support=30, max_qual=10
 
         # Calculate quality score
         qual_value = sv.quality
-        if qual_value in [None, '.', '']:
+        if qual_value in [None, ".", ""]:
             qual = 50  # Default quality score
         else:
             try:
@@ -103,9 +100,7 @@ def select_representative_sv(sv_group, weights=None, max_support=30, max_qual=10
 
         # Calculate weighted total score
         total_score = (
-                weights['support'] * support_score +
-                weights['quality'] * quality_score +
-                weights['caller'] * caller_score
+            weights["support"] * support_score + weights["quality"] * quality_score + weights["caller"] * caller_score
         )
 
         # Update representative SV if current SV has higher score
@@ -114,19 +109,19 @@ def select_representative_sv(sv_group, weights=None, max_support=30, max_qual=10
             representative_sv = sv
         elif total_score == max_score:
             # Tiebreaker 1: Higher read support
-            curr_support_value = representative_sv.info.get('SUPPORT', '0')
-            current_support = 0 if curr_support_value in [None, '.', ''] else int(curr_support_value)
+            curr_support_value = representative_sv.info.get("SUPPORT", "0")
+            current_support = 0 if curr_support_value in [None, ".", ""] else int(curr_support_value)
             if support > current_support:
                 representative_sv = sv
             elif support == current_support:
                 # Tiebreaker 2: Higher quality score
                 curr_qual_value = representative_sv.quality
-                current_qual = 50 if curr_qual_value in [None, '.', ''] else float(curr_qual_value)
+                current_qual = 50 if curr_qual_value in [None, ".", ""] else float(curr_qual_value)
                 if qual > current_qual:
                     representative_sv = sv
 
     if representative_sv:
-        representative_sv.source_file = ','.join(sorted(all_source_files))
+        representative_sv.source_file = ",".join(sorted(all_source_files))
         representative_sv.merged_samples = merged_samples_list
 
     return representative_sv

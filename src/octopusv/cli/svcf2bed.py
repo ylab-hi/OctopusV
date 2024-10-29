@@ -1,16 +1,16 @@
 from pathlib import Path
+
 import typer
-from typing import Optional
-from octopusv.utils.svcf_parser import SVCFFileEventCreator
 from octopusv.formatter.svcf_to_bed_converter import SVCFtoBEDConverter
+from octopusv.utils.svcf_parser import SVCFFileEventCreator
+
 
 def svcf2bed(
     input_file: Path = typer.Option(..., "--input-file", "-i", exists=True, help="Input SVCF file to convert."),
     output_file: Path = typer.Option(..., "--output-file", "-o", help="Output BED file."),
-    minimal: bool = typer.Option(False, "--minimal", help="Output minimal BED format (only chrom, start, end)")
+    minimal: bool = typer.Option(False, "--minimal", help="Output minimal BED format (only chrom, start, end)"),
 ):
-    """
-    Convert SVCF file to BED format.
+    """Convert SVCF file to BED format.
 
     The output BED file will contain structural variants with their positions.
     If --minimal is specified, only chromosome, start, and end positions will be included.
@@ -30,7 +30,7 @@ def svcf2bed(
         bed_content = converter.convert()
 
         # Write to output file
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             f.write(bed_content)
 
         typer.echo(f"Successfully converted SVCF to {'minimal ' if minimal else ''}BED format")
@@ -44,5 +44,5 @@ def svcf2bed(
         typer.echo(f"Error: Permission denied when writing to '{output_file}'", err=True)
         raise typer.Exit(code=1)
     except Exception as e:
-        typer.echo(f"Error occurred: {str(e)}", err=True)
+        typer.echo(f"Error occurred: {e!s}", err=True)
         raise typer.Exit(code=1)

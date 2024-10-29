@@ -1,9 +1,9 @@
-from .TRA_merge_logic import should_merge_tra
 from .sv_selector import select_representative_sv
+from .TRA_merge_logic import should_merge_tra
+
 
 class TRAMerger:
-    """
-    A specialized merger class for handling translocation (TRA) structural variants.
+    """A specialized merger class for handling translocation (TRA) structural variants.
     Implements clustering and merging of TRA events between chromosome pairs.
 
     The merger maintains a collection of TRA events organized by chromosome pairs
@@ -12,8 +12,7 @@ class TRAMerger:
     """
 
     def __init__(self, delta=50, min_overlap_ratio=0.5, strand_consistency=True):
-        """
-        Initialize the TRA merger with configurable parameters.
+        """Initialize the TRA merger with configurable parameters.
 
         Args:
             delta (int): Distance threshold in base pairs for merging nearby breakpoints (default: 50)
@@ -29,8 +28,7 @@ class TRAMerger:
         self.strand_consistency = strand_consistency
 
     def add_event(self, event):
-        """
-        Add a TRA event to the merger, organizing events by chromosome pairs.
+        """Add a TRA event to the merger, organizing events by chromosome pairs.
 
         Args:
             event (SVCFEvent): A translocation event to be added to the merger
@@ -46,8 +44,7 @@ class TRAMerger:
         self.tra_events[key].append(event)
 
     def merge_events(self):
-        """
-        Merge overlapping TRA events for each chromosome pair.
+        """Merge overlapping TRA events for each chromosome pair.
 
         Returns:
             dict: A dictionary where:
@@ -69,7 +66,9 @@ class TRAMerger:
                 event_was_merged = False
                 for idx, event_group in enumerate(merged_event_groups):
                     existing_event = event_group[0]
-                    if should_merge_tra(existing_event, current_event, self.delta, self.min_overlap_ratio, self.strand_consistency):
+                    if should_merge_tra(
+                        existing_event, current_event, self.delta, self.min_overlap_ratio, self.strand_consistency
+                    ):
                         # Add current event to existing group if it meets merge criteria
                         merged_event_groups[idx].append(current_event)
                         event_was_merged = True
@@ -81,8 +80,7 @@ class TRAMerger:
         return all_chromosome_pair_events
 
     def get_merged_events(self):
-        """
-        Get the final list of merged TRA events with representative selection.
+        """Get the final list of merged TRA events with representative selection.
 
         Returns:
             list: A list of representative SVCFEvent objects, where each event:
@@ -104,6 +102,7 @@ class TRAMerger:
                 # source_file merging is handled within select_representative_sv
                 merged_events.append(representative_sv)
         return merged_events
+
 
 """
 self.tra_events = {

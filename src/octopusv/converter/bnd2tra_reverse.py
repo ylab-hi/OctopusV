@@ -13,10 +13,7 @@ class BND_to_TRA_Reverse_Converter(Converter):
                     if chrom_alt is None:
                         print("Failed to get ALT chrom and pos")
                     elif event.chrom == chrom_alt:
-                        if pattern == "t]p]" and event.pos > pos_alt:
-                            end = pos_alt
-                            self.convert_to_TRA_reverse(event, end)
-                        elif pattern == "[p[t" and event.pos < pos_alt:
+                        if pattern == "t]p]" and event.pos > pos_alt or pattern == "[p[t" and event.pos < pos_alt:
                             end = pos_alt
                             self.convert_to_TRA_reverse(event, end)
         except Exception as e:

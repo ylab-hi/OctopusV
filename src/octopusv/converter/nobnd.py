@@ -6,7 +6,6 @@ class NonBNDConverter(Converter):
 
     def convert(self, event):
         """Simplifies SVTYPE to one of the specified types and sets CHR2 and SVMETHOD for non-BND events."""
-
         # Check and simplify SVTYPE
         svtype = event.info.get("SVTYPE", "")
         if ":" in svtype:

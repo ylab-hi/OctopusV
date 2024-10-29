@@ -1,6 +1,5 @@
 def should_merge(event1, event2, max_distance=50, max_length_ratio=1.3, min_jaccard=0.7):
-    """
-    Determines whether two SV events should be merged based on the XXX merge logic.
+    """Determines whether two SV events should be merged based on the XXX merge logic.
 
     Args:
     event1: The first SV event.
