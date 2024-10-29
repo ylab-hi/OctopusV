@@ -88,7 +88,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -q --no-install-recommends --no-install-suggests libhts-dev  libssl-dev
+          sudo apt-get install -q --no-install-recommends --no-install-suggests libhts-dev libssl-dev
 
       - name: Cache macOS dependencies
         if: matrix.os == 'macos-latest'
@@ -107,9 +107,8 @@ jobs:
         if: matrix.os == 'macos-latest'
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
-          HOMEBREW_NO_INSTALL_CLEANUP: 1 # Do not run brew cleanup automatically.
-          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1 # Do not automatically update packages.
-
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
         run: |
           brew install htslib
           brew install openssl@3
@@ -157,13 +156,9 @@ jobs:
           restore-keys: |
             ${{ steps.pre-commit-cache.outputs.result }}-
 
-      - name: Run Nox for Python 3.9 tests session
-        if: matrix.session == 'tests' && matrix.python == '3.9'
-        run: nox --session tests_39 --force-color
-
-      - name: Run Nox for Python 3.10 tests session
-        if: matrix.session == 'tests' && matrix.python == '3.10'
-        run: nox --session tests_310 --force-color
+      - name: Run Nox
+        run: |
+          nox --force-color --session=tests
 
       - name: Upload coverage data
         if: always() && matrix.session == 'tests'
