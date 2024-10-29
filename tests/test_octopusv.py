@@ -4,14 +4,14 @@ import os
 import difflib
 import logging
 
-# 配置日志
+# Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
-# 获取项目根目录的绝对路径
+# Get absolute path of project root directory
 ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
-# 使用绝对路径定义目录结构
+# Define directory structure using absolute paths
 TEST_DATA_DIR = os.path.join(ROOT_DIR, "tests", "data")
 INPUT_DIR = os.path.join(TEST_DATA_DIR, "input")
 STANDARD_DIR = os.path.join(TEST_DATA_DIR, "standard")
@@ -20,12 +20,12 @@ OUTPUT_DIR = os.path.join(TEST_DATA_DIR, "output")
 
 def run_octopusv(command, *args, verbose=False):
     """
-    运行 octopusv 命令，并捕获输出。
-    如果命令失败，则打印详细的错误信息并抛出异常。
+    Run octopusv command and capture output.
+    If command fails, print detailed error information and raise exception.
     """
     cmd = ["octopusv", command] + list(args)
     if verbose:
-        logger.info(f"执行命令: {' '.join(cmd)}")
+        logger.info(f"Executing command: {' '.join(cmd)}")
     try:
         result = subprocess.run(
             cmd,
@@ -34,13 +34,13 @@ def run_octopusv(command, *args, verbose=False):
             cwd=ROOT_DIR
         )
         if verbose and result.stdout:
-            logger.info(f"命令 stdout:\n{result.stdout}")
+            logger.info(f"Command stdout:\n{result.stdout}")
         if result.stderr:
-            logger.warning(f"命令 stderr:\n{result.stderr}")
+            logger.warning(f"Command stderr:\n{result.stderr}")
         result.check_returncode()
     except subprocess.CalledProcessError as e:
-        logger.error(f"命令执行失败，退出码 {e.returncode}")
-        logger.error(f"错误输出:\n{e.stderr}")
+        logger.error(f"Command execution failed with exit code {e.returncode}")
+        logger.error(f"Error output:\n{e.stderr}")
         raise
 
 
@@ -51,11 +51,11 @@ def compare_files(file1, file2, verbose=False):
     """
 
     def normalize_line(line):
-        # 移除常见的路径模式
+        # Remove common path patterns
         import re
-        # 移除绝对路径
+        # Remove absolute paths
         line = re.sub(r'/[^,\s;]*/([^/,\s;]+)', r'\1', line)
-        # 移除相对路径
+        # Remove relative paths
         line = re.sub(r'\.\.?/[^,\s;]+/([^/,\s;]+)', r'\1', line)
         return line.rstrip('\r\n')
 
@@ -106,63 +106,63 @@ def compare_files(file1, file2, verbose=False):
 
 class TestOctopusV:
     def setup_method(self):
-        """每个测试运行前的设置方法"""
-        # 确保输出目录存在
+        """Setup method runs before each test"""
+        # Ensure output directory exists
         os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     def test_correct_svim(self):
-        """测试使用 SVIM 输入的 correct 命令"""
+        """Test correct command with SVIM input"""
         input_vcf = os.path.join(INPUT_DIR, "svim_example.vcf")
         output_svcf = os.path.join(OUTPUT_DIR, "out_svim_example.svcf")
         standard_svcf = os.path.join(STANDARD_DIR, "standard_svim.svcf")
 
-        # 检查输入和标准文件是否存在
-        assert os.path.exists(input_vcf), f"输入文件未找到: {input_vcf}"
-        assert os.path.exists(standard_svcf), f"标准文件未找到: {standard_svcf}"
+        # Check if input and standard files exist
+        assert os.path.exists(input_vcf), f"Input file not found: {input_vcf}"
+        assert os.path.exists(standard_svcf), f"Standard file not found: {standard_svcf}"
 
-        # 运行 octopusv correct 命令，使用 -i 和 -o 选项
+        # Run octopusv correct command with -i and -o options
         run_octopusv("correct", "-i", input_vcf, "-o", output_svcf, verbose=False)
 
-        # 检查输出文件是否创建
-        assert os.path.exists(output_svcf), f"输出文件未创建: {output_svcf}"
+        # Check if output file was created
+        assert os.path.exists(output_svcf), f"Output file not created: {output_svcf}"
 
-        # 比较输出文件与标准文件的内容
+        # Compare output file with standard file
         assert compare_files(output_svcf, standard_svcf, verbose=True), \
-            "SVIM correction 输出与标准不匹配"
+            "SVIM correction output does not match standard"
 
     def test_correct_pbsv(self):
-        """测试使用 PBSV 输入的 correct 命令"""
+        """Test correct command with PBSV input"""
         input_vcf = os.path.join(INPUT_DIR, "pbsv_example.vcf")
         output_svcf = os.path.join(OUTPUT_DIR, "out_pbsv_example.svcf")
         standard_svcf = os.path.join(STANDARD_DIR, "standard_pbsv.svcf")
 
-        # 检查输入和标准文件是否存在
-        assert os.path.exists(input_vcf), f"输入文件未找到: {input_vcf}"
-        assert os.path.exists(standard_svcf), f"标准文件未找到: {standard_svcf}"
+        # Check if input and standard files exist
+        assert os.path.exists(input_vcf), f"Input file not found: {input_vcf}"
+        assert os.path.exists(standard_svcf), f"Standard file not found: {standard_svcf}"
 
-        # 运行 octopusv correct 命令，使用 -i 和 -o 选项
+        # Run octopusv correct command with -i and -o options
         run_octopusv("correct", "-i", input_vcf, "-o", output_svcf, verbose=False)
 
-        # 检查输出文件是否创建
-        assert os.path.exists(output_svcf), f"输出文件未创建: {output_svcf}"
+        # Check if output file was created
+        assert os.path.exists(output_svcf), f"Output file not created: {output_svcf}"
 
-        # 比较输出文件与标准文件的内容
+        # Compare output file with standard file
         assert compare_files(output_svcf, standard_svcf, verbose=True), \
-            "PBSV correction 输出与标准不匹配"
+            "PBSV correction output does not match standard"
 
     def test_merge_intersect(self):
-        """测试 merge 命令的 intersect 选项"""
+        """Test merge command with intersect option"""
         input_svcf1 = os.path.join(INPUT_DIR, "pbsv.svcf")
         input_svcf2 = os.path.join(INPUT_DIR, "svim.svcf")
         output_svcf = os.path.join(OUTPUT_DIR, "out_inter.svcf")
         standard_svcf = os.path.join(STANDARD_DIR, "standard_intersection.svcf")
 
-        # 检查输入和标准文件是否存在
-        assert os.path.exists(input_svcf1), f"输入文件1未找到: {input_svcf1}"
-        assert os.path.exists(input_svcf2), f"输入文件2未找到: {input_svcf2}"
-        assert os.path.exists(standard_svcf), f"标准文件未找到: {standard_svcf}"
+        # Check if input and standard files exist
+        assert os.path.exists(input_svcf1), f"Input file 1 not found: {input_svcf1}"
+        assert os.path.exists(input_svcf2), f"Input file 2 not found: {input_svcf2}"
+        assert os.path.exists(standard_svcf), f"Standard file not found: {standard_svcf}"
 
-        # 运行 octopusv merge 命令
+        # Run octopusv merge command
         run_octopusv(
             "merge",
             "-i", input_svcf1, input_svcf2,
@@ -171,13 +171,13 @@ class TestOctopusV:
             verbose=True
         )
 
-        # 检查输出文件是否创建
-        assert os.path.exists(output_svcf), f"输出文件未创建: {output_svcf}"
+        # Check if output file was created
+        assert os.path.exists(output_svcf), f"Output file not created: {output_svcf}"
 
-        # 使用详细模式比较文件
+        # Compare files with verbose mode
         is_same = compare_files(output_svcf, standard_svcf, verbose=True)
 
-        # 如果文件不同，打印额外的调试信息
+        # Print additional debug information if files differ
         if not is_same:
             print("\nRaw hex dump of first few lines:")
             for filename in [output_svcf, standard_svcf]:
@@ -185,4 +185,4 @@ class TestOctopusV:
                 with open(filename, 'rb') as f:
                     print(f.read().hex())
 
-        assert is_same, "Merge intersect 输出与标准不匹配"
+        assert is_same, "Merge intersect output does not match standard"
