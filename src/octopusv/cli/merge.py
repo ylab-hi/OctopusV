@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import typer
+
 from octopusv.merger.sv_merger import SVMerger
 from octopusv.utils.SV_classifier_by_chromosome import SVClassifiedByChromosome
 from octopusv.utils.SV_classifier_by_type import SVClassifierByType
@@ -69,8 +70,7 @@ def merge(
         True, "--tra-strand-consistency", help="Whether to require strand consistency for TRA events."
     ),
 ):
-    """Merge multiple SVCF files based on specified strategy.
-    """
+    """Merge multiple SVCF files based on specified strategy."""
     # Combine input files from arguments and options
     all_input_files = (input_files or []) + (input_option or [])
 

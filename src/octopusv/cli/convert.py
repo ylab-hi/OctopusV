@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import typer
+
 from octopusv.converter.base import get_alt_chrom_pos
 from octopusv.converter.bnd2dup import BND_to_DUP_Converter
 from octopusv.converter.bnd2inv import BND_to_INV_Converter
@@ -47,7 +48,7 @@ def correct(
             "Error: Please specify input file either as an argument or with -i/--input-file, not both.", err=True
         )
         raise typer.Exit(code=1)
-    elif input_vcf:
+    if input_vcf:
         input_file = input_vcf
     elif input_option:
         input_file = input_option
@@ -61,7 +62,7 @@ def correct(
             "Error: Please specify output file either as an argument or with -o/--output-file, not both.", err=True
         )
         raise typer.Exit(code=1)
-    elif output:
+    if output:
         output_file = output
     elif output_option:
         output_file = output_option

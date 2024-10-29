@@ -6,28 +6,27 @@ def get_caller_name(sample_dict):
     # Standardize caller names
     if "svim" in caller.lower():
         return "SVIM"
-    elif "pbsv" in caller.lower():
+    if "pbsv" in caller.lower():
         return "PBSV"
-    elif "cutesv" in caller.lower():
+    if "cutesv" in caller.lower():
         return "cuteSV"
-    elif "sniffles" in caller.lower():
+    if "sniffles" in caller.lower():
         return "sniffles"
-    elif "debreak" in caller.lower():
+    if "debreak" in caller.lower():
         return "debreak"
-    elif "manta" in caller.lower():
+    if "manta" in caller.lower():
         return "manta"
-    elif "delly" in caller.lower():
+    if "delly" in caller.lower():
         return "delly"
-    elif "svaba" in caller.lower():
+    if "svaba" in caller.lower():
         return "svaba"
-    elif "svdss" in caller.lower():
+    if "svdss" in caller.lower():
         return "svdss"
     return caller
 
 
 def get_caller_score(caller_name, caller_priority_list):
-    """Calculate a score for a structural variant caller based on its priority ranking.
-    """
+    """Calculate a score for a structural variant caller based on its priority ranking."""
     try:
         rank = caller_priority_list.index(caller_name) + 1
     except ValueError:

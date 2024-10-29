@@ -93,8 +93,7 @@ class SVCFtoVCFConverter:
     def _get_alt(self, event):
         if event.alt and event.alt != "N" and event.alt != ".":
             return event.alt
-        else:
-            return f"<{event.sv_type}>"
+        return f"<{event.sv_type}>"
 
     def _calculate_dp(self, ad):
         try:

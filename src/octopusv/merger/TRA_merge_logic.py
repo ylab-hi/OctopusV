@@ -38,16 +38,15 @@ def _is_compatible_bnd_pattern(pattern1, pattern2):
     def classify_pattern(pattern):
         if pattern == "<TRA>":
             return 5  # Special case for <TRA>
-        elif pattern.startswith("]") and pattern.endswith("N"):
+        if pattern.startswith("]") and pattern.endswith("N"):
             return 1  # ]chr:pos]N
-        elif pattern.startswith("N[") and pattern.endswith("["):
+        if pattern.startswith("N[") and pattern.endswith("["):
             return 2  # N[chr:pos[
-        elif pattern.startswith("N]") and pattern.endswith("]"):
+        if pattern.startswith("N]") and pattern.endswith("]"):
             return 3  # N]chr:pos]
-        elif pattern.startswith("[") and pattern.endswith("N"):
+        if pattern.startswith("[") and pattern.endswith("N"):
             return 4  # [chr:pos[N
-        else:
-            return 0  # Unknown pattern
+        return 0  # Unknown pattern
 
     class1 = classify_pattern(pattern1)
     class2 = classify_pattern(pattern2)

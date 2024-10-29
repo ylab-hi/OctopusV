@@ -103,8 +103,7 @@ class SVMerger:
         return other_filtered + tra_filtered
 
     def format_sample_values(self, format_keys, sample_dict):
-        """Format sample values according to the FORMAT field.
-        """
+        """Format sample values according to the FORMAT field."""
         values = []
         for key in format_keys:
             value = sample_dict.get(key, ".")
