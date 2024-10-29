@@ -18,7 +18,8 @@ class SVClassifierByType:
         """
         for event in self.events:
             if event.sv_type not in self.valid_types:
-                raise ValueError(f"Invalid SV type encountered: {event.sv_type}")
+                msg = f"Invalid SV type encountered: {event.sv_type}"
+                raise ValueError(msg)
 
             # Directly append to the predefined list for each SV type
             self.classified_events[event.sv_type].append(event)

@@ -65,7 +65,7 @@ class TRAMerger:
             merged_event_groups = []
             for current_event in unmerged_events:
                 event_was_merged = False
-                for idx, event_group in enumerate(merged_event_groups):
+                for _idx, event_group in enumerate(merged_event_groups):
                     existing_event = event_group[0]
                     if should_merge_tra(
                         existing_event, current_event, self.delta, self.min_overlap_ratio, self.strand_consistency
@@ -97,7 +97,7 @@ class TRAMerger:
         """
         all_chromosome_pair_events = self.merge_events()
         merged_events = []
-        for chromosome_pair, event_groups in all_chromosome_pair_events.items():
+        for _chromosome_pair, event_groups in all_chromosome_pair_events.items():
             for event_group in event_groups:
                 representative_sv = select_representative_sv(event_group)
                 # source_file merging is handled within select_representative_sv

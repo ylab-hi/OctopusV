@@ -4,7 +4,7 @@ from datetime import datetime
 def generate_sv_header(contig_lines):
     """Generates SVCF file header lines according to SVCF specification, including original contig lines."""
     current_time_str = datetime.now().strftime("%Y-%m-%d|%I:%M:%S%p|%Z")
-    headers = [
+    return [
         "##fileformat=SVCFv1.0",
         f"##fileDate={current_time_str}",  # Use current time
         "##source=octopusV",
@@ -38,7 +38,6 @@ def generate_sv_header(contig_lines):
         '##FORMAT=<ID=CO,Number=1,Type=String,Description="Coordinate information of the SV">',
         "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSample",
     ]
-    return headers
 
 
 def write_sv_vcf(contig_lines, events, output_file):

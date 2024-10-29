@@ -10,7 +10,7 @@ class QCAnalyzer:
     def _safe_float_convert(self, value, default=0):
         """Safely convert a value to float, returning default if conversion fails."""
         try:
-            if value == "." or value == "":
+            if value in (".", ""):
                 return default
             return float(value)
         except (ValueError, TypeError):
@@ -19,7 +19,7 @@ class QCAnalyzer:
     def _safe_int_convert(self, value, default=0):
         """Safely convert a value to integer, returning default if conversion fails."""
         try:
-            if value == "." or value == "":
+            if value in (".", ""):
                 return default
             return int(value)
         except (ValueError, TypeError):

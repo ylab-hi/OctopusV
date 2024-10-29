@@ -61,7 +61,7 @@ class SVCFEvent:
 
     def _extract_bnd_pattern(self):
         """Extract the breakend pattern from ALT field if present."""
-        if self.sv_type == "BND" or self.sv_type == "TRA":
+        if self.sv_type in ("BND", "TRA"):
             return self.alt
         return None
 
@@ -115,7 +115,7 @@ class SVCFEvent:
 
     def _parse_coordinates(self):
         """Extracts and parses the coordinates of the SV from the ALT field or INFO field."""
-        if self.sv_type == "BND" or self.sv_type == "TRA":
+        if self.sv_type in ("BND", "TRA"):
             alt = self.alt
             # Define regex pattern to match ALT field for BND/TRA events
             pattern = re.compile(r"([ACGTNacgtn]*)([\[\]])([^:\[\]]+):(\d+)([\[\]])([ACGTNacgtn]*)")
