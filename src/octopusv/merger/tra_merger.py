@@ -70,7 +70,7 @@ class TRAMerger:
                         existing_event, current_event, self.delta, self.min_overlap_ratio, self.strand_consistency
                     ):
                         # Add current event to existing group if it meets merge criteria
-                        merged_event_groups[idx].append(current_event)
+                        event_group.append(current_event)
                         event_was_merged = True
                         break
                 if not event_was_merged:

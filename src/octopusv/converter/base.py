@@ -110,8 +110,7 @@ def get_alt_chrom_pos(alt):
     if match:
         chrom_alt, pos_alt = match.groups()
         return chrom_alt, int(pos_alt)
-    else:
-        logging.info(
-            f"Unexpected ALT format, it should be something like N]chr10:69650962] or with sequences: {alt}",
-        )
-        return None, None
+    logging.info(
+        f"Unexpected ALT format, it should be something like N]chr10:69650962] or with sequences: {alt}",
+    )
+    return None, None

@@ -114,8 +114,7 @@ class SVCFEvent:
         return result
 
     def _parse_coordinates(self):
-        """Extracts and parses the coordinates of the SV from the ALT field or INFO field.
-        """
+        """Extracts and parses the coordinates of the SV from the ALT field or INFO field."""
         if self.sv_type == "BND" or self.sv_type == "TRA":
             alt = self.alt
             # Define regex pattern to match ALT field for BND/TRA events
@@ -131,50 +130,47 @@ class SVCFEvent:
                     )
                     end_pos = self.pos
                 return self.chrom, self.pos, end_chrom, end_pos
-            else:
-                # If ALT field parsing fails, try to get coordinates from INFO
-                end_chrom = self.info.get("CHR2", self.chrom)
-                end_pos_str = self.info.get("END", self.pos)
+            # If ALT field parsing fails, try to get coordinates from INFO
+            end_chrom = self.info.get("CHR2", self.chrom)
+            end_pos_str = self.info.get("END", self.pos)
+            try:
+                end_pos = int(end_pos_str)
+            except ValueError:
+                print(
+                    f"Warning: Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos."
+                )
+                end_pos = self.pos
+            return self.chrom, self.pos, end_chrom, end_pos
+        # For other SV types
+        co = self.sample.get("CO")
+        if co and "-" in co:
+            start, end = co.split("-")
+            start_chrom, start_pos = start.split("_")
+            end_chrom, end_pos = end.split("_")
+            return start_chrom, int(start_pos), end_chrom, int(end_pos)
+        start_chrom = self.chrom
+        start_pos = self.pos
+        end_chrom = self.info.get("CHR2", self.chrom)
+        end_pos_str = self.info.get("END", self.pos)
+        if end_pos_str == "." or end_pos_str is None:
+            # Try to use SVLEN
+            svlen = self.info.get("SVLEN", None)
+            if svlen and svlen != ".":
                 try:
-                    end_pos = int(end_pos_str)
+                    end_pos = self.pos + abs(int(svlen))
                 except ValueError:
-                    print(
-                        f"Warning: Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos."
-                    )
                     end_pos = self.pos
-                return self.chrom, self.pos, end_chrom, end_pos
-        else:
-            # For other SV types
-            co = self.sample.get("CO")
-            if co and "-" in co:
-                start, end = co.split("-")
-                start_chrom, start_pos = start.split("_")
-                end_chrom, end_pos = end.split("_")
-                return start_chrom, int(start_pos), end_chrom, int(end_pos)
             else:
-                start_chrom = self.chrom
-                start_pos = self.pos
-                end_chrom = self.info.get("CHR2", self.chrom)
-                end_pos_str = self.info.get("END", self.pos)
-                if end_pos_str == "." or end_pos_str is None:
-                    # Try to use SVLEN
-                    svlen = self.info.get("SVLEN", None)
-                    if svlen and svlen != ".":
-                        try:
-                            end_pos = self.pos + abs(int(svlen))
-                        except ValueError:
-                            end_pos = self.pos
-                    else:
-                        end_pos = self.pos
-                else:
-                    try:
-                        end_pos = int(end_pos_str)
-                    except ValueError:
-                        print(
-                            f"Warning: Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos."
-                        )
-                        end_pos = self.pos
-                return start_chrom, start_pos, end_chrom, end_pos
+                end_pos = self.pos
+        else:
+            try:
+                end_pos = int(end_pos_str)
+            except ValueError:
+                print(
+                    f"Warning: Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos."
+                )
+                end_pos = self.pos
+        return start_chrom, start_pos, end_chrom, end_pos
 
 
 class SVCFFileEventCreator:
@@ -190,8 +186,7 @@ class SVCFFileEventCreator:
         self.events = []
 
     def parse(self):
-        """Parses each file in the filenames list, creating SVCFEvent objects for each valid SV record.
-        """
+        """Parses each file in the filenames list, creating SVCFEvent objects for each valid SV record."""
         for filename in self.filenames:
             with open(filename) as file:
                 sample_name = None
