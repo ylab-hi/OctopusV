@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import typer
-
 from octopusv.ploter.chromosome_plotter import ChromosomePlotter
 from octopusv.ploter.size_plotter import SizePlotter
 from octopusv.ploter.type_plotter import TypePlotter
