@@ -50,3 +50,4 @@ docs/api/*
 !PxBLAT.ipynb
 .ltex
 .vscode
+.cursorignore
