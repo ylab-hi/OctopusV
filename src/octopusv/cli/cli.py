@@ -1,7 +1,6 @@
 import sys
 
 import typer
-
 from octopusv import __version__
 
 from .bench import bench

@@ -150,6 +150,7 @@ ignore = [
     'Q002',
     'Q003',
     'W191',
+    "T201",   # temperate ignore
 ]
 
 [tool.ruff.format]
