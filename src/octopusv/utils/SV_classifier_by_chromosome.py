@@ -1,6 +1,7 @@
 class SVClassifiedByChromosome:
-    """Further classifies SV events by chromosome within each SV type category. This helps reduce the search and processing space,
-    especially when performing interval-based operations.
+    """Further classifies SV events by chromosome within each SV type category.
+
+    This helps reduce the search and processing space, especially when performing interval-based operations.
 
     Attributes:
         events_by_type (dict): A dictionary with SV types as keys and lists of events as values.

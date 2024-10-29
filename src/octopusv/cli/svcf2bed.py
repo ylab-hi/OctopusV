@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import typer
+
 from octopusv.formatter.svcf_to_bed_converter import SVCFtoBEDConverter
 from octopusv.utils.svcf_parser import SVCFFileEventCreator
 
