@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+
 class ChromosomeAnalyzer:
     def __init__(self, input_file):
         self.input_file = input_file
@@ -11,11 +12,11 @@ class ChromosomeAnalyzer:
 
     def analyze(self):
         sv_counts = defaultdict(int)
-        with open(self.input_file, 'r') as f:
+        with open(self.input_file) as f:
             for line in f:
-                if line.startswith('#'):
+                if line.startswith("#"):
                     continue
-                fields = line.strip().split('\t')
+                fields = line.strip().split("\t")
                 chrom = fields[0]
                 sv_counts[chrom] += 1
 

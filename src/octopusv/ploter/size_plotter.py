@@ -1,6 +1,7 @@
+import logging
+
 import matplotlib.pyplot as plt
 import seaborn as sns
-import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -13,7 +14,7 @@ class SizePlotter:
     def parse_data(self):
         size_distribution = {}
         parsing_distribution = False
-        with open(self.input_file, 'r') as f:
+        with open(self.input_file) as f:
             for line in f:
                 if "Size distribution" in line:
                     parsing_distribution = True
@@ -21,7 +22,7 @@ class SizePlotter:
                 if parsing_distribution:
                     if line.strip() == "":
                         break
-                    parts = line.strip().split('=')
+                    parts = line.strip().split("=")
                     if len(parts) == 2:
                         size_range = parts[0].strip()
                         count = int(parts[1].strip())
@@ -38,11 +39,11 @@ class SizePlotter:
         sns.set_style("whitegrid")
 
         # Sort the size ranges
-        size_order = ['0-50 bp', '51-100 bp', '101-500 bp', '501-1 kb', '1 kb-10 kb', '>10 kb']
+        size_order = ["0-50 bp", "51-100 bp", "101-500 bp", "501-1 kb", "1 kb-10 kb", ">10 kb"]
         sizes = [self.data.get(size, 0) for size in size_order]
 
         # Create bar plot
-        bars = plt.bar(size_order, sizes, color=sns.color_palette("deep")[0], edgecolor='white', width=0.7)
+        bars = plt.bar(size_order, sizes, color=sns.color_palette("deep")[0], edgecolor="white", width=0.7)
 
         # Customize the plot
         plt.xlabel("SV Size Range", fontsize=14, labelpad=10)
@@ -54,9 +55,9 @@ class SizePlotter:
         # Add value labels on top of each bar
         for bar in bars:
             height = bar.get_height()
-            plt.text(bar.get_x() + bar.get_width() / 2., height,
-                    f'{int(height)}',
-                    ha='center', va='bottom', fontsize=11)
+            plt.text(
+                bar.get_x() + bar.get_width() / 2.0, height, f"{int(height)}", ha="center", va="bottom", fontsize=11
+            )
 
         # Adjust layout and display
         plt.tight_layout()
@@ -65,10 +66,10 @@ class SizePlotter:
         plt.ylim(0, max(sizes) * 1.1)
 
         # Add a light grid
-        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.grid(axis="y", linestyle="--", alpha=0.7)
 
-        plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches='tight')
-        plt.savefig(f"{output_prefix}.svg", bbox_inches='tight')
+        plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches="tight")
+        plt.savefig(f"{output_prefix}.svg", bbox_inches="tight")
         plt.close()
 
         logging.info(f"Plot saved as {output_prefix}.png and {output_prefix}.svg")

@@ -26,10 +26,10 @@ def get_bnd_pattern(alt):
     """
     # Define regex patterns for the four BND types
     patterns = {
-        't[p[': r'^[ACGTNacgtn]+\[[^\[\]:]+:\d+\[$',
-        't]p]': r'^[ACGTNacgtn]+\][^\[\]:]+:\d+\]$',
-        '[p[t': r'^\[[^\[\]:]+:\d+\[[ACGTNacgtn]+$',
-        ']p]t': r'^\][^\[\]:]+:\d+\][ACGTNacgtn]+$',
+        "t[p[": r"^[ACGTNacgtn]+\[[^\[\]:]+:\d+\[$",
+        "t]p]": r"^[ACGTNacgtn]+\][^\[\]:]+:\d+\]$",
+        "[p[t": r"^\[[^\[\]:]+:\d+\[[ACGTNacgtn]+$",
+        "]p]t": r"^\][^\[\]:]+:\d+\][ACGTNacgtn]+$",
     }
     for pattern_name, regex in patterns.items():
         if re.match(regex, alt):
@@ -39,7 +39,7 @@ def get_bnd_pattern(alt):
 
 def is_same_bnd_event(event1, event2) -> bool:
     """Define whether the BND represent the same TRA events, used by MatePairMergeToTRAConverter."""
-    qualified_pairings = [{'t[p[', 't]p]'}]
+    qualified_pairings = [{"t[p[", "t]p]"}]
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
 
@@ -49,12 +49,12 @@ def is_same_bnd_event(event1, event2) -> bool:
 def is_independent_bnd_event(event1, event2):
     """Determine if two mate_pair_bnd events are independent events."""
     qualified_pairings = [
-        {'t]p]', ']p]t'},
-        {'t]p]', 't]p]'},
-        {'[p[t', '[p[t'},
-        {'t[p[', 't]p]'},
-        {'t[p[', '[p[t'},
-        {']p]t', '[p[t'},
+        {"t]p]", "]p]t"},
+        {"t]p]"},
+        {"[p[t"},
+        {"t[p[", "t]p]"},
+        {"t[p[", "[p[t"},
+        {"]p]t", "[p[t"},
     ]
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
@@ -65,10 +65,10 @@ def is_independent_bnd_event(event1, event2):
 def is_independent_special_bnd_event(event1, event2):
     """Determine if two special_no_mate_diff_bnd_pair events are independent events."""
     qualified_pairings = [
-        {'t[p[', 't]p]'},
-        {'t[p[', '[p[t'},
-        {'t]p]', ']p]t'},
-        {']p]t', '[p[t'},
+        {"t[p[", "t]p]"},
+        {"t[p[", "[p[t"},
+        {"t]p]", "]p]t"},
+        {"]p]t", "[p[t"},
     ]
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
@@ -78,7 +78,7 @@ def is_independent_special_bnd_event(event1, event2):
 
 def is_SpecialNoMateDiffBndPairReciprocalTranslocation(event1, event2):
     """Determine if SpecialNoMateDiffBndPairReciprocalTranslocation."""
-    qualified_pairings = [{'t[p[', ']p]t'}, {'t]p]', '[p[t'}]
+    qualified_pairings = [{"t[p[", "]p]t"}, {"t]p]", "[p[t"}]
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
 
@@ -105,7 +105,7 @@ def get_alt_chrom_pos(alt):
 
     This function uses regular expressions to handle cases where there are multiple nucleotides.
     """
-    pattern = re.compile(r'[ACGTNacgtn]*[\[\]]([^:\[\]]+):(\d+)[\[\]][ACGTNacgtn]*')
+    pattern = re.compile(r"[ACGTNacgtn]*[\[\]]([^:\[\]]+):(\d+)[\[\]][ACGTNacgtn]*")
     match = pattern.match(alt)
     if match:
         chrom_alt, pos_alt = match.groups()

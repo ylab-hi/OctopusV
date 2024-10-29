@@ -1,8 +1,6 @@
 from pathlib import Path
-from typing import Optional
 
 import typer
-
 from octopusv.converter.base import get_alt_chrom_pos
 from octopusv.converter.bnd2dup import BND_to_DUP_Converter
 from octopusv.converter.bnd2inv import BND_to_INV_Converter
@@ -25,33 +23,15 @@ from octopusv.utils.svcf_utils import write_sv_vcf
 
 
 def correct(
-    input_vcf: Optional[Path] = typer.Argument(
-        None,
-        exists=True,
-        dir_okay=False,
-        resolve_path=True,
-        help="Input VCF file to correct."
+    input_vcf: Path | None = typer.Argument(
+        None, exists=True, dir_okay=False, resolve_path=True, help="Input VCF file to correct."
     ),
-    output: Optional[Path] = typer.Argument(
-        None,
-        dir_okay=False,
-        resolve_path=True,
-        help="Output file path."
+    output: Path | None = typer.Argument(None, dir_okay=False, resolve_path=True, help="Output file path."),
+    input_option: Path | None = typer.Option(
+        None, "--input-file", "-i", exists=True, dir_okay=False, resolve_path=True, help="Input VCF file to correct."
     ),
-    input_option: Optional[Path] = typer.Option(
-        None,
-        "--input-file", "-i",
-        exists=True,
-        dir_okay=False,
-        resolve_path=True,
-        help="Input VCF file to correct."
-    ),
-    output_option: Optional[Path] = typer.Option(
-        None,
-        "--output-file", "-o",
-        dir_okay=False,
-        resolve_path=True,
-        help="Output file path."
+    output_option: Path | None = typer.Option(
+        None, "--output-file", "-o", dir_okay=False, resolve_path=True, help="Output file path."
     ),
     pos_tolerance: int = typer.Option(
         3,
@@ -61,10 +41,11 @@ def correct(
     ),
 ):
     """Correct SV events."""
-
     # Determine input file
     if input_vcf and input_option:
-        typer.echo("Error: Please specify input file either as an argument or with -i/--input-file, not both.", err=True)
+        typer.echo(
+            "Error: Please specify input file either as an argument or with -i/--input-file, not both.", err=True
+        )
         raise typer.Exit(code=1)
     elif input_vcf:
         input_file = input_vcf
@@ -76,7 +57,9 @@ def correct(
 
     # Determine output file
     if output and output_option:
-        typer.echo("Error: Please specify output file either as an argument or with -o/--output-file, not both.", err=True)
+        typer.echo(
+            "Error: Please specify output file either as an argument or with -o/--output-file, not both.", err=True
+        )
         raise typer.Exit(code=1)
     elif output:
         output_file = output
@@ -176,6 +159,7 @@ def correct(
     write_sv_vcf(contig_lines, all_transformed_events, output_file)
     typer.echo(f"Corrected SV events written to {output_file}")
 
+
 # ==============================
 # The following are auxiliary Functions.
 # ==============================
@@ -228,7 +212,7 @@ def find_no_mate_events(events, pos_tolerance=3):
 
         # Check each reverse key to see if a mate exists in event_dict.
         for reverse_key in possible_reverse_keys:
-            if reverse_key in event_dict:   # Means got a mate.
+            if reverse_key in event_dict:  # Means got a mate.
                 # Now iterating through all events associated with the reverse_key
                 for mate_event in event_dict[reverse_key]:
                     # If a mate is found, add the pair to the mate_bnd_pairs list.

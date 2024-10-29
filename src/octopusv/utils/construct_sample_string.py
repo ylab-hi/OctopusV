@@ -1,7 +1,7 @@
 def construct_sample_string(sv_event):
     format_parts = sv_event.format.split(":")
     sample_parts = sv_event.sample.split(":")
-    format_sample_dict = dict(zip(format_parts, sample_parts))
+    format_sample_dict = dict(zip(format_parts, sample_parts, strict=False))
 
     # Deal with AD, we have to calculate it by ourself.
     if "AD" in format_sample_dict:

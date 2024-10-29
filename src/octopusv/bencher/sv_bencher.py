@@ -1,10 +1,11 @@
 from pathlib import Path
-from typing import Dict, List
-from octopusv.utils.svcf_parser import SVCFFileEventCreator
+
 from octopusv.merger.sv_merger import SVMerger
 from octopusv.utils.SV_classifier_by_chromosome import SVClassifiedByChromosome
 from octopusv.utils.SV_classifier_by_type import SVClassifierByType
-from .bench_utils import calculate_metrics, write_vcf, write_summary
+from octopusv.utils.svcf_parser import SVCFFileEventCreator
+
+from .bench_utils import calculate_metrics, write_summary, write_vcf
 
 
 class SVBencher:
@@ -48,17 +49,35 @@ class SVBencher:
         tp_base, tp_call, fp, fn = [], [], [], []
 
         for sv_type, chromosomes in self.call_events.items():
-            if sv_type == 'TRA':
+            if sv_type == "TRA":
                 for (chr1, chr2), events in chromosomes.items():
                     for event in events:
                         matched_events = sv_merger.get_events(sv_type, chr1, event.start_pos, event.end_pos)
                         if matched_events:
-                            tp_call.append(('TRA', event.start_chrom, event.end_chrom, event.start_pos, event.end_pos,
-                                            event.source_file, event.bnd_pattern))
+                            tp_call.append(
+                                (
+                                    "TRA",
+                                    event.start_chrom,
+                                    event.end_chrom,
+                                    event.start_pos,
+                                    event.end_pos,
+                                    event.source_file,
+                                    event.bnd_pattern,
+                                )
+                            )
                             tp_base.extend(matched_events)
                         else:
-                            fp.append(('TRA', event.start_chrom, event.end_chrom, event.start_pos, event.end_pos,
-                                    event.source_file, event.bnd_pattern))
+                            fp.append(
+                                (
+                                    "TRA",
+                                    event.start_chrom,
+                                    event.end_chrom,
+                                    event.start_pos,
+                                    event.end_pos,
+                                    event.source_file,
+                                    event.bnd_pattern,
+                                )
+                            )
             else:
                 for chromosome, events in chromosomes.items():
                     for event in events:
@@ -70,24 +89,28 @@ class SVBencher:
                             fp.append(event)
 
         for sv_type, chromosomes in self.truth_events.items():
-            if sv_type == 'TRA':
+            if sv_type == "TRA":
                 for (chr1, chr2), events in chromosomes.items():
                     for event in events:
                         if event not in tp_base:
-                            fn.append(('TRA', event.start_chrom, event.end_chrom, event.start_pos, event.end_pos,
-                                    event.source_file, event.bnd_pattern))
+                            fn.append(
+                                (
+                                    "TRA",
+                                    event.start_chrom,
+                                    event.end_chrom,
+                                    event.start_pos,
+                                    event.end_pos,
+                                    event.source_file,
+                                    event.bnd_pattern,
+                                )
+                            )
             else:
                 for chromosome, events in chromosomes.items():
                     for event in events:
                         if event not in tp_base:
                             fn.append(event)
 
-        self.results = {
-            "tp_base": tp_base,
-            "tp_call": tp_call,
-            "fp": fp,
-            "fn": fn
-        }
+        self.results = {"tp_base": tp_base, "tp_call": tp_call, "fp": fp, "fn": fn}
 
     def _write_results(self):
         self.output_dir.mkdir(parents=True, exist_ok=True)

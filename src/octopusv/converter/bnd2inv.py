@@ -18,7 +18,9 @@ class BND_to_INV_Converter(Converter):
                     if pattern == "t]p]" and event.pos < pos_alt:
                         end = pos_alt
                         svlen = abs(event.pos - pos_alt)
-                        self.convert_to_inv(event, end, svlen, chrom_alt)  # self will be passed to convert_to_INV method.
+                        self.convert_to_inv(
+                            event, end, svlen, chrom_alt
+                        )  # self will be passed to convert_to_INV method.
                     elif pattern == "[p[t" and event.pos > pos_alt:
                         end = event.pos
                         event.pos = pos_alt
