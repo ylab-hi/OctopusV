@@ -113,16 +113,16 @@ jobs:
           # Create and set permissions for necessary directories
           sudo mkdir -p /usr/local/include /usr/local/lib
           sudo chown -R $(whoami) /usr/local/include /usr/local/lib
-          
+
           # Install required packages
           brew install htslib
           brew install openssl@3
-          
+
           # Create symbolic links using brew --prefix to ensure correct paths
           ln -sf $(brew --prefix openssl@3)/include/openssl /usr/local/include/openssl || true
           ln -sf $(brew --prefix openssl@3)/lib/*a /usr/local/lib/ || true
           ln -sf $(brew --prefix openssl@3)/lib/*dylib /usr/local/lib/ || true
-          
+
           # Verify installations and links
           ls -la /usr/local/include/openssl || true
           ls -la /usr/local/lib/*ssl* || true

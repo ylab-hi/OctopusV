@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import typer
+
 from octopusv.converter.base import get_alt_chrom_pos
 from octopusv.converter.bnd2dup import BND_to_DUP_Converter
 from octopusv.converter.bnd2inv import BND_to_INV_Converter
@@ -234,7 +235,6 @@ def find_no_mate_events(events, pos_tolerance=3):
 
     # Flattening the list of events from all keys
     return [single_event for event_list in event_dict.values() for single_event in event_list]
-
 
 
 def find_special_no_mate_diff_bnd_pair_and_other_single_tra(

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import typer
+
 from octopusv.bencher.sv_bencher import SVBencher
 
 
