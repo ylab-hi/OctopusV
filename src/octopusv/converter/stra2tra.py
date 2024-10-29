@@ -2,9 +2,7 @@ from .base import Converter, get_alt_chrom_pos
 
 
 class SingleTRAToTRAConverter(Converter):
-    """This class inherits from the `Converter` base class and implements
-    the conversion logic for single TRA events.
-    """
+    """This class inherits from the `Converter` base class and implements the conversion logic for single TRA events."""
 
     def convert(self, event):
         event.info["SVTYPE"] = "TRA"
