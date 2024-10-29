@@ -23,6 +23,7 @@ class TypePlotter:
 
     def parse_data(self):
         """Parse the statistics file and extract SV type information.
+
         Returns a dictionary with SV types as keys and (count, percentage) as values.
         """
         sv_types = {}

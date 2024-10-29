@@ -130,8 +130,8 @@ class ChromosomePlotter:
         plt.tight_layout()
 
         # Save plots
-        plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches="tight", facecolor="white")
+        plt.savefig(f"{output_prefix}.pdf", dpi=300, bbox_inches="tight", facecolor="white")
         plt.savefig(f"{output_prefix}.svg", bbox_inches="tight", facecolor="white")
         plt.close()
 
-        logging.info(f"Plot saved as {output_prefix}.png and {output_prefix}.svg")
+        logging.info(f"Plot saved as {output_prefix}.pdf and {output_prefix}.svg")

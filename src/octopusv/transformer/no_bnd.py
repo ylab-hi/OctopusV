@@ -2,7 +2,8 @@ from .base import EventTransformer
 
 
 class NonBNDTransformer(EventTransformer):
-    """Transformer for non-BND events. Currently, the transformation is a no-op,
+    """Transformer for non-BND events. Currently, the transformation is a no-op.
+
     but the structure is in place for future transformation strategies.
     """
 

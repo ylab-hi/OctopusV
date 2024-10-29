@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import typer
+
 from octopusv.converter.base import get_alt_chrom_pos
 from octopusv.converter.bnd2dup import BND_to_DUP_Converter
 from octopusv.converter.bnd2inv import BND_to_INV_Converter

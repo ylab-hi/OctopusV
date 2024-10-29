@@ -4,6 +4,7 @@ from .TRA_merge_logic import should_merge_tra
 
 class TRAMerger:
     """A specialized merger class for handling translocation (TRA) structural variants.
+
     Implements clustering and merging of TRA events between chromosome pairs.
 
     The merger maintains a collection of TRA events organized by chromosome pairs
