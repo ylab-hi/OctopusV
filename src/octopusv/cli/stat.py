@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import typer
-
 from octopusv.stater.sv_stater import SVStater
 
 

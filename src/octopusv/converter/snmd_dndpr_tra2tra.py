@@ -6,9 +6,7 @@ from .base import (
 
 
 class SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter(Converter):
-    """This class inherits from the `Converter` base class and implements
-    the conversion logic for reciprocal translocation.
-    """
+    """This class inherits from the `Converter` base class and implements the conversion logic for reciprocal translocation."""
 
     def convert(self, pair):
         event1, event2 = pair

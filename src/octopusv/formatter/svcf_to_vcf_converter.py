@@ -10,14 +10,14 @@ class SVCFtoVCFConverter:
         return vcf_content
 
     def _generate_vcf_header(self):
-        # 读取输入 SVCF 文件中的 contig 信息
+        # read contig info from SVCF
         contig_lines = ""
         with open(self.input_svcf_file) as f:
             for line in f:
                 if line.startswith("##contig"):
                     contig_lines += line
                 elif line.startswith("#CHROM"):
-                    break  # 到达列名，停止读取头部
+                    break
 
         header = f"""##fileformat=VCFv4.2
 {contig_lines}##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">

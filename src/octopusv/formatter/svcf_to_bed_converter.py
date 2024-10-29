@@ -14,10 +14,7 @@ class SVCFtoBEDConverter:
         return bed_content
 
     def _convert_event_to_bed(self, event):
-        """Convert SVCF event to BED format
-        Minimal BED format: chrom start end
-        Standard BED format: chrom start end name score strand
-        """
+        """Convert SVCF event to BED format Minimal BED format: chrom start end Standard BED format: chrom start end name score strand."""
         try:
             chrom = event.chrom
             start = int(event.pos) - 1  # BED is 0-based
