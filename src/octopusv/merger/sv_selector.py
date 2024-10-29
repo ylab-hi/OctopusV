@@ -33,8 +33,7 @@ def get_caller_score(caller_name, caller_priority_list):
         # If caller not in priority list, rank it last
         rank = len(caller_priority_list) + 1
     total_callers = len(caller_priority_list) + 1
-    score = (total_callers - rank + 1) / total_callers * 10
-    return score
+    return (total_callers - rank + 1) / total_callers * 10
 
 
 def select_representative_sv(sv_group, weights=None, max_support=30, max_qual=100):

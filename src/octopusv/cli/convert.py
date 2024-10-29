@@ -194,7 +194,6 @@ def find_mate_bnd_events(events, pos_tolerance=3):
 def find_no_mate_events(events, pos_tolerance=3):
     """Find no mate events. The main idea is to store events in list to avoid overriding in event_dict."""
     event_dict = {}
-    no_mate_events = []
     mate_bnd_pairs = []
 
     for event in events:
@@ -234,9 +233,8 @@ def find_no_mate_events(events, pos_tolerance=3):
             event_dict[key].append(event)  # # Add the event to the list under its key.
 
     # Flattening the list of events from all keys
-    no_mate_events = [single_event for event_list in event_dict.values() for single_event in event_list]
+    return [single_event for event_list in event_dict.values() for single_event in event_list]
 
-    return no_mate_events
 
 
 def find_special_no_mate_diff_bnd_pair_and_other_single_tra(

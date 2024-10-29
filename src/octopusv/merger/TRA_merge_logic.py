@@ -1,6 +1,6 @@
 def should_merge_tra(event1, event2, delta=50, min_overlap_ratio=0.5, strand_consistency=True):
     # 检查染色体配对一致性
-    if set([event1.start_chrom, event1.end_chrom]) != set([event2.start_chrom, event2.end_chrom]):
+    if {event1.start_chrom, event1.end_chrom} != {event2.start_chrom, event2.end_chrom}:
         return False
 
     # 检查方向性一致性

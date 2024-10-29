@@ -19,7 +19,7 @@ class SVCFtoBEDPEConverter:
         return bedpe_content
 
     def _convert_event_to_bedpe(self, event):
-        """Convert SVCF event to BEDPE format"""
+        """Convert SVCF event to BEDPE format."""
         try:
             # Process first breakpoint
             chrom1 = event.chrom

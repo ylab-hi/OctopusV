@@ -37,9 +37,6 @@ def construct_sample_string(sv_event):
         end = sv_event.pos + int(svlen)  # Adjust end based on the length of the insertion
 
     # Build CO
-    if chr2 != "." and end != ".":
-        co = f"{sv_event.chrom}_{sv_event.pos}-{chr2}_{end}"
-    else:
-        co = "."
+    co = f"{sv_event.chrom}_{sv_event.pos}-{chr2}_{end}" if chr2 != "." and end != "." else "."
 
     return f"{gt}:{ad}:{ln}:{st}:{qv}:{ty}:{id_}:{sc}:{ref}:{alt}:{co}"

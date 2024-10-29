@@ -95,7 +95,7 @@ class TypePlotter:
             autopct="%1.1f%%",
             startangle=90,
             colors=colors,
-            wedgeprops=dict(width=0.5, edgecolor="white", linewidth=2),
+            wedgeprops={"width": 0.5, "edgecolor": "white", "linewidth": 2},
         )
 
         # Add center circle for donut chart with refined border

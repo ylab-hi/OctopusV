@@ -19,7 +19,7 @@ class SVCFtoVCFConverter:
                 elif line.startswith("#CHROM"):
                     break
 
-        header = f"""##fileformat=VCFv4.2
+        return f"""##fileformat=VCFv4.2
 {contig_lines}##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
 ##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
 ##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">
@@ -37,7 +37,6 @@ class SVCFtoVCFConverter:
 ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth">
 ##FORMAT=<ID=LN,Number=1,Type=Integer,Description="Length of SV">
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSample\n"""
-        return header
 
     def _convert_event_to_vcf(self, event):
         chrom = event.chrom
@@ -49,10 +48,7 @@ class SVCFtoVCFConverter:
         filter = event.filter if hasattr(event, "filter") else "PASS"
 
         # 调整插入的 END
-        if event.sv_type == "INS":
-            end_pos = event.pos
-        else:
-            end_pos = event.end_pos
+        end_pos = event.pos if event.sv_type == "INS" else event.end_pos
 
         info_fields = [f"SVTYPE={event.sv_type}", f"END={end_pos}"]
 

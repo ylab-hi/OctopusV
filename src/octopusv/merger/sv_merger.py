@@ -27,7 +27,7 @@ class SVMerger:
     def merge(self):
         for sv_type, chromosomes in self.classified_events.items():
             if sv_type == "TRA":
-                for (chr1, chr2), events in chromosomes.items():
+                for (_chr1, _chr2), events in chromosomes.items():
                     for event in events:
                         self.tra_merger.add_event(event)
             else:
@@ -90,7 +90,8 @@ class SVMerger:
             tra_filtered = [event for event in tra_events if set(event.source_file.split(",")) == set(sources)]
             other_filtered = [event for event in other_events if set(event.source_file.split(",")) == set(sources)]
         else:
-            raise ValueError(f"Unsupported operation: {operation}")
+            msg = f"Unsupported operation: {operation}"
+            raise ValueError(msg)
 
         return other_filtered + tra_filtered
 

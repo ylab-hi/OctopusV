@@ -50,7 +50,7 @@ class SVBencher:
 
         for sv_type, chromosomes in self.call_events.items():
             if sv_type == "TRA":
-                for (chr1, chr2), events in chromosomes.items():
+                for (chr1, _chr2), events in chromosomes.items():
                     for event in events:
                         matched_events = sv_merger.get_events(sv_type, chr1, event.start_pos, event.end_pos)
                         if matched_events:
@@ -90,7 +90,7 @@ class SVBencher:
 
         for sv_type, chromosomes in self.truth_events.items():
             if sv_type == "TRA":
-                for (chr1, chr2), events in chromosomes.items():
+                for (chr1, _chr2), events in chromosomes.items():
                     for event in events:
                         if event not in tp_base:
                             fn.append(

@@ -47,7 +47,7 @@ class SVCFtoBEDConverter:
             score = event.info.get("SUPPORT", event.quality if hasattr(event, "quality") else "0")
 
             strand = event.info.get("STRAND", ".")
-            if strand == "+-" or strand == "-+":
+            if strand in ("+-", "-+"):
                 strand = "-"
             elif strand == "++":
                 strand = "+"

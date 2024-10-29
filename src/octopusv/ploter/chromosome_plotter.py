@@ -39,7 +39,7 @@ class ChromosomePlotter:
         self.data = self.parse_data()
 
     def parse_data(self):
-        """Parse the statistics file and extract chromosome data"""
+        """Parse the statistics file and extract chromosome data."""
         chromosome_order = [f"chr{i}" for i in range(1, 23)] + ["chrX", "chrY"]
         chromosome_data = {chrom: {"count": 0, "density": 0} for chrom in chromosome_order}
 
@@ -73,7 +73,7 @@ class ChromosomePlotter:
         return chromosome_data
 
     def plot(self, output_prefix):
-        """Create and save the chromosome distribution plot"""
+        """Create and save the chromosome distribution plot."""
         if not self.data:
             logging.error("No data to plot")
             return
