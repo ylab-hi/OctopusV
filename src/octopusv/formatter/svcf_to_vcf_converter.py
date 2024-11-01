@@ -87,7 +87,7 @@ class SVCFtoVCFConverter:
         return f"{chrom}\t{pos}\t{id}\t{ref}\t{alt}\t{qual}\t{filter}\t{info}\t{format}\t{sample}\n"
 
     def _get_alt(self, event):
-        if event.alt and event.alt != "N" and event.alt != ".":
+        if event.alt and event.alt not in ("N", "."):
             return event.alt
         return f"<{event.sv_type}>"
 
