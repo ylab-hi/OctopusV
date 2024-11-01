@@ -16,7 +16,7 @@ class NonBNDConverter(Converter):
             event.info["SVTYPE"] = svtype
         else:
             # If SVTYPE is not among the specified types, print a warning or keep it unchanged
-            print(f"Warning: Simplified SVTYPE '{svtype}' is not one of the allowed types. Keeping original SVTYPE.")
+            logging.warning(f"Simplified SVTYPE '{svtype}' is not one of the allowed types. Keeping original SVTYPE.")
 
         # Only set CHR2 if it does not already exist
         if "CHR2" not in event.info:
@@ -32,7 +32,7 @@ class NonBNDConverter(Converter):
                 end = int(event.info["END"])
                 event.info["SVLEN"] = abs(end - pos)
             except (ValueError, KeyError):
-                print(f"Error: Unable to calculate SVLEN for event {event.id}")
+                logging.error(f"Unable to calculate SVLEN for event {event.id}")
 
         if svtype == "TRA":
             event.info["SVLEN"] = "."

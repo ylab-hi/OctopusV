@@ -1,3 +1,5 @@
+import logging
+
 from .base import Converter, get_alt_chrom_pos, get_bnd_pattern
 
 
@@ -11,7 +13,7 @@ class BND_to_DUP_Converter(Converter):
                 if pattern in ["]p]t", "t[p["]:
                     chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
                     if chrom_alt is None:
-                        print("Failed to get ALT chrom and pos")
+                        logging.info("Failed to get ALT chrom and pos")
                     elif event.chrom == chrom_alt:
                         if pattern == "]p]t" and event.pos < pos_alt:
                             end = pos_alt
@@ -23,7 +25,7 @@ class BND_to_DUP_Converter(Converter):
                             event.pos = pos_alt
                             self.convert_to_DUP(event, end, svlen, chrom_alt)
         except Exception as e:
-            print("Failed to convert BND to Duplication: ", e)
+            logging.error("Failed to convert BND to Duplication: ", e)
 
     def convert_to_DUP(self, event, end, svlen, chrom_alt):
         event.alt = "<DUP>"

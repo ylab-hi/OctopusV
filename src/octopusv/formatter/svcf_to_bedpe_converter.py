@@ -1,3 +1,6 @@
+import logging
+
+
 class SVCFtoBEDPEConverter:
     def __init__(self, events, minimal=False):
         self.events = events
@@ -61,5 +64,5 @@ class SVCFtoBEDPEConverter:
             return f"{chrom1}\t{start1}\t{end1}\t{chrom2}\t{start2}\t{end2}\t{name}\t{score}\t{strand1}\t{strand2}\t{svtype}\t{svlen}\n"
 
         except (AttributeError, ValueError) as e:
-            print(f"Warning: Could not convert event {event.sv_id}: {e!s}")
+            logging.error(f"Warning: Could not convert event {event.sv_id}: {e!s}")
             return None

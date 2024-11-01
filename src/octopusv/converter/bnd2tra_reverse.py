@@ -1,3 +1,5 @@
+import logging
+
 from .base import Converter, get_alt_chrom_pos, get_bnd_pattern
 
 
@@ -11,13 +13,13 @@ class BND_to_TRA_Reverse_Converter(Converter):
                 if pattern in ["[p[t", "t]p]"]:
                     chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
                     if chrom_alt is None:
-                        print("Failed to get ALT chrom and pos")
+                        logging.info("Failed to get ALT chrom and pos")
                     elif event.chrom == chrom_alt:
                         if pattern == "t]p]" and event.pos > pos_alt or pattern == "[p[t" and event.pos < pos_alt:
                             end = pos_alt
                             self.convert_to_TRA_reverse(event, end)
         except Exception as e:
-            print("Failed to convert BND to Translocation: ", e)
+            logging.error("Failed to convert BND to Translocation: ", e)
 
     def convert_to_TRA_reverse(self, event, end):
         event.info["SVTYPE"] = "TRA"

@@ -45,7 +45,7 @@ class SVCFEvent:
         try:
             self.start_chrom, self.start_pos, self.end_chrom, self.end_pos = self._parse_coordinates()
         except Exception as e:
-            print(f"Warning: Error parsing coordinates for {self.sv_id} in {self.source_file}: {e}")
+            logging.warning(f"Warning: Error parsing coordinates for {self.sv_id} in {self.source_file}: {e}")
             # Use default values as fallback options
             self.start_chrom, self.start_pos = self.chrom, self.pos
             self.end_chrom = self.info.get("CHR2", self.chrom)
@@ -56,7 +56,7 @@ class SVCFEvent:
                 try:
                     self.end_pos = int(end_value)
                 except ValueError:
-                    print(f"Invalid END value: {end_value}, setting end_pos to start_pos")
+                    logging.error(f"Invalid END value: {end_value}, setting end_pos to start_pos")
                     self.end_pos = self.start_pos
 
     def _extract_bnd_pattern(self):
@@ -125,8 +125,8 @@ class SVCFEvent:
                 try:
                     end_pos = int(end_pos_str)
                 except ValueError:
-                    print(
-                        f"Warning: Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos."
+                    logging.warning(
+                        f"Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos."
                     )
                     end_pos = self.pos
                 return self.chrom, self.pos, end_chrom, end_pos
@@ -136,8 +136,8 @@ class SVCFEvent:
             try:
                 end_pos = int(end_pos_str)
             except ValueError:
-                print(
-                    f"Warning: Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos."
+                logging.warning(
+                    f"Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos."
                 )
                 end_pos = self.pos
             return self.chrom, self.pos, end_chrom, end_pos
@@ -166,8 +166,8 @@ class SVCFEvent:
             try:
                 end_pos = int(end_pos_str)
             except ValueError:
-                print(
-                    f"Warning: Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos."
+                logging.warning(
+                    f"Invalid end_pos '{end_pos_str}' for SV {self.sv_id} in {self.source_file}, setting end_pos to start_pos."
                 )
                 end_pos = self.pos
         return start_chrom, start_pos, end_chrom, end_pos

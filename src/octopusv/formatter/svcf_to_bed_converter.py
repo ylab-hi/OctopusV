@@ -57,5 +57,5 @@ class SVCFtoBEDConverter:
             return f"{chrom}\t{start}\t{end}\t{name}\t{score}\t{strand}\n"
 
         except (AttributeError, ValueError) as e:
-            print(f"Warning: Could not convert event {event.sv_id}: {e!s}")
+            typer.echo(f"Warning: Could not convert event {event.sv_id}: {e!s}")
             return None

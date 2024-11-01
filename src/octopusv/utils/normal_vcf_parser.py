@@ -1,3 +1,4 @@
+import logging
 import re
 import sys
 
@@ -9,7 +10,7 @@ def is_same_chr_bnd(event):
     if event.is_BND():
         split_result = re.split(r"[\[\]:]", event.alt)
         if len(split_result) != 4:
-            print(
+            logging.info(
                 f"Unexpected ALT format, it should be something like N]chr10:69650962]: {split_result}",
             )
         else:
@@ -29,8 +30,8 @@ def check_vcf_format(vcf_file_path):
 
     # Check if there is at least one header line
     if not any(line.startswith("#") for line in lines):
-        print(
-            "ERROR: Invalid VCF format. The file should contain at least one header line starting with '#'.",
+        logging.error(
+            "Invalid VCF format. The file should contain at least one header line starting with '#'.",
         )
         sys.exit(1)
 
@@ -40,8 +41,8 @@ def check_vcf_format(vcf_file_path):
 
         # Check for space in lines
         if " " in line:
-            print(
-                "ERROR: Invalid VCF format. Non-header lines should not contain spaces.",
+            logging.error(
+                "Invalid VCF format. Non-header lines should not contain spaces.",
             )
             sys.exit(1)
 
@@ -49,8 +50,8 @@ def check_vcf_format(vcf_file_path):
 
         # Check the number of columns
         if len(fields) < 10:
-            print(
-                f"ERROR: Invalid VCF format. Expected at least 10 fields, but got {len(fields)}",
+            logging.error(
+                f"Invalid VCF format. Expected at least 10 fields, but got {len(fields)}",
             )
             sys.exit(1)
 
@@ -58,8 +59,8 @@ def check_vcf_format(vcf_file_path):
         try:
             int(fields[1])
         except ValueError:
-            print(
-                f"ERROR: Invalid VCF format. Position (field 2) should be a number, but got {fields[1]}",
+            logging.error(
+                f"Invalid VCF format. Position (field 2) should be a number, but got {fields[1]}",
             )
             sys.exit(1)
 
@@ -68,8 +69,8 @@ def check_vcf_format(vcf_file_path):
             try:
                 float(fields[5])
             except ValueError:
-                print(
-                    f"ERROR: Invalid VCF format. Quality score (field 6) should be a number or '.', but got {fields[5]}",
+                logging.error(
+                    f"Invalid VCF format. Quality score (field 6) should be a number or '.', but got {fields[5]}",
                 )
                 sys.exit(1)
 

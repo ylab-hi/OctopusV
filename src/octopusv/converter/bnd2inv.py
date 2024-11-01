@@ -1,3 +1,5 @@
+import logging
+
 from .base import Converter, get_alt_chrom_pos, get_bnd_pattern
 
 
@@ -13,7 +15,7 @@ class BND_to_INV_Converter(Converter):
             if pattern in ("t]p]", "[p[t"):
                 chrom_alt, pos_alt = get_alt_chrom_pos(event.alt)
                 if chrom_alt is None:
-                    print("Failed to get ALT chrom and pos")
+                    logging.info("Failed to get ALT chrom and pos")
                 elif event.chrom == chrom_alt:  # Do this only when same chromosome
                     if pattern == "t]p]" and event.pos < pos_alt:
                         end = pos_alt
@@ -28,7 +30,7 @@ class BND_to_INV_Converter(Converter):
                         self.convert_to_inv(event, end, svlen, chrom_alt)
 
         except Exception as e:
-            print("Failed to convert BND to Inversion: ", e)
+            logging.error("Failed to convert BND to Inversion: ", e)
 
     def convert_to_inv(self, event, end, svlen, chrom_alt):
         # Detail logic changing BND event to INV event
