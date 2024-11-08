@@ -113,7 +113,12 @@ class SVMerger:
             elif value is None:
                 value = "."
             values.append(str(value))
-        return ":".join(values)
+
+        # Remove the :.: at the end if it exists
+        result = ":".join(values)
+        if result.endswith(":.:."):
+            result = result[:-4]
+        return result
 
     def write_results(self, output_file, events, contigs):
         with open(output_file, "w") as f:
@@ -169,9 +174,14 @@ class SVMerger:
                             for key in format_keys:
                                 value = sample_data.get(key, ".")
                                 values.append(str(value))
-                            sample_strings.append(":".join(values))
+                            sample_str = ":".join(values)
+                            if sample_str.endswith(":.:."):
+                                sample_str = sample_str[:-4]
+                            sample_strings.append(sample_str)
                         else:
-                            sample_strings.append(sample_data)
+                            if str(sample_data).endswith(":.:."):
+                                sample_data = str(sample_data)[:-4]
+                            sample_strings.append(str(sample_data))
 
                     # Add other samples
                     for _, _, sample_data in other_samples:
@@ -180,13 +190,20 @@ class SVMerger:
                             for key in format_keys:
                                 value = sample_data.get(key, ".")
                                 values.append(str(value))
-                            sample_strings.append(":".join(values))
+                            sample_str = ":".join(values)
+                            if sample_str.endswith(":.:."):
+                                sample_str = sample_str[:-4]
+                            sample_strings.append(sample_str)
                         else:
-                            sample_strings.append(sample_data)
+                            if str(sample_data).endswith(":.:."):
+                                sample_data = str(sample_data)[:-4]
+                            sample_strings.append(str(sample_data))
 
                     sample_part = "\t".join(sample_strings)
                 elif hasattr(event, "sample"):
                     formatted_values = self.format_sample_values(format_keys, event.sample)
+                    if formatted_values.endswith(":.:."):
+                        formatted_values = formatted_values[:-4]
                     sample_part = formatted_values
                 else:
                     sample_part = "./."
