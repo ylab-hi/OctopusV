@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List  # 导入 List 类型
 import typer
 from octopusv.merger.sv_merger import SVMerger
 from octopusv.utils.SV_classifier_by_chromosome import SVClassifiedByChromosome
@@ -38,12 +39,12 @@ def get_contigs_from_svcf(filenames):
     return contigs
 
 def merge(
-    input_files: list[Path] | None = typer.Argument(None, help="List of input SVCF files to merge."),
-    input_option: list[Path] | None = typer.Option(None, "--input-file", "-i", help="Input SVCF files to merge."),
+    input_files: List[Path] = typer.Argument(None, help="List of input SVCF files to merge."),
+    input_option: List[Path] = typer.Option(None, "--input-file", "-i", help="Input SVCF files to merge."),
     output_file: Path = typer.Option(..., "--output-file", "-o", help="Output file for merged SV data."),
     intersect: bool = typer.Option(False, "--intersect", help="Apply intersection strategy for merging."),
     union: bool = typer.Option(False, "--union", help="Apply union strategy for merging."),
-    specific: list[Path] = typer.Option(
+    specific: List[Path] = typer.Option(
         None, "--specific", help="Extract SVs that are specifically supported by provided files."
     ),
     min_support: int = typer.Option(
@@ -70,7 +71,9 @@ def merge(
     tra_delta: int = typer.Option(
         50, "--tra-delta", help="Position uncertainty threshold for TRA events (in base pairs)."
     ),
-    tra_min_overlap_ratio: float = typer.Option(0.5, "--tra-min-overlap", help="Minimum overlap ratio for TRA events."),
+    tra_min_overlap_ratio: float = typer.Option(
+        0.5, "--tra-min-overlap", help="Minimum overlap ratio for TRA events."
+    ),
     tra_strand_consistency: bool = typer.Option(
         True, "--tra-strand-consistency", help="Whether to require strand consistency for TRA events."
     ),
@@ -102,6 +105,7 @@ def merge(
 
     sv_merger = SVMerger(
         chromosome_classifier.get_classified_events(),
+        all_input_files=input_filenames,
         tra_delta=tra_delta,
         tra_min_overlap_ratio=tra_min_overlap_ratio,
         tra_strand_consistency=tra_strand_consistency,
@@ -118,7 +122,9 @@ def merge(
     elif union:
         results = sv_merger.get_events_by_source([str(file) for file in all_input_files], operation="union")
     elif specific:
-        results = sv_merger.get_events_by_source([str(file) for file in specific], operation="specific")
+        # Ensure that specific is a list of strings
+        specific_files = [str(file) for file in specific]
+        results = sv_merger.get_events_by_source(specific_files, operation="specific")
     elif exact_support is not None:
         results = sv_merger.get_events_by_exact_support(exact_support)
     elif min_support is not None or max_support is not None:

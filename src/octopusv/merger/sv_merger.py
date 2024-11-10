@@ -1,4 +1,6 @@
 import datetime
+import os
+import re
 from .sv_merge_logic import should_merge
 from .sv_selector import select_representative_sv
 from .tra_merger import TRAMerger
@@ -8,6 +10,7 @@ class SVMerger:
     def __init__(
             self,
             classified_events,
+            all_input_files,
             tra_delta=50,
             tra_min_overlap_ratio=0.5,
             tra_strand_consistency=True,
@@ -16,6 +19,7 @@ class SVMerger:
             min_jaccard=0.7,
     ):
         self.classified_events = classified_events
+        self.all_input_files = [str(file) for file in all_input_files]
         self.merged_events: dict[str, dict[str, list]] = {}
         self.event_groups: dict[str, dict[str, list[list]]] = {}
         self.tra_merger = TRAMerger(tra_delta, tra_min_overlap_ratio, tra_strand_consistency)
@@ -72,22 +76,40 @@ class SVMerger:
         return merged_events
 
     def get_events_by_source(self, sources, operation="union"):
+        """Get events based on source files and specified operation."""
         tra_events = self.tra_merger.get_merged_events()
         other_events = self.get_all_merged_events()
 
+        # Normalize sources to basenames
+        sources_set = set([os.path.basename(source) for source in sources])
+
         if operation == "union":
-            tra_filtered = [event for event in tra_events if any(source in event.source_file for source in sources)]
+            tra_filtered = [
+                event for event in tra_events
+                if sources_set.intersection(set([os.path.basename(s) for s in event.source_file.split(",")]))
+            ]
             other_filtered = [
-                event for event in other_events if any(source in event.source_file.split(",") for source in sources)
+                event for event in other_events
+                if sources_set.intersection(set([os.path.basename(s) for s in event.source_file.split(",")]))
             ]
         elif operation == "intersection":
-            tra_filtered = [event for event in tra_events if all(source in event.source_file for source in sources)]
+            tra_filtered = [
+                event for event in tra_events
+                if sources_set.issubset(set([os.path.basename(s) for s in event.source_file.split(",")]))
+            ]
             other_filtered = [
-                event for event in other_events if all(source in event.source_file.split(",") for source in sources)
+                event for event in other_events
+                if sources_set.issubset(set([os.path.basename(s) for s in event.source_file.split(",")]))
             ]
         elif operation == "specific":
-            tra_filtered = [event for event in tra_events if set(event.source_file.split(",")) == set(sources)]
-            other_filtered = [event for event in other_events if set(event.source_file.split(",")) == set(sources)]
+            tra_filtered = [
+                event for event in tra_events
+                if set([os.path.basename(s) for s in event.source_file.split(",")]) == sources_set
+            ]
+            other_filtered = [
+                event for event in other_events
+                if set([os.path.basename(s) for s in event.source_file.split(",")]) == sources_set
+            ]
         else:
             msg = f"Unsupported operation: {operation}"
             raise ValueError(msg)
@@ -122,22 +144,34 @@ class SVMerger:
 
     def evaluate_expression(self, expression, event_sources):
         """Evaluate a logical expression against event sources."""
-        # Convert file paths to simple identifiers (A, B, C, etc.)
-        source_map = {chr(65 + i): str(source) for i, source in enumerate(set(event_sources))}
-        reverse_map = {v: k for k, v in source_map.items()}
+        # Function to convert file names to valid Python identifiers
+        def make_identifier(file_path):
+            # Extract basename to ensure consistency
+            file_name = os.path.basename(file_path)
+            # Replace non-alphanumeric characters with underscores
+            identifier = re.sub(r'\W|^(?=\d)', '_', file_name)
+            return identifier
 
-        # Replace file paths with identifiers in the expression
+        # Build context for all input files
+        context = {}
+        all_sources = set(self.all_input_files)
+        for source in all_sources:
+            identifier = make_identifier(source)
+            context[identifier] = False  # Initialize all to False
+
+        # Set True for event_sources
+        for source in event_sources:
+            identifier = make_identifier(source)
+            context[identifier] = True
+
+        # Replace file names in expression with identifiers
         expr = expression
-        for file_path, identifier in reverse_map.items():
-            expr = expr.replace(str(file_path), identifier)
+        for source in all_sources:
+            identifier = make_identifier(source)
+            # Use regex to replace exact file names to avoid partial matches
+            expr = re.sub(r'\b' + re.escape(os.path.basename(source)) + r'\b', identifier, expr)
 
-        # Convert event sources to identifiers
-        event_identifiers = {reverse_map[str(source)] for source in event_sources}
-
-        # Create evaluation context
-        context = {identifier: identifier in event_identifiers for identifier in source_map.keys()}
-
-        # Convert expression to Python boolean expression
+        # Convert logical operators to Python syntax
         expr = expr.replace("AND", "and").replace("OR", "or").replace("NOT", "not")
 
         try:
@@ -152,11 +186,11 @@ class SVMerger:
 
         tra_filtered = [
             event for event in tra_events
-            if self.evaluate_expression(expression, event.source_file.split(","))
+            if self.evaluate_expression(expression, [os.path.basename(s) for s in event.source_file.split(",")])
         ]
         other_filtered = [
             event for event in other_events
-            if self.evaluate_expression(expression, event.source_file.split(","))
+            if self.evaluate_expression(expression, [os.path.basename(s) for s in event.source_file.split(",")])
         ]
         return other_filtered + tra_filtered
 
