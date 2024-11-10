@@ -18,6 +18,19 @@ class SVMerger:
             max_length_ratio=1.3,
             min_jaccard=0.7,
     ):
+        """
+        Initialize SVMerger with the given parameters and events.
+
+        Args:
+            classified_events: Dictionary of classified SV events
+            all_input_files: List of all input file paths
+            tra_delta: Position uncertainty threshold for TRA events
+            tra_min_overlap_ratio: Minimum overlap ratio for TRA events
+            tra_strand_consistency: Whether to require strand consistency for TRA events
+            max_distance: Maximum allowed distance between start or end positions
+            max_length_ratio: Maximum allowed ratio between event lengths
+            min_jaccard: Minimum required Jaccard index for overlap
+        """
         self.classified_events = classified_events
         self.all_input_files = [str(file) for file in all_input_files]
         self.merged_events: dict[str, dict[str, list]] = {}
@@ -28,6 +41,7 @@ class SVMerger:
         self.min_jaccard = min_jaccard
 
     def merge(self):
+        """Merge all SV events based on their types and chromosomes."""
         for sv_type, chromosomes in self.classified_events.items():
             if sv_type == "TRA":
                 for (_chr1, _chr2), events in chromosomes.items():
@@ -45,6 +59,7 @@ class SVMerger:
                         self.add_and_merge_event(sv_type, chromosome, event)
 
     def add_and_merge_event(self, sv_type, chromosome, new_event):
+        """Add a new event and merge it with existing events if possible."""
         events = self.merged_events[sv_type][chromosome]
         event_groups = self.event_groups[sv_type][chromosome]
         for idx, existing_event in enumerate(events):
@@ -55,6 +70,7 @@ class SVMerger:
         event_groups.append([new_event])
 
     def get_events(self, sv_type, chromosome, start, end):
+        """Get events of given type within the specified region."""
         if sv_type == "TRA":
             return self.tra_merger.get_merged_events()
         if sv_type in self.event_groups and chromosome in self.event_groups[sv_type]:
@@ -67,6 +83,7 @@ class SVMerger:
         return []
 
     def get_all_merged_events(self):
+        """Get all merged events across all types and chromosomes."""
         merged_events = []
         for sv_type in self.event_groups:
             for chromosome in self.event_groups[sv_type]:
@@ -76,7 +93,13 @@ class SVMerger:
         return merged_events
 
     def get_events_by_source(self, sources, operation="union"):
-        """Get events based on source files and specified operation."""
+        """
+        Get events based on their source files and specified operation.
+
+        Args:
+            sources: List of source file paths
+            operation: One of "union", "intersection", or "unique"
+        """
         tra_events = self.tra_merger.get_merged_events()
         other_events = self.get_all_merged_events()
 
@@ -101,14 +124,22 @@ class SVMerger:
                 event for event in other_events
                 if sources_set.issubset(set([os.path.basename(s) for s in event.source_file.split(",")]))
             ]
-        elif operation == "specific":
+        elif operation == "unique":
+            # Get the target file and all other files
+            source_file = list(sources_set)[0]
+            other_files = set([os.path.basename(f) for f in self.all_input_files]) - {source_file}
+
             tra_filtered = [
                 event for event in tra_events
-                if set([os.path.basename(s) for s in event.source_file.split(",")]) == sources_set
+                if source_file in [os.path.basename(s) for s in event.source_file.split(",")]
+                and not any(other in [os.path.basename(s) for s in event.source_file.split(",")]
+                            for other in other_files)
             ]
             other_filtered = [
                 event for event in other_events
-                if set([os.path.basename(s) for s in event.source_file.split(",")]) == sources_set
+                if source_file in [os.path.basename(s) for s in event.source_file.split(",")]
+                and not any(other in [os.path.basename(s) for s in event.source_file.split(",")]
+                            for other in other_files)
             ]
         else:
             msg = f"Unsupported operation: {operation}"
@@ -144,6 +175,7 @@ class SVMerger:
 
     def evaluate_expression(self, expression, event_sources):
         """Evaluate a logical expression against event sources."""
+
         # Function to convert file names to valid Python identifiers
         def make_identifier(file_path):
             # Extract basename to ensure consistency
@@ -212,6 +244,7 @@ class SVMerger:
         return result
 
     def write_results(self, output_file, events, contigs):
+        """Write merged results to output file."""
         with open(output_file, "w") as f:
             # Write VCF header
             f.write("##fileformat=SVCFv1.0\n")

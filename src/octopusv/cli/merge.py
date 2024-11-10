@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List  # 导入 List 类型
+from typing import List
 import typer
 from octopusv.merger.sv_merger import SVMerger
 from octopusv.utils.SV_classifier_by_chromosome import SVClassifiedByChromosome
@@ -44,8 +44,8 @@ def merge(
     output_file: Path = typer.Option(..., "--output-file", "-o", help="Output file for merged SV data."),
     intersect: bool = typer.Option(False, "--intersect", help="Apply intersection strategy for merging."),
     union: bool = typer.Option(False, "--union", help="Apply union strategy for merging."),
-    specific: List[Path] = typer.Option(
-        None, "--specific", help="Extract SVs that are specifically supported by provided files."
+    unique: Path = typer.Option(
+        None, "--unique", help="Extract SVs that are uniquely supported by a single provided file."
     ),
     min_support: int = typer.Option(
         None, "--min-support", help="Minimum number of files that must support an SV."
@@ -85,9 +85,6 @@ def merge(
     if not all_input_files:
         typer.echo("Error: No input files provided.", err=True)
         raise typer.Exit(code=1)
-    if specific and not specific[0]:
-        typer.echo("Error: --specific option requires at least one file.", err=True)
-        raise typer.Exit(code=1)
     if min_support is not None and min_support < 1:
         typer.echo("Error: --min-support must be a positive integer.", err=True)
         raise typer.Exit(code=1)
@@ -121,17 +118,15 @@ def merge(
         results = sv_merger.get_events_by_source([str(file) for file in all_input_files], operation="intersection")
     elif union:
         results = sv_merger.get_events_by_source([str(file) for file in all_input_files], operation="union")
-    elif specific:
-        # Ensure that specific is a list of strings
-        specific_files = [str(file) for file in specific]
-        results = sv_merger.get_events_by_source(specific_files, operation="specific")
+    elif unique:
+        results = sv_merger.get_events_by_source([str(unique)], operation="unique")
     elif exact_support is not None:
         results = sv_merger.get_events_by_exact_support(exact_support)
     elif min_support is not None or max_support is not None:
         results = sv_merger.get_events_by_support_range(min_support, max_support)
     else:
         raise ValueError(
-            "No merge strategy specified. Please use --intersect, --union, --specific, "
+            "No merge strategy specified. Please use --intersect, --union, --unique, "
             "--min-support, --exact-support, --max-support, or --expression."
         )
 
