@@ -1,5 +1,4 @@
 import datetime
-
 from .sv_merge_logic import should_merge
 from .sv_selector import select_representative_sv
 from .tra_merger import TRAMerger
@@ -7,14 +6,14 @@ from .tra_merger import TRAMerger
 
 class SVMerger:
     def __init__(
-        self,
-        classified_events,
-        tra_delta=50,
-        tra_min_overlap_ratio=0.5,
-        tra_strand_consistency=True,
-        max_distance=50,
-        max_length_ratio=1.3,
-        min_jaccard=0.7,
+            self,
+            classified_events,
+            tra_delta=50,
+            tra_min_overlap_ratio=0.5,
+            tra_strand_consistency=True,
+            max_distance=50,
+            max_length_ratio=1.3,
+            min_jaccard=0.7,
     ):
         self.classified_events = classified_events
         self.merged_events: dict[str, dict[str, list]] = {}
@@ -95,12 +94,70 @@ class SVMerger:
 
         return other_filtered + tra_filtered
 
-    def get_events_by_overlap(self, min_overlap):
+    def get_events_by_exact_support(self, exact_support):
+        """Get events supported by exactly N files."""
         tra_events = self.tra_merger.get_merged_events()
         other_events = self.get_all_merged_events()
 
-        tra_filtered = [event for event in tra_events if len(set(event.source_file.split(","))) >= min_overlap]
-        other_filtered = [event for event in other_events if len(set(event.source_file.split(","))) >= min_overlap]
+        tra_filtered = [event for event in tra_events if len(set(event.source_file.split(","))) == exact_support]
+        other_filtered = [event for event in other_events if len(set(event.source_file.split(","))) == exact_support]
+        return other_filtered + tra_filtered
+
+    def get_events_by_support_range(self, min_support=None, max_support=None):
+        """Get events supported by a range of files."""
+        tra_events = self.tra_merger.get_merged_events()
+        other_events = self.get_all_merged_events()
+
+        def within_range(event):
+            support_count = len(set(event.source_file.split(",")))
+            if min_support is not None and support_count < min_support:
+                return False
+            if max_support is not None and support_count > max_support:
+                return False
+            return True
+
+        tra_filtered = [event for event in tra_events if within_range(event)]
+        other_filtered = [event for event in other_events if within_range(event)]
+        return other_filtered + tra_filtered
+
+    def evaluate_expression(self, expression, event_sources):
+        """Evaluate a logical expression against event sources."""
+        # Convert file paths to simple identifiers (A, B, C, etc.)
+        source_map = {chr(65 + i): str(source) for i, source in enumerate(set(event_sources))}
+        reverse_map = {v: k for k, v in source_map.items()}
+
+        # Replace file paths with identifiers in the expression
+        expr = expression
+        for file_path, identifier in reverse_map.items():
+            expr = expr.replace(str(file_path), identifier)
+
+        # Convert event sources to identifiers
+        event_identifiers = {reverse_map[str(source)] for source in event_sources}
+
+        # Create evaluation context
+        context = {identifier: identifier in event_identifiers for identifier in source_map.keys()}
+
+        # Convert expression to Python boolean expression
+        expr = expr.replace("AND", "and").replace("OR", "or").replace("NOT", "not")
+
+        try:
+            return eval(expr, {"__builtins__": {}}, context)
+        except Exception as e:
+            raise ValueError(f"Invalid expression: {e}")
+
+    def get_events_by_expression(self, expression):
+        """Get events that satisfy a logical expression."""
+        tra_events = self.tra_merger.get_merged_events()
+        other_events = self.get_all_merged_events()
+
+        tra_filtered = [
+            event for event in tra_events
+            if self.evaluate_expression(expression, event.source_file.split(","))
+        ]
+        other_filtered = [
+            event for event in other_events
+            if self.evaluate_expression(expression, event.source_file.split(","))
+        ]
         return other_filtered + tra_filtered
 
     def format_sample_values(self, format_keys, sample_dict):

@@ -1,12 +1,9 @@
 from pathlib import Path
-
 import typer
-
 from octopusv.merger.sv_merger import SVMerger
 from octopusv.utils.SV_classifier_by_chromosome import SVClassifiedByChromosome
 from octopusv.utils.SV_classifier_by_type import SVClassifierByType
 from octopusv.utils.svcf_parser import SVCFFileEventCreator
-
 
 def get_contigs_from_svcf(filenames):
     """Extract contig information from SVCF files.
@@ -40,7 +37,6 @@ def get_contigs_from_svcf(filenames):
                     break
     return contigs
 
-
 def merge(
     input_files: list[Path] | None = typer.Argument(None, help="List of input SVCF files to merge."),
     input_option: list[Path] | None = typer.Option(None, "--input-file", "-i", help="Input SVCF files to merge."),
@@ -50,8 +46,17 @@ def merge(
     specific: list[Path] = typer.Option(
         None, "--specific", help="Extract SVs that are specifically supported by provided files."
     ),
-    overlap: int = typer.Option(
-        None, "--overlap", help="Minimum number of files that must support an SV to be included in the output."
+    min_support: int = typer.Option(
+        None, "--min-support", help="Minimum number of files that must support an SV."
+    ),
+    exact_support: int = typer.Option(
+        None, "--exact-support", help="Exact number of files that must support an SV."
+    ),
+    max_support: int = typer.Option(
+        None, "--max-support", help="Maximum number of files that can support an SV."
+    ),
+    expression: str = typer.Option(
+        None, "--expression", help="Logical expression for complex file combinations (e.g., '(A AND B) AND NOT (C OR D)')"
     ),
     max_distance: int = typer.Option(
         50, "--max-distance", help="Maximum allowed distance between start or end positions for merging events."
@@ -80,8 +85,8 @@ def merge(
     if specific and not specific[0]:
         typer.echo("Error: --specific option requires at least one file.", err=True)
         raise typer.Exit(code=1)
-    if overlap is not None and overlap < 1:
-        typer.echo("Error: --overlap must be a positive integer.", err=True)
+    if min_support is not None and min_support < 1:
+        typer.echo("Error: --min-support must be a positive integer.", err=True)
         raise typer.Exit(code=1)
 
     # Get contig information from input files
@@ -106,21 +111,27 @@ def merge(
     )
     sv_merger.merge()
 
-    if intersect:
+    if expression:
+        results = sv_merger.get_events_by_expression(expression)
+    elif intersect:
         results = sv_merger.get_events_by_source([str(file) for file in all_input_files], operation="intersection")
     elif union:
         results = sv_merger.get_events_by_source([str(file) for file in all_input_files], operation="union")
     elif specific:
         results = sv_merger.get_events_by_source([str(file) for file in specific], operation="specific")
-    elif overlap is not None:
-        results = sv_merger.get_events_by_overlap(overlap)
+    elif exact_support is not None:
+        results = sv_merger.get_events_by_exact_support(exact_support)
+    elif min_support is not None or max_support is not None:
+        results = sv_merger.get_events_by_support_range(min_support, max_support)
     else:
-        raise ValueError("No merge strategy specified. Please use --intersect, --union, --specific, or --overlap.")
+        raise ValueError(
+            "No merge strategy specified. Please use --intersect, --union, --specific, "
+            "--min-support, --exact-support, --max-support, or --expression."
+        )
 
     # Write results with contig information
     sv_merger.write_results(output_file, results, contigs)
     typer.echo(f"Merged results written to {output_file}")
-
 
 if __name__ == "__main__":
     typer.run(merge)
