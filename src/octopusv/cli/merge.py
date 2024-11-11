@@ -5,6 +5,7 @@ from octopusv.merger.sv_merger import SVMerger
 from octopusv.utils.SV_classifier_by_chromosome import SVClassifiedByChromosome
 from octopusv.utils.SV_classifier_by_type import SVClassifierByType
 from octopusv.utils.svcf_parser import SVCFFileEventCreator
+from octopusv.merger.upset_plotter import UpSetPlotter  # 导入 UpSetPlotter
 
 def get_contigs_from_svcf(filenames):
     """Extract contig information from SVCF files.
@@ -44,8 +45,8 @@ def merge(
     output_file: Path = typer.Option(..., "--output-file", "-o", help="Output file for merged SV data."),
     intersect: bool = typer.Option(False, "--intersect", help="Apply intersection strategy for merging."),
     union: bool = typer.Option(False, "--union", help="Apply union strategy for merging."),
-    unique: Path = typer.Option(
-        None, "--unique", help="Extract SVs that are uniquely supported by a single provided file."
+    specific: List[Path] = typer.Option(
+        None, "--specific", help="Extract SVs that are specifically supported by provided files."
     ),
     min_support: int = typer.Option(
         None, "--min-support", help="Minimum number of files that must support an SV."
@@ -77,6 +78,12 @@ def merge(
     tra_strand_consistency: bool = typer.Option(
         True, "--tra-strand-consistency", help="Whether to require strand consistency for TRA events."
     ),
+    upsetr: bool = typer.Option(
+        False, "--upsetr", help="Generate UpSet plot visualization of input file intersections."
+    ),
+    upsetr_output: Path = typer.Option(
+        None, "--upsetr-output", help="Output path for UpSet plot. If not provided, will use output_file basename with _upset.png suffix."
+    ),
 ):
     """Merge multiple SVCF files based on specified strategy."""
     # Combine input files from arguments and options
@@ -84,6 +91,9 @@ def merge(
 
     if not all_input_files:
         typer.echo("Error: No input files provided.", err=True)
+        raise typer.Exit(code=1)
+    if specific and not specific[0]:
+        typer.echo("Error: --specific option requires at least one file.", err=True)
         raise typer.Exit(code=1)
     if min_support is not None and min_support < 1:
         typer.echo("Error: --min-support must be a positive integer.", err=True)
@@ -118,21 +128,34 @@ def merge(
         results = sv_merger.get_events_by_source([str(file) for file in all_input_files], operation="intersection")
     elif union:
         results = sv_merger.get_events_by_source([str(file) for file in all_input_files], operation="union")
-    elif unique:
-        results = sv_merger.get_events_by_source([str(unique)], operation="unique")
+    elif specific:
+        specific_files = [str(file) for file in specific]
+        results = sv_merger.get_events_by_source(specific_files, operation="specific")
     elif exact_support is not None:
         results = sv_merger.get_events_by_exact_support(exact_support)
     elif min_support is not None or max_support is not None:
         results = sv_merger.get_events_by_support_range(min_support, max_support)
     else:
         raise ValueError(
-            "No merge strategy specified. Please use --intersect, --union, --unique, "
+            "No merge strategy specified. Please use --intersect, --union, --specific, "
             "--min-support, --exact-support, --max-support, or --expression."
         )
 
     # Write results with contig information
     sv_merger.write_results(output_file, results, contigs)
     typer.echo(f"Merged results written to {output_file}")
+
+    # Generate UpSet plot if requested
+    if upsetr:
+        try:
+            plot_file = str(upsetr_output) if upsetr_output else str(output_file).rsplit('.', 1)[0] + '_upset.png'
+            plotter = UpSetPlotter(sv_merger.get_all_merged_events(), all_input_files)
+            plotter.plot(plot_file)
+            typer.echo(f"UpSet plot written to {plot_file}")
+        except ImportError:
+            typer.echo("Warning: Could not generate UpSet plot. Please ensure matplotlib and numpy are installed.", err=True)
+        except Exception as e:
+            typer.echo(f"Warning: Failed to generate UpSet plot: {str(e)}", err=True)
 
 if __name__ == "__main__":
     typer.run(merge)
