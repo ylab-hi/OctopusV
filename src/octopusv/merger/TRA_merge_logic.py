@@ -1,19 +1,19 @@
 def should_merge_tra(event1, event2, delta=50, min_overlap_ratio=0.5, strand_consistency=True):
-    # 检查染色体配对一致性
+    # Check chrom
     if {event1.start_chrom, event1.end_chrom} != {event2.start_chrom, event2.end_chrom}:
         return False
 
-    # 检查方向性一致性
+    # Check strand
     if strand_consistency and not _is_compatible_bnd_pattern(event1.bnd_pattern, event2.bnd_pattern):
         return False
 
-    # 计算断点位置差异
+    # Calculate breakpoint diff
     pos1_diff = abs(event1.start_pos - event2.start_pos)
     pos2_diff = abs(event1.end_pos - event2.end_pos)
     if pos1_diff > 2 * delta or pos2_diff > 2 * delta:
         return False
 
-    # 计算重叠区间的相似性
+    # Calculate overlap similarity
     overlap1 = max(
         0,
         min(event1.start_pos + delta, event2.start_pos + delta)

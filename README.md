@@ -1,150 +1,177 @@
-# octopusV: Correcting and Standardize benchmarking of Structural Variant (SV) Results from SV Callers
+# OctopusV: Advanced Structural Variant Analysis Toolkit 🐙
 
-<img src="https://github.com/ylab-hi/octopusV/blob/main/imgs/octopusV_logo.png" width=50% height=50%>
+<p align="center">
+  <img src="https://github.com/ylab-hi/octopusV/blob/main/imgs/octopusV_logo.png" width="50%" height="50%">
+</p>
 
-## What is octopusV?
+[![PyPI version](https://badge.fury.io/py/octopusv.svg)](https://badge.fury.io/py/octopusv)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-octopusV is a toolkit for efficient manipulation and comparative analysis of structural variant (SV) callsets from multiple approaches. It streamlines SV analysis workflows by providing a standardized input/output interface and a comprehensive set of commands for filtration, merging, intersection, benchmarking and visualization of VCF from various SV callers. Octopus aims to offer a holistic solution for researchers venturing into the complex landscape of structural variations.
+OctopusV is a comprehensive toolkit for analyzing, comparing, and standardizing structural variant (SV) calls from multiple SV callers. It provides a unified framework for SV analysis, offering tools for standardization, merging, benchmarking, and visualization of structural variants.
 
-## Getting Started
+## Key Features
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+- **Standardization**: Convert various SV caller outputs to a unified [SVCF format](https://github.com/ylab-hi/octopusV/blob/main/docs/SVCF_specifications.md)
+- **Merging**: Combine SV calls from multiple callers with flexible strategies
+- **Benchmarking**: Compare SV calls against truth sets using industry-standard metrics
+- **Visualization**: Generate informative plots for SV analysis
+- **Format Conversion**: Convert between different SV formats (VCF, BED, BEDPE)
 
-### Prerequisites
-
-- Python 3
-
-### Installation
+## Installation
 
 ```bash
 pip install octopusv
 ```
 
-## Usage
+## Quick Start
 
-### Standardize input with `convert`
+### 1. Convert SV Calls to Standardized Format
 
-Convert VCFs from multiple callers to standardized SVCF format:
+Convert VCF files from different callers to the standardized SVCF format:
 
-```
-octopusv convert -i caller1.vcf -o caller1.svcf
-octopusv convert -i caller2.vcf -o caller2.svcf
-```
+```bash
+# Basic conversion
+octopusv convert -i input.vcf -o output.svcf
 
-### Merge callsets with `merge`
-
-Extract intersection or union of multiple callsets:
-
-```
-octopusv merge -i caller1.svcf caller2.svcf -o intersect.svcf --intersect
-octopusv merge -i caller1.svcf caller2.svcf -o union.svcf --union
+# With position tolerance adjustment
+octopusv convert -i input.vcf -o output.svcf --pos-tolerance 5
 ```
 
-Extract SVs specifically supported by vcf1:
+### 2. Merge SV Calls
 
-```
-octopusv merge -i vcf1.svcf vcf2.svcf -o uniq_vcf1.svcf --specific vcf1.svcf
-```
+Combine SV calls from multiple callers with various strategies:
 
-Extract SVs specifically supported by vcf1 and vcf2:
+```bash
+# Intersect calls from multiple callers
+octopusv merge -i caller1.svcf caller2.svcf -o merged.svcf --intersect
 
-```
-octopusv merge -i vcf1.svcf vcf2.svcf vcf3.svcf -o common_vcf1_vcf2.svcf --specific vcf1.svcf vcf2.svcf
-```
+# Union of calls
+octopusv merge -i caller1.svcf caller2.svcf -o merged.svcf --union
 
-Extract SVs supported by 2+ callers:
+# Get SVs supported by at least 2 callers
+octopusv merge -i caller1.svcf caller2.svcf caller3.svcf -o merged.svcf --min-support 2
 
-```
-octopusv merge -i vcf1.svcf vcf2.svcf vcf3.svcf -o overlap.svcf --overlap 2
-```
+# Extract caller-specific SVs
+octopusv merge -i caller1.svcf caller2.svcf -o specific.svcf --specific caller1.svcf
 
-### Evaluate calls against truthsets using `bench`
+# Complex merging with expression
+octopusv merge -i caller1.svcf caller2.svcf caller3.svcf -o merged.svcf \
+    --expression "(caller1 AND caller2) AND NOT caller3"
 
-```
-octopusv bench -i candidate.svcf -g truthset.svcf -o bench_stat.txt
-```
-
-### Generate statistical reports for the called SVs using `stat`
-
-```
-octopusv stat -i merged.svcf -o sv_statistics.txt
+# Generate UpSet plot of intersections
+octopusv merge -i caller1.svcf caller2.svcf caller3.svcf -o merged.svcf \
+    --intersect --upsetr --upsetr-output intersections.png
 ```
 
-### Plotting the stat results using `plot`
+### 3. Benchmark Against Truth Sets
 
+Evaluate SV calls against a truth set:
+
+```bash
+octopusv benchmark \
+    truth.svcf \
+    test.svcf \
+    -o benchmark_results \
+    --reference-distance 500 \
+    --size-similarity 0.7 \
+    --reciprocal-overlap 0.0 \
+    --size-min 50 \
+    --size-max 50000
 ```
-octopusv plot -i sv_statistics.svcf -o plot
+
+### 4. Generate Statistics
+
+Analyze SV characteristics:
+
+```bash
+# Basic statistics
+octopusv stat -i variants.svcf -o stats.txt
+
+# With size filters
+octopusv stat -i variants.svcf -o stats.txt --min-size 50 --max-size 10000
 ```
 
+### 5. Create Visualizations
+
+Generate plots from statistics:
+
+```bash
+octopusv plot -i stats.txt -o output_prefix
 ```
-octopusv plot -i bench_statistics.txt -o plot
+
+This will create:
+- `output_prefix_chromosome_distribution.png`: SV distribution across chromosomes
+- `output_prefix_sv_types.png`: Distribution of SV types
+- `output_prefix_sv_sizes.png`: SV size distribution
+
+### 6. Format Conversion
+
+Convert between different SV formats:
+
+```bash
+# Convert SVCF to BED
+octopusv svcf2bed -i variants.svcf -o variants.bed
+
+# Convert SVCF to BEDPE
+octopusv svcf2bedpe -i variants.svcf -o variants.bedpe
+
+# Convert SVCF back to VCF
+octopusv svcf2vcf -i variants.svcf -o variants.vcf
 ```
 
-## Contribution Guide
+## Advanced Usage
 
-We appreciate and welcome contributions from the community. Whether it's submitting issues, feature requests, or pull requests, we're always looking forward to your collaboration.
+### Merge Configuration Options
 
-### Steps to Contribute:
+- `--max-distance`: Maximum distance between start/end positions (default: 50)
+- `--max-length-ratio`: Maximum ratio between event lengths (default: 1.3)
+- `--min-jaccard`: Minimum Jaccard index for overlap (default: 0.7)
+- `--tra-delta`: Position uncertainty for translocations (default: 50)
+- `--tra-min-overlap`: Minimum overlap ratio for translocations (default: 0.5)
+- `--tra-strand-consistency`: Require strand consistency (default: True)
 
-1. **Clone the Repository**
+### Benchmark Configuration Options
 
-   Begin by cloning the repository to your local machine:
+- `--reference-distance`: Maximum reference location distance
+- `--size-similarity`: Minimum size similarity ratio
+- `--reciprocal-overlap`: Minimum reciprocal overlap
+- `--type-ignore`: Allow type mismatches
+- `--enable-sequence-comparison`: Enable sequence similarity comparison
+- `--sequence-similarity`: Minimum sequence similarity threshold
 
+## Contributing
+
+We welcome contributions! Here's how you can help:
+
+1. Clone the repository:
    ```bash
    git clone https://github.com/ylab-hi/octopusV.git
    ```
 
-2. **Create a New Branch**
-
-   Keep your work organized by creating a new branch for each contribution:
-
+2. Create a feature branch:
    ```bash
-   git checkout -b feature/descriptive-branch-name
+   git checkout -b feature/your-feature-name
    ```
 
-3. **Install Dependencies (if required)**
-
-   If you're adding new features or making changes that require additional dependencies, make sure to install them:
-
+3. Install development dependencies:
    ```bash
    poetry install
    ```
 
-4. **Make Your Changes**
-
-5. **Run pre-commit Hooks**
-
+4. Make your changes and ensure all checks pass:
    ```bash
    pre-commit run -a
    ```
 
-   If all checks pass, proceed to the next step.
-
-6. **Commit and Push Your Changes**
-
-   ```bash
-   git add .
-   git commit -m "A descriptive message about your changes"
-   git push origin feature/descriptive-branch-name
-   ```
-
-7. **Create a Pull Request**
-
-   Head over to the `ylab-hi/octopusV` repository on GitHub and click "New Pull Request". Choose your branch from the dropdown and submit your PR with a clear description of the changes you've made.
+5. Submit a pull request with a clear description of your changes
 
 ## License
 
-octopusV is licensed under MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+## Contact
 
-## Anecdote
-
-**Agent Octopus Code V: The Sentinel of the Structural Variations Sea!**
-Plunge deep into the ocean of structural variations with the most advanced tool yet: Agent Octopus Code V. Equipped with precision tentacles, it's designed to merge, correct, and beautifully visualize results from diverse callers.
-
-In the vast realm of structural variations, where each wave symbolizes a unique caller with its distinct characteristics, navigating and deciphering these waves can be overwhelming. Enter OctopusV, the guardian of this intricate digital ocean. Boasting eight versatile tentacles, OctopusV has the unmatched capability to synchronize with a multitude of structural results, encapsulate them, and craft a coherent narrative. Every tentacle is meticulously engineered to grasp, dissect, and harmonize with the intricacies of each caller, ensuring that the final structure stands unblemished.
-
-But the genius of Agent Octopus doesn't halt there. Embedded within its core, Code V, lies a visual spectacle. It's not merely about precision; it's about illuminating your results. Dive into vivid visual representations of your structural variations, simplifying comprehension and paving the way for insightful analysis. In the vast expanse of structural variations, while the challenges are as deep and endless as the sea, with OctopusV, clarity is merely a tentacle's reach away. With the formidable Agent Octopus Code V by their side, researchers have found an unwavering ally, promising impeccable merging, meticulous correction, and dynamic visualization.
-
-OctopusV - Your beacon in the boundless ocean of structural variations.
+For questions and feedback:
+- GitHub Issues: [https://github.com/ylab-hi/octopusV/issues](https://github.com/ylab-hi/octopusV/issues)
+- Email: [qingxiang.guo@northwestern.edu]
+- Email: [yangyang.li@northwestern.edu]

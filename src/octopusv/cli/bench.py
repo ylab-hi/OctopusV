@@ -5,7 +5,7 @@ import logging
 
 from octopusv.bencher.sv_bencher import SVBencher
 
-# 设置日志格式
+# Set logging style
 FORMAT = "%(message)s"
 logging.basicConfig(
     level="INFO",
