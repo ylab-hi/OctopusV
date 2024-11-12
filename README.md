@@ -63,6 +63,10 @@ octopusv merge -i caller1.svcf caller2.svcf caller3.svcf -o merged.svcf \
     --intersect --upsetr --upsetr-output intersections.png
 ```
 
+<p align="center">
+  <img src="https://github.com/ylab-hi/octopusV/blob/main/imgs/up_upset.png" width="50%" height="50%">
+</p>
+
 ### 3. Benchmark Against Truth Sets
 
 Evaluate SV calls against a truth set:
@@ -101,8 +105,22 @@ octopusv plot -i stats.txt -o output_prefix
 
 This will create:
 - `output_prefix_chromosome_distribution.png`: SV distribution across chromosomes
+
+<p align="center">
+  <img src="https://github.com/ylab-hi/octopusV/blob/main/imgs/chromosome_distribution.png" width="50%" height="50%">
+</p>
+
 - `output_prefix_sv_types.png`: Distribution of SV types
+
+<p align="center">
+  <img src="https://github.com/ylab-hi/octopusV/blob/main/imgs/sv_types.png" width="50%" height="50%">
+</p>
+
 - `output_prefix_sv_sizes.png`: SV size distribution
+
+<p align="center">
+  <img src="https://github.com/ylab-hi/octopusV/blob/main/imgs/sv_sizes.png" width="50%" height="50%">
+</p>
 
 ### 6. Format Conversion
 

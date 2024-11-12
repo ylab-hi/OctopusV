@@ -1,31 +1,29 @@
 import collections
 import logging
-
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 logging.basicConfig(level=logging.DEBUG)
 
+# Define consistent color scheme for SV types
+COLOR_SCHEME = {
+    "TRA": "#FF6B6B",  # Coral red
+    "INV": "#4ECDC4",  # Turquoise
+    "DUP": "#45B7D1",  # Sky blue
+    "INS": "#96CEB4",  # Mint green
+    "DEL": "#6C5B7B",  # Deep purple
+}
+
 
 class TypePlotter:
     def __init__(self, input_file):
         self.input_file = input_file
-        # Define fixed SV type order and corresponding refined colors
         self.sv_order = ["TRA", "INV", "DUP", "INS", "DEL"]
-        self.color_map = {
-            "TRA": "#8e44ad",  # Muted purple
-            "INV": "#c0392b",  # Deep crimson
-            "DUP": "#d4ac0d",  # Soft gold
-            "INS": "#27ae60",  # Forest green
-            "DEL": "#2980b9",  # Ocean blue
-        }
+        self.color_map = COLOR_SCHEME
         self.data = self.parse_data()
 
     def parse_data(self):
-        """Parse the statistics file and extract SV type information.
-
-        Returns a dictionary with SV types as keys and (count, percentage) as values.
-        """
+        """Parse the statistics file and extract SV type information."""
         sv_types = {}
         parsing_types = False
         with open(self.input_file) as f:
@@ -44,96 +42,76 @@ class TypePlotter:
                             count = int(count_percentage[0])
                             percentage = float(count_percentage[1].strip("()%"))
                             sv_types[sv_type] = (count, percentage)
-
-        logging.debug(f"Parsed SV type data: {sv_types}")
         return sv_types
 
     def _sort_data(self):
-        """Sort data according to predefined order.
-        Returns an OrderedDict with sorted SV types and their values.
-        """
+        """Sort data according to predefined order."""
         ordered_data = collections.OrderedDict()
-        # First add SV types in the predefined order
         for sv_type in self.sv_order:
             if sv_type in self.data:
                 ordered_data[sv_type] = self.data[sv_type]
-
-        # Add any additional SV types not in the predefined order at the end
         for sv_type, values in self.data.items():
             if sv_type not in self.sv_order:
                 ordered_data[sv_type] = values
-
         return ordered_data
 
     def plot(self, output_prefix):
-        """Create and save the SV type distribution plot.
-
-        Args:
-            output_prefix: Prefix for output files (.png and .svg will be appended)
-        """
+        """Create and save the SV type distribution plot."""
         if not self.data:
             logging.error("No data to plot")
             return
 
-        # Sort data according to predefined order
         ordered_data = self._sort_data()
 
-        # Set up the plot style
-        plt.figure(figsize=(12, 8))
-        sns.set_theme(style="white")
+        # Set up the figure
+        plt.figure(figsize=(10, 8))
+        plt.rcParams['font.family'] = 'sans-serif'
+        plt.rcParams['font.sans-serif'] = ['Arial']
+        plt.rcParams['svg.fonttype'] = 'none'  # Ensure editable text in SVG
 
+        # Prepare data
         types = list(ordered_data.keys())
         sizes = [count for count, _ in ordered_data.values()]
+        colors = [self.color_map.get(sv_type, "#7f8c8d") for sv_type in types]
 
-        # Get color list based on SV types
-        colors = [self.color_map.get(sv_type, "#7f8c8d") for sv_type in types]  # Refined default gray
+        # Create pie chart with refined styling
+        explode = [0.01] * len(types)  # Slight separation between segments
+        wedges, texts, autotexts = plt.pie(sizes,
+                                           explode=explode,
+                                           labels=types,
+                                           colors=colors,
+                                           autopct='%1.1f%%',
+                                           pctdistance=0.85,
+                                           startangle=90,
+                                           wedgeprops=dict(width=0.5,
+                                                           edgecolor='white',
+                                                           linewidth=2))
 
-        # Create pie chart with refined aesthetics
-        wedges, texts, autotexts = plt.pie(
-            sizes,
-            labels=types,
-            autopct="%1.1f%%",
-            startangle=90,
-            colors=colors,
-            wedgeprops={"width": 0.5, "edgecolor": "white", "linewidth": 2},
-        )
+        # Style percentage labels
+        plt.setp(autotexts, size=9, weight="bold", color="white")
+        plt.setp(texts, size=10, weight="bold")
 
-        # Add center circle for donut chart with refined border
-        centre_circle = plt.Circle((0, 0), 0.70, fc="white", ec="#f8f9fa")
+        # Add center circle for donut effect
+        centre_circle = plt.Circle((0, 0), 0.70, fc='white', ec='#e0e0e0')
         fig = plt.gcf()
         fig.gca().add_artist(centre_circle)
 
-        # Ensure pie is drawn as a circle
-        plt.axis("equal")
+        # Configure legend
+        legend_labels = [f"{sv_type}: {ordered_data[sv_type][0]:,}" for sv_type in types]
+        plt.legend(wedges, legend_labels,
+                   title="SV Types",
+                   loc="center left",
+                   bbox_to_anchor=(1, 0, 0.5, 1),
+                   frameon=False,
+                   title_fontsize=12,
+                   fontsize=10)
 
-        # Refined title styling
-        plt.title("SV Type Distribution", fontsize=18, pad=20, fontweight="bold", color="#2c3e50")
+        # Add title and ensure proportional scaling
+        plt.title("Structural Variant Type Distribution",
+                  pad=20, fontsize=14, fontweight='bold')
+        plt.axis('equal')
 
-        # Create ordered legend labels with counts
-        legend_labels = [f"{sv_type}: {ordered_data[sv_type][0]}" for sv_type in types]
-
-        # Add legend with refined styling
-        plt.legend(
-            wedges,
-            legend_labels,
-            title="SV types",
-            loc="center left",
-            bbox_to_anchor=(1, 0, 0.5, 1),
-            frameon=False,
-            title_fontsize=12,
-            fontsize=10,
-        )
-
-        # Adjust text properties for better readability
-        for autotext in autotexts:
-            autotext.set_fontsize(10)
-            autotext.set_color("white")
-            autotext.set_fontweight("bold")
-
-        plt.tight_layout()
-        # Save plots with high quality
-        plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches="tight", facecolor="white")
-        plt.savefig(f"{output_prefix}.svg", bbox_inches="tight", facecolor="white")
+        # Save plots
+        plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches="tight", facecolor='white')
+        plt.savefig(f"{output_prefix}.svg", bbox_inches="tight", facecolor='white')
         plt.close()
-
-        logging.info(f"Plot saved as {output_prefix}.png and {output_prefix}.svg")
