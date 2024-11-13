@@ -64,7 +64,7 @@ octopusv merge -i caller1.svcf caller2.svcf caller3.svcf -o merged.svcf \
 ```
 
 <p align="center">
-  <img src="https://github.com/ylab-hi/octopusV/blob/main/imgs/up_upset.png" width="50%" height="50%">
+  <img src="https://github.com/ylab-hi/octopusV/blob/main/imgs/up_upset.png" width="70%" height="70%">
 </p>
 
 ### 3. Benchmark Against Truth Sets
