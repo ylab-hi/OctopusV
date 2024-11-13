@@ -23,6 +23,7 @@ def is_same_chr_bnd(event):
 def check_vcf_format(vcf_file_path):
     """Check the format of a VCF file.
 
+    Allow both standard VCF (10 columns) and simplified VCF (8 columns) formats.
     Raise an error and exit if the format is incorrect.
     """
     with open(vcf_file_path) as f:
@@ -46,12 +47,12 @@ def check_vcf_format(vcf_file_path):
             )
             sys.exit(1)
 
-        fields = line.split("\t")
+        fields = line.strip().split("\t")
 
-        # Check the number of columns
-        if len(fields) < 10:
+        # Check the minimum number of columns (8 for simplified VCF)
+        if len(fields) < 8:
             logging.error(
-                f"Invalid VCF format. Expected at least 10 fields, but got {len(fields)}",
+                f"Invalid VCF format. Expected at least 8 fields, but got {len(fields)}",
             )
             sys.exit(1)
 
@@ -76,7 +77,10 @@ def check_vcf_format(vcf_file_path):
 
 
 def parse_vcf(vcf_file_path):
-    """Parse VCF file into lists of SVEvent objects based on their type (same chromosome BND, different chromosome BND, non-BND) and return headers."""
+    """Parse VCF file into lists of SVEvent objects based on their type.
+
+    Handles both standard VCF (10 columns) and simplified VCF (8 columns) formats.
+    """
     check_vcf_format(vcf_file_path)  # Check the format first
     same_chr_bnd_events = []
     diff_chr_bnd_events = []
@@ -95,6 +99,10 @@ def parse_vcf(vcf_file_path):
                 contig_lines.append(line.strip())
             elif not line.startswith("#"):  # Skip all header lines except ##contig
                 fields = line.strip().split("\t")
+
+                # Add default FORMAT and SAMPLE fields if they don't exist
+                if len(fields) == 8:
+                    fields.extend(["GT", "0/1"])  # Add minimal FORMAT and SAMPLE fields
 
                 # Adjust for SVABA if it's detected by the source line and has 13 fields
                 if is_svaba_output and len(fields) == 13:

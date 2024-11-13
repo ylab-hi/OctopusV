@@ -17,7 +17,7 @@ class SVType(Enum):
 class SVEvent:
     """represent each SV event."""
 
-    def __init__(self, chrom, pos, id, ref, alt, qual, filter, info, format, sample):
+    def __init__(self, chrom, pos, id, ref, alt, qual, filter, info, format="GT", sample="0/1"):
         self.chrom = chrom
         self.pos = int(pos)
         self.id = id
@@ -77,8 +77,8 @@ class SVEvent:
         return self.info["SVTYPE"] == "BND"
 
     def __str__(self):
-        # Process 'PR' for 'SUPPORT' if not already set
-        if "SUPPORT" not in self.info:
+        # Process 'PR' for 'SUPPORT' if not already set and if FORMAT/SAMPLE fields exist
+        if "SUPPORT" not in self.info and self.format != "GT":
             format_parts = self.format.split(":")
             sample_parts = self.sample.split(":")
             format_sample_dict = dict(zip(format_parts, sample_parts, strict=False))
@@ -99,16 +99,18 @@ class SVEvent:
                     # Ensure the value is an integer and take its absolute value
                     value = str(abs(int(value)))
                 except ValueError:
-                    # In case value is not an integer, keep the original value (should not happen if your data is correct)
+                    # In case value is not an integer, keep the original value
                     pass
             info_str_parts.append(f"{key}={value}")
-            info_str = ";".join(info_str_parts)
+        info_str = ";".join(info_str_parts)
 
-        # Fixed order for FORMAT fields
+        # Handle minimal FORMAT/SAMPLE fields when they don't exist in input
+        if self.format == "GT" and self.sample == "0/1":
+            return f"{self.chrom}\t{self.pos}\t{self.id}\t{self.ref}\t{self.alt}\t{self.qual}\t{self.filter}\t{info_str}"
+
+        # Otherwise, include FORMAT and SAMPLE fields
         format_order = ["GT", "AD", "LN", "ST", "QV", "TY", "ID", "SC", "REF", "ALT", "CO"]
         format_str = ":".join(format_order)
-
-        # Use construct_sample_string to build sample string
         sample_str = construct_sample_string(self)
 
         return f"{self.chrom}\t{self.pos}\t{self.id}\t{self.ref}\t{self.alt}\t{self.qual}\t{self.filter}\t{info_str}\t{format_str}\t{sample_str}"
