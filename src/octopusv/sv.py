@@ -47,6 +47,10 @@ class SVEvent:
                 info_dict["SUPPORT"] = info_dict[support_key]
                 break
 
+        # If RNAMES not in info, set it to "."
+        if "RNAMES" not in info_dict:
+            info_dict["RNAMES"] = "."
+
         return info_dict
 
     def __getitem__(self, key):
@@ -90,7 +94,7 @@ class SVEvent:
                     self.info["SUPPORT"] = pr_values[1]  # Use the alt allele's paired-read count
 
         # Fixed order for INFO fields, using '.' as a placeholder for missing values
-        info_order = ["SVTYPE", "END", "SVLEN", "CHR2", "SUPPORT", "SVMETHOD", "RTID", "AF", "STRAND"]
+        info_order = ["SVTYPE", "END", "SVLEN", "CHR2", "SUPPORT", "SVMETHOD", "RTID", "AF", "STRAND", "RNAMES"]
         info_str_parts = []
         for key in info_order:
             value = self.info.get(key, ".")
