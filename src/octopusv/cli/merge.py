@@ -1,11 +1,13 @@
 from pathlib import Path
-from typing import List
+
 import typer
+
 from octopusv.merger.sv_merger import SVMerger
+from octopusv.merger.upset_plotter import UpSetPlotter  # 导入 UpSetPlotter
 from octopusv.utils.SV_classifier_by_chromosome import SVClassifiedByChromosome
 from octopusv.utils.SV_classifier_by_type import SVClassifierByType
 from octopusv.utils.svcf_parser import SVCFFileEventCreator
-from octopusv.merger.upset_plotter import UpSetPlotter  # 导入 UpSetPlotter
+
 
 def get_contigs_from_svcf(filenames):
     """Extract contig information from SVCF files.
@@ -39,26 +41,23 @@ def get_contigs_from_svcf(filenames):
                     break
     return contigs
 
+
 def merge(
-    input_files: List[Path] = typer.Argument(None, help="List of input SVCF files to merge."),
-    input_option: List[Path] = typer.Option(None, "--input-file", "-i", help="Input SVCF files to merge."),
+    input_files: list[Path] = typer.Argument(None, help="List of input SVCF files to merge."),
+    input_option: list[Path] = typer.Option(None, "--input-file", "-i", help="Input SVCF files to merge."),
     output_file: Path = typer.Option(..., "--output-file", "-o", help="Output file for merged SV data."),
     intersect: bool = typer.Option(False, "--intersect", help="Apply intersection strategy for merging."),
     union: bool = typer.Option(False, "--union", help="Apply union strategy for merging."),
-    specific: List[Path] = typer.Option(
+    specific: list[Path] = typer.Option(
         None, "--specific", help="Extract SVs that are specifically supported by provided files."
     ),
-    min_support: int = typer.Option(
-        None, "--min-support", help="Minimum number of files that must support an SV."
-    ),
-    exact_support: int = typer.Option(
-        None, "--exact-support", help="Exact number of files that must support an SV."
-    ),
-    max_support: int = typer.Option(
-        None, "--max-support", help="Maximum number of files that can support an SV."
-    ),
+    min_support: int = typer.Option(None, "--min-support", help="Minimum number of files that must support an SV."),
+    exact_support: int = typer.Option(None, "--exact-support", help="Exact number of files that must support an SV."),
+    max_support: int = typer.Option(None, "--max-support", help="Maximum number of files that can support an SV."),
     expression: str = typer.Option(
-        None, "--expression", help="Logical expression for complex file combinations (e.g., '(A AND B) AND NOT (C OR D)')"
+        None,
+        "--expression",
+        help="Logical expression for complex file combinations (e.g., '(A AND B) AND NOT (C OR D)')",
     ),
     max_distance: int = typer.Option(
         50, "--max-distance", help="Maximum allowed distance between start or end positions for merging events."
@@ -72,9 +71,7 @@ def merge(
     tra_delta: int = typer.Option(
         50, "--tra-delta", help="Position uncertainty threshold for TRA events (in base pairs)."
     ),
-    tra_min_overlap_ratio: float = typer.Option(
-        0.5, "--tra-min-overlap", help="Minimum overlap ratio for TRA events."
-    ),
+    tra_min_overlap_ratio: float = typer.Option(0.5, "--tra-min-overlap", help="Minimum overlap ratio for TRA events."),
     tra_strand_consistency: bool = typer.Option(
         True, "--tra-strand-consistency", help="Whether to require strand consistency for TRA events."
     ),
@@ -82,7 +79,9 @@ def merge(
         False, "--upsetr", help="Generate UpSet plot visualization of input file intersections."
     ),
     upsetr_output: Path = typer.Option(
-        None, "--upsetr-output", help="Output path for UpSet plot. If not provided, will use output_file basename with _upset.png suffix."
+        None,
+        "--upsetr-output",
+        help="Output path for UpSet plot. If not provided, will use output_file basename with _upset.png suffix.",
     ),
 ):
     """Merge multiple SVCF files based on specified strategy."""
@@ -148,14 +147,17 @@ def merge(
     # Generate UpSet plot if requested
     if upsetr:
         try:
-            plot_file = str(upsetr_output) if upsetr_output else str(output_file).rsplit('.', 1)[0] + '_upset.png'
+            plot_file = str(upsetr_output) if upsetr_output else str(output_file).rsplit(".", 1)[0] + "_upset.png"
             plotter = UpSetPlotter(sv_merger.get_all_merged_events(), all_input_files)
             plotter.plot(plot_file)
             typer.echo(f"UpSet plot written to {plot_file}")
         except ImportError:
-            typer.echo("Warning: Could not generate UpSet plot. Please ensure matplotlib and numpy are installed.", err=True)
+            typer.echo(
+                "Warning: Could not generate UpSet plot. Please ensure matplotlib and numpy are installed.", err=True
+            )
         except Exception as e:
-            typer.echo(f"Warning: Failed to generate UpSet plot: {str(e)}", err=True)
+            typer.echo(f"Warning: Failed to generate UpSet plot: {e!s}", err=True)
+
 
 if __name__ == "__main__":
     typer.run(merge)

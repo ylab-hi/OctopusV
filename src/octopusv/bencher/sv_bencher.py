@@ -1,7 +1,8 @@
-from pathlib import Path
 import logging
-from typing import Dict, List, Tuple, Union, Optional
+from pathlib import Path
+
 from octopusv.utils.svcf_parser import SVCFFileEventCreator
+
 from .bench_utils import calculate_metrics, write_summary, write_vcf
 
 
@@ -9,19 +10,19 @@ class SVBencher:
     """Benchmark structural variants using GIAB standards."""
 
     def __init__(
-            self,
-            truth_file: Path,
-            call_file: Path,
-            output_dir: Path,
-            reference_distance: int = 500,
-            sequence_similarity: float = 0.7,
-            size_similarity: float = 0.7,
-            reciprocal_overlap: float = 0.0,
-            type_ignore: bool = False,
-            size_min: int = 50,
-            size_max: int = 50000,
-            pass_only: bool = False,
-            enable_sequence_comparison: bool = False,
+        self,
+        truth_file: Path,
+        call_file: Path,
+        output_dir: Path,
+        reference_distance: int = 500,
+        sequence_similarity: float = 0.7,
+        size_similarity: float = 0.7,
+        reciprocal_overlap: float = 0.0,
+        type_ignore: bool = False,
+        size_min: int = 50,
+        size_max: int = 50000,
+        pass_only: bool = False,
+        enable_sequence_comparison: bool = False,
     ):
         """Initialize the SV benchmarker with GIAB standard parameters."""
         self.truth_file = truth_file
@@ -50,7 +51,7 @@ class SVBencher:
             self._compare_events()
             self._write_results()
         except Exception as e:
-            self.logger.error(f"Benchmarking failed: {str(e)}")
+            self.logger.error(f"Benchmarking failed: {e!s}")
             raise
 
     def _parse_files(self):
@@ -66,7 +67,7 @@ class SVBencher:
         self.truth_events = truth_parser.events
         self.call_events = call_parser.events
 
-    def _filter_events(self, events: List) -> List:
+    def _filter_events(self, events: list) -> list:
         """Filter events based on size and FILTER criteria."""
         filtered = []
         for event in events:
@@ -87,7 +88,7 @@ class SVBencher:
 
                 filtered.append(event)
             except AttributeError as e:
-                self.logger.warning(f"Skipping malformed event: {str(e)}")
+                self.logger.warning(f"Skipping malformed event: {e!s}")
                 continue
 
         return filtered
@@ -132,15 +133,14 @@ class SVBencher:
             return True
 
         except AttributeError as e:
-            self.logger.warning(f"Error comparing events: {str(e)}")
+            self.logger.warning(f"Error comparing events: {e!s}")
             return False
 
     def _compare_tra_events(self, truth_event, call_event) -> bool:
         """Special comparison logic for translocation events."""
         try:
             # Check chromosomes match
-            if (truth_event.start_chrom != call_event.start_chrom or
-                    truth_event.end_chrom != call_event.end_chrom):
+            if truth_event.start_chrom != call_event.start_chrom or truth_event.end_chrom != call_event.end_chrom:
                 return False
 
             # Check positions within reference distance
@@ -150,14 +150,14 @@ class SVBencher:
                 return False
 
             # Check strand consistency if available
-            if hasattr(truth_event, 'strand') and hasattr(call_event, 'strand'):
+            if hasattr(truth_event, "strand") and hasattr(call_event, "strand"):
                 if truth_event.strand != call_event.strand:
                     return False
 
             return True
 
         except AttributeError as e:
-            self.logger.warning(f"Error comparing TRA events: {str(e)}")
+            self.logger.warning(f"Error comparing TRA events: {e!s}")
             return False
 
     def _calculate_sequence_similarity(self, truth_event, call_event) -> float:
@@ -171,26 +171,27 @@ class SVBencher:
 
         try:
             from Levenshtein import ratio
+
             return ratio(truth_seq, call_seq)
         except ImportError:
             self.logger.warning("Levenshtein package not available, using simple comparison")
             return float(truth_seq == call_seq)
 
-    def _get_sequence_from_event(self, event) -> Optional[str]:
+    def _get_sequence_from_event(self, event) -> str | None:
         """Extract sequence information from an event."""
         try:
-            if hasattr(event, 'alt_seq') and event.alt_seq:
+            if hasattr(event, "alt_seq") and event.alt_seq:
                 return event.alt_seq
 
-            if hasattr(event, 'info'):
-                seq = event.info.get('SVSEQ', '')
+            if hasattr(event, "info"):
+                seq = event.info.get("SVSEQ", "")
                 if seq:
                     return seq
-                seq = event.info.get('SEQ', '')
+                seq = event.info.get("SEQ", "")
                 if seq:
                     return seq
 
-            if hasattr(event, 'alt') and len(event.alt) > 1 and not event.alt.startswith('<'):
+            if hasattr(event, "alt") and len(event.alt) > 1 and not event.alt.startswith("<"):
                 return event.alt
 
             return None
@@ -223,7 +224,7 @@ class SVBencher:
             return min(overlap_ratio1, overlap_ratio2)
 
         except AttributeError as e:
-            self.logger.warning(f"Error calculating overlap: {str(e)}")
+            self.logger.warning(f"Error calculating overlap: {e!s}")
             return 0.0
 
     def _compare_events(self):
@@ -258,12 +259,7 @@ class SVBencher:
         # Collect unmatched truth events as FN
         fn = [event for event in filtered_truth if event not in matched_truth]
 
-        self.results = {
-            "tp_base": tp_base,
-            "tp_call": tp_call,
-            "fp": fp,
-            "fn": fn
-        }
+        self.results = {"tp_base": tp_base, "tp_call": tp_call, "fp": fp, "fn": fn}
 
         self.logger.info(f"Found {len(tp_call)} true positives, {len(fp)} false positives, {len(fn)} false negatives")
 

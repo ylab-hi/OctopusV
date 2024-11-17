@@ -110,7 +110,9 @@ class SVEvent:
 
         # Handle minimal FORMAT/SAMPLE fields when they don't exist in input
         if self.format == "GT" and self.sample == "0/1":
-            return f"{self.chrom}\t{self.pos}\t{self.id}\t{self.ref}\t{self.alt}\t{self.qual}\t{self.filter}\t{info_str}"
+            return (
+                f"{self.chrom}\t{self.pos}\t{self.id}\t{self.ref}\t{self.alt}\t{self.qual}\t{self.filter}\t{info_str}"
+            )
 
         # Otherwise, include FORMAT and SAMPLE fields
         format_order = ["GT", "AD", "LN", "ST", "QV", "TY", "ID", "SC", "REF", "ALT", "CO"]

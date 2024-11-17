@@ -1,5 +1,6 @@
-from .base import Converter
 import logging
+
+from .base import Converter
 
 
 class NonBNDConverter(Converter):

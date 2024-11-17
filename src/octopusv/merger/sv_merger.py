@@ -1,6 +1,7 @@
 import datetime
 import os
 import re
+
 from .sv_merge_logic import should_merge
 from .sv_selector import select_representative_sv
 from .tra_merger import TRAMerger
@@ -8,18 +9,17 @@ from .tra_merger import TRAMerger
 
 class SVMerger:
     def __init__(
-            self,
-            classified_events,
-            all_input_files,
-            tra_delta=50,
-            tra_min_overlap_ratio=0.5,
-            tra_strand_consistency=True,
-            max_distance=50,
-            max_length_ratio=1.3,
-            min_jaccard=0.7,
+        self,
+        classified_events,
+        all_input_files,
+        tra_delta=50,
+        tra_min_overlap_ratio=0.5,
+        tra_strand_consistency=True,
+        max_distance=50,
+        max_length_ratio=1.3,
+        min_jaccard=0.7,
     ):
-        """
-        Initialize SVMerger with the given parameters and events.
+        """Initialize SVMerger with the given parameters and events.
 
         Args:
             classified_events: Dictionary of classified SV events
@@ -93,8 +93,7 @@ class SVMerger:
         return merged_events
 
     def get_events_by_source(self, sources, operation="union"):
-        """
-        Get events based on their source files and specified operation.
+        """Get events based on their source files and specified operation.
 
         Args:
             sources: List of source file paths
@@ -108,20 +107,24 @@ class SVMerger:
 
         if operation == "union":
             tra_filtered = [
-                event for event in tra_events
+                event
+                for event in tra_events
                 if sources_set.intersection(set([os.path.basename(s) for s in event.source_file.split(",")]))
             ]
             other_filtered = [
-                event for event in other_events
+                event
+                for event in other_events
                 if sources_set.intersection(set([os.path.basename(s) for s in event.source_file.split(",")]))
             ]
         elif operation == "intersection":
             tra_filtered = [
-                event for event in tra_events
+                event
+                for event in tra_events
                 if sources_set.issubset(set([os.path.basename(s) for s in event.source_file.split(",")]))
             ]
             other_filtered = [
-                event for event in other_events
+                event
+                for event in other_events
                 if sources_set.issubset(set([os.path.basename(s) for s in event.source_file.split(",")]))
             ]
         elif operation == "unique":
@@ -130,16 +133,20 @@ class SVMerger:
             other_files = set([os.path.basename(f) for f in self.all_input_files]) - {source_file}
 
             tra_filtered = [
-                event for event in tra_events
+                event
+                for event in tra_events
                 if source_file in [os.path.basename(s) for s in event.source_file.split(",")]
-                and not any(other in [os.path.basename(s) for s in event.source_file.split(",")]
-                            for other in other_files)
+                and not any(
+                    other in [os.path.basename(s) for s in event.source_file.split(",")] for other in other_files
+                )
             ]
             other_filtered = [
-                event for event in other_events
+                event
+                for event in other_events
                 if source_file in [os.path.basename(s) for s in event.source_file.split(",")]
-                and not any(other in [os.path.basename(s) for s in event.source_file.split(",")]
-                            for other in other_files)
+                and not any(
+                    other in [os.path.basename(s) for s in event.source_file.split(",")] for other in other_files
+                )
             ]
         else:
             msg = f"Unsupported operation: {operation}"
@@ -181,7 +188,7 @@ class SVMerger:
             # Extract basename to ensure consistency
             file_name = os.path.basename(file_path)
             # Replace non-alphanumeric characters with underscores
-            identifier = re.sub(r'\W|^(?=\d)', '_', file_name)
+            identifier = re.sub(r"\W|^(?=\d)", "_", file_name)
             return identifier
 
         # Build context for all input files
@@ -201,7 +208,7 @@ class SVMerger:
         for source in all_sources:
             identifier = make_identifier(source)
             # Use regex to replace exact file names to avoid partial matches
-            expr = re.sub(r'\b' + re.escape(os.path.basename(source)) + r'\b', identifier, expr)
+            expr = re.sub(r"\b" + re.escape(os.path.basename(source)) + r"\b", identifier, expr)
 
         # Convert logical operators to Python syntax
         expr = expr.replace("AND", "and").replace("OR", "or").replace("NOT", "not")
@@ -217,11 +224,13 @@ class SVMerger:
         other_events = self.get_all_merged_events()
 
         tra_filtered = [
-            event for event in tra_events
+            event
+            for event in tra_events
             if self.evaluate_expression(expression, [os.path.basename(s) for s in event.source_file.split(",")])
         ]
         other_filtered = [
-            event for event in other_events
+            event
+            for event in other_events
             if self.evaluate_expression(expression, [os.path.basename(s) for s in event.source_file.split(",")])
         ]
         return other_filtered + tra_filtered

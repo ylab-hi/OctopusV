@@ -1,7 +1,7 @@
 import collections
 import logging
+
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -65,9 +65,9 @@ class TypePlotter:
 
         # Set up the figure
         plt.figure(figsize=(10, 8))
-        plt.rcParams['font.family'] = 'sans-serif'
-        plt.rcParams['font.sans-serif'] = ['Arial']
-        plt.rcParams['svg.fonttype'] = 'none'  # Ensure editable text in SVG
+        plt.rcParams["font.family"] = "sans-serif"
+        plt.rcParams["font.sans-serif"] = ["Arial"]
+        plt.rcParams["svg.fonttype"] = "none"  # Ensure editable text in SVG
 
         # Prepare data
         types = list(ordered_data.keys())
@@ -76,42 +76,44 @@ class TypePlotter:
 
         # Create pie chart with refined styling
         explode = [0.01] * len(types)  # Slight separation between segments
-        wedges, texts, autotexts = plt.pie(sizes,
-                                           explode=explode,
-                                           labels=types,
-                                           colors=colors,
-                                           autopct='%1.1f%%',
-                                           pctdistance=0.85,
-                                           startangle=90,
-                                           wedgeprops=dict(width=0.5,
-                                                           edgecolor='white',
-                                                           linewidth=2))
+        wedges, texts, autotexts = plt.pie(
+            sizes,
+            explode=explode,
+            labels=types,
+            colors=colors,
+            autopct="%1.1f%%",
+            pctdistance=0.85,
+            startangle=90,
+            wedgeprops=dict(width=0.5, edgecolor="white", linewidth=2),
+        )
 
         # Style percentage labels
         plt.setp(autotexts, size=9, weight="bold", color="white")
         plt.setp(texts, size=10, weight="bold")
 
         # Add center circle for donut effect
-        centre_circle = plt.Circle((0, 0), 0.70, fc='white', ec='#e0e0e0')
+        centre_circle = plt.Circle((0, 0), 0.70, fc="white", ec="#e0e0e0")
         fig = plt.gcf()
         fig.gca().add_artist(centre_circle)
 
         # Configure legend
         legend_labels = [f"{sv_type}: {ordered_data[sv_type][0]:,}" for sv_type in types]
-        plt.legend(wedges, legend_labels,
-                   title="SV Types",
-                   loc="center left",
-                   bbox_to_anchor=(1, 0, 0.5, 1),
-                   frameon=False,
-                   title_fontsize=12,
-                   fontsize=10)
+        plt.legend(
+            wedges,
+            legend_labels,
+            title="SV Types",
+            loc="center left",
+            bbox_to_anchor=(1, 0, 0.5, 1),
+            frameon=False,
+            title_fontsize=12,
+            fontsize=10,
+        )
 
         # Add title and ensure proportional scaling
-        plt.title("Structural Variant Type Distribution",
-                  pad=20, fontsize=14, fontweight='bold')
-        plt.axis('equal')
+        plt.title("Structural Variant Type Distribution", pad=20, fontsize=14, fontweight="bold")
+        plt.axis("equal")
 
         # Save plots
-        plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches="tight", facecolor='white')
-        plt.savefig(f"{output_prefix}.svg", bbox_inches="tight", facecolor='white')
+        plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches="tight", facecolor="white")
+        plt.savefig(f"{output_prefix}.svg", bbox_inches="tight", facecolor="white")
         plt.close()

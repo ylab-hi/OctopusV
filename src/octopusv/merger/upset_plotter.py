@@ -1,5 +1,6 @@
-import matplotlib.pyplot as plt
 import os
+
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -13,19 +14,19 @@ class UpSetPlotter:
         self.short_input_files = self._shorten_file_names(self.input_files)
 
         # Color settings
-        self.matrix_dot_color = 'black'
-        self.matrix_bg_dot_color = '#D3D3D3'
-        self.matrix_line_color = '#404040'
-        self.bar_color = '#4e79a7'
-        self.intersection_bar_color = '#404040'
-        self.alternate_row_color = '#f5f5f5'  # 非常浅的灰色作为交替行的背景色
+        self.matrix_dot_color = "black"
+        self.matrix_bg_dot_color = "#D3D3D3"
+        self.matrix_line_color = "#404040"
+        self.bar_color = "#4e79a7"
+        self.intersection_bar_color = "#404040"
+        self.alternate_row_color = "#f5f5f5"  # 非常浅的灰色作为交替行的背景色
 
     def _shorten_file_names(self, file_names, max_length=30):
         """Shorten file names if they exceed the maximum length."""
         shortened_names = []
         for name in file_names:
             if len(name) > max_length:
-                shortened = name[:15] + '...' + name[-10:]
+                shortened = name[:15] + "..." + name[-10:]
             else:
                 shortened = name
             shortened_names.append(shortened)
@@ -59,11 +60,7 @@ class UpSetPlotter:
         num_files = len(self.input_files)
 
         # Get intersection combinations sorted by size (from high to low)
-        sorted_intersections = sorted(
-            self.intersections.items(),
-            key=lambda x: (x[1], len(x[0])),
-            reverse=True
-        )
+        sorted_intersections = sorted(self.intersections.items(), key=lambda x: (x[1], len(x[0])), reverse=True)
 
         num_intersections = len(sorted_intersections)
 
@@ -74,12 +71,7 @@ class UpSetPlotter:
         # Create figure with tighter spacing
         fig = plt.figure(figsize=(fig_width, fig_height))
         gs = fig.add_gridspec(
-            nrows=3,
-            ncols=2,
-            height_ratios=[1, 0.05, 2],
-            width_ratios=[1, 2.5],
-            hspace=0.1,
-            wspace=0.2
+            nrows=3, ncols=2, height_ratios=[1, 0.05, 2], width_ratios=[1, 2.5], hspace=0.1, wspace=0.2
         )
 
         # Set up axes
@@ -96,15 +88,15 @@ class UpSetPlotter:
         set_size_ax.set_yticks(y_pos)
         set_size_ax.set_yticklabels([])
         set_size_ax.invert_yaxis()
-        set_size_ax.set_xlabel('Set Size', fontsize=10, labelpad=10)
-        set_size_ax.spines['top'].set_visible(False)
-        set_size_ax.spines['right'].set_visible(False)
+        set_size_ax.set_xlabel("Set Size", fontsize=10, labelpad=10)
+        set_size_ax.spines["top"].set_visible(False)
+        set_size_ax.spines["right"].set_visible(False)
 
         # Add sample names to the right of the bars
-        for bar, name in zip(bars, self.short_input_files):
+        for bar, name in zip(bars, self.short_input_files, strict=False):
             width = bar.get_width()
             y = bar.get_y() + bar.get_height() / 2
-            set_size_ax.text(width + max(set_sizes) * 0.02, y, name, va='center', ha='left', fontsize=10)
+            set_size_ax.text(width + max(set_sizes) * 0.02, y, name, va="center", ha="left", fontsize=10)
 
         # Adjust x-axis limits to make room for labels
         set_size_ax.set_xlim(0, max(set_sizes) * 1.2)
@@ -120,18 +112,18 @@ class UpSetPlotter:
             inter_size_ax.text(
                 bar.get_x() + bar.get_width() / 2,
                 height + (max(intersection_sizes) * 0.02),
-                f'{int(height)}',
-                ha='center',
-                va='bottom',
+                f"{int(height)}",
+                ha="center",
+                va="bottom",
                 fontsize=8,
-                color='gray'
+                color="gray",
             )
 
         # Customize intersection size axis
         inter_size_ax.set_xticks([])
-        inter_size_ax.set_ylabel('Intersection Size', fontsize=10, labelpad=10)
-        inter_size_ax.spines['top'].set_visible(False)
-        inter_size_ax.spines['right'].set_visible(False)
+        inter_size_ax.set_ylabel("Intersection Size", fontsize=10, labelpad=10)
+        inter_size_ax.spines["top"].set_visible(False)
+        inter_size_ax.spines["right"].set_visible(False)
 
         # Create and plot matrix
         matrix = np.zeros((num_files, num_intersections))
@@ -163,8 +155,8 @@ class UpSetPlotter:
                     indices,
                     color=self.matrix_line_color,
                     linewidth=1,
-                    solid_capstyle='round',
-                    zorder=2
+                    solid_capstyle="round",
+                    zorder=2,
                 )
 
         # Customize matrix appearance
@@ -172,7 +164,7 @@ class UpSetPlotter:
         matrix_ax.set_ylim(num_files - 0.5, -0.5)
         matrix_ax.set_xticks([])
         matrix_ax.set_yticks([])
-        matrix_ax.set_facecolor('white')
+        matrix_ax.set_facecolor("white")
 
         # Remove matrix border
         for spine in matrix_ax.spines.values():
@@ -182,5 +174,5 @@ class UpSetPlotter:
         plt.subplots_adjust(left=0.1, right=0.9, wspace=0.3)
 
         # Save plot with white background
-        plt.savefig(output_file, dpi=300, bbox_inches='tight', facecolor='white')
+        plt.savefig(output_file, dpi=300, bbox_inches="tight", facecolor="white")
         plt.close()

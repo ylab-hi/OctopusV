@@ -1,10 +1,12 @@
 # chromosome_plotter.py
 
 import logging
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 logging.basicConfig(level=logging.DEBUG)
+
 
 class ChromosomePlotter:
     def __init__(self, input_file):
@@ -86,8 +88,7 @@ class ChromosomePlotter:
 
         # Create figure with two subplots
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 16), height_ratios=[1, 1])
-        fig.suptitle("Structural Variant Distribution Across Chromosomes",
-                    fontsize=20, y=0.95, fontweight='bold')
+        fig.suptitle("Structural Variant Distribution Across Chromosomes", fontsize=20, y=0.95, fontweight="bold")
 
         # Set the style for both plots
         for ax in [ax1, ax2]:
@@ -96,24 +97,22 @@ class ChromosomePlotter:
             ax.spines["top"].set_visible(False)
             ax.spines["right"].set_visible(False)
             for spine in ax.spines.values():
-                spine.set_color('#cccccc')
+                spine.set_color("#cccccc")
                 spine.set_linewidth(0.8)
             ax.set_xticks(x)
             ax.tick_params(axis="both", which="major", labelsize=12)
 
         # Plot 1: Raw counts with refined color
-        bars1 = ax1.bar(x, raw_counts, color="#4a90e2", width=0.8,
-                       edgecolor='white', linewidth=1)
-        ax1.set_title("Raw SV Counts", fontsize=16, pad=20, fontweight='bold')
-        ax1.set_ylabel("Number of SVs", fontsize=14, fontweight='bold')
+        bars1 = ax1.bar(x, raw_counts, color="#4a90e2", width=0.8, edgecolor="white", linewidth=1)
+        ax1.set_title("Raw SV Counts", fontsize=16, pad=20, fontweight="bold")
+        ax1.set_ylabel("Number of SVs", fontsize=14, fontweight="bold")
         ax1.set_xticklabels(chromosomes, rotation=0)
 
         # Plot 2: Normalized densities with complementary color
-        bars2 = ax2.bar(x, densities, color="#2ecc71", width=0.8,
-                       edgecolor='white', linewidth=1)
-        ax2.set_title("Normalized SV Density", fontsize=16, pad=20, fontweight='bold')
-        ax2.set_xlabel("Chromosome", fontsize=14, fontweight='bold')
-        ax2.set_ylabel("SVs per Mb", fontsize=14, fontweight='bold')
+        bars2 = ax2.bar(x, densities, color="#2ecc71", width=0.8, edgecolor="white", linewidth=1)
+        ax2.set_title("Normalized SV Density", fontsize=16, pad=20, fontweight="bold")
+        ax2.set_xlabel("Chromosome", fontsize=14, fontweight="bold")
+        ax2.set_ylabel("SVs per Mb", fontsize=14, fontweight="bold")
         ax2.set_xticklabels(chromosomes, rotation=0)
 
         # Add value labels on bars
@@ -127,7 +126,7 @@ class ChromosomePlotter:
                     ha="center",
                     va="bottom",
                     fontsize=10,
-                    fontweight='bold'
+                    fontweight="bold",
                 )
 
         add_value_labels(ax1, bars1)
