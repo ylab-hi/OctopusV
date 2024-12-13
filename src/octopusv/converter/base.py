@@ -67,7 +67,10 @@ def get_alt_chrom_pos(alt):
 
 def is_same_bnd_event(event1, event2) -> bool:
     """Define whether the BND represent the same TRA events, used by MatePairMergeToTRAConverter."""
-    qualified_pairings = [{"t[p[", "t]p]"}]
+    qualified_pairings = [
+        {"t[p[", "t]p]"},
+        {"]p]t", "t[p["}  #Added pattern.
+    ]
     event1_pattern = get_bnd_pattern(event1.alt)
     event2_pattern = get_bnd_pattern(event2.alt)
     return any({event1_pattern, event2_pattern} == pairing for pairing in qualified_pairings)
