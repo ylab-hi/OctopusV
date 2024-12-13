@@ -97,7 +97,7 @@ class SVMerger:
 
         Args:
             sources: List of source file paths
-            operation: One of "union", "intersection", or "unique"
+            operation: One of "union", "intersection", or "specific"
         """
         tra_events = self.tra_merger.get_merged_events()
         other_events = self.get_all_merged_events()
@@ -127,7 +127,7 @@ class SVMerger:
                 for event in other_events
                 if sources_set.issubset(set([os.path.basename(s) for s in event.source_file.split(",")]))
             ]
-        elif operation == "unique":
+        elif operation == "specific":
             # Get the target file and all other files
             source_file = list(sources_set)[0]
             other_files = set([os.path.basename(f) for f in self.all_input_files]) - {source_file}
