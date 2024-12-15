@@ -81,6 +81,7 @@ class SVEvent:
         return self.info["SVTYPE"] == "BND"
 
     def __str__(self):
+        """Convert the SVEvent to a string in SVCF format."""
         # Process 'PR' for 'SUPPORT' if not already set and if FORMAT/SAMPLE fields exist
         if "SUPPORT" not in self.info and self.format != "GT":
             format_parts = self.format.split(":")
@@ -108,13 +109,7 @@ class SVEvent:
             info_str_parts.append(f"{key}={value}")
         info_str = ";".join(info_str_parts)
 
-        # Handle minimal FORMAT/SAMPLE fields when they don't exist in input
-        if self.format == "GT" and self.sample == "0/1":
-            return (
-                f"{self.chrom}\t{self.pos}\t{self.id}\t{self.ref}\t{self.alt}\t{self.qual}\t{self.filter}\t{info_str}"
-            )
-
-        # Otherwise, include FORMAT and SAMPLE fields
+        # Always include FORMAT and SAMPLE fields
         format_order = ["GT", "AD", "LN", "ST", "QV", "TY", "ID", "SC", "REF", "ALT", "CO"]
         format_str = ":".join(format_order)
         sample_str = construct_sample_string(self)
