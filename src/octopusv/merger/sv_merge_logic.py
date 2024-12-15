@@ -1,98 +1,81 @@
 def should_merge(event1, event2, max_distance=50, max_length_ratio=1.3, min_jaccard=0.7):
-    """Determines whether two SV events should be merged.
-
-    Enhanced version with multiple dimensions of analysis:
-    1. Breakpoint consistency analysis
-    2. Proportional analysis
-    3. Position sensitivity analysis
-    4. Local pattern analysis
+    """Determines whether two SV events should be merged based on simple position and length comparison.
 
     Args:
-        event1: The first SV event
-        event2: The second SV event
-        max_distance: Maximum allowed distance between positions
-        max_length_ratio: Maximum allowed ratio between lengths
-        min_jaccard: Minimum required Jaccard index
+        event1: First SV event
+        event2: Second SV event
+        max_distance: Base maximum allowed distance between positions
+        max_length_ratio: Base maximum allowed ratio between lengths
+        min_jaccard: Base minimum required Jaccard index (not used in simplified version)
 
     Returns:
         bool: True if events should be merged
     """
-    # 1. Initial position checks
+    # Compare chromosomes
+    if event1.chrom != event2.chrom:
+        return False
+
+    # Get event type
+    sv_type = event1.info.get("SVTYPE", "")
+
+    # Safely get lengths
+    def get_length(event):
+        svlen = event.info.get("SVLEN", ".")
+        try:
+            if svlen == "." or not svlen:
+                return event.end_pos - event.start_pos + 1
+            return abs(int(svlen))
+        except (ValueError, TypeError):
+            return event.end_pos - event.start_pos + 1
+
+    length1 = get_length(event1)
+    length2 = get_length(event2)
+
+    # Get type-specific thresholds
+    distance_threshold = _get_distance_threshold(sv_type, min(length1, length2))
+    length_ratio_threshold = _get_length_ratio_threshold(sv_type)
+
+    # Position comparison
     start_diff = abs(event1.start_pos - event2.start_pos)
     end_diff = abs(event1.end_pos - event2.end_pos)
 
-    if start_diff > max_distance or end_diff > max_distance:
+    if start_diff > distance_threshold:
         return False
 
-    # 2. Length calculations
-    length1 = event1.end_pos - event1.start_pos + 1
-    length2 = event2.end_pos - event2.start_pos + 1
-    min_length = min(length1, length2)
-    max_length = max(length1, length2)
-
-    # 3. Enhanced proportional analysis
-    # Consider the proportion of difference relative to SV size
-    start_diff_ratio = start_diff / min_length
-    end_diff_ratio = end_diff / min_length
-
-    # Reject if position difference is too large relative to SV size
-    if start_diff_ratio > 0.2 or end_diff_ratio > 0.2:
+    # For non-INS events, also check end position
+    if sv_type != "INS" and end_diff > distance_threshold:
         return False
 
-    # 4. Position sensitivity analysis
-    # Check if differences are proportional
-    diff_ratio = abs(start_diff - end_diff) / max_distance
-    if diff_ratio > 0.6:  # One end matches much better than the other
+    # Length ratio comparison
+    if length1 == 0 or length2 == 0:
         return False
 
-    # 5. Breakpoint consistency score
-    bp_consistency = 1 - ((start_diff + end_diff) / (2 * max_distance))
+    ratio = max(length1, length2) / min(length1, length2)
+    return ratio <= length_ratio_threshold
 
-    # 6. Enhanced length ratio analysis with size awareness
-    length_ratio = max_length / min_length
 
-    # Adjust ratio threshold based on SV size
-    if min_length < 100:  # Small SVs
-        adjusted_ratio = max_length_ratio * 0.9  # More strict
-    elif min_length > 10000:  # Large SVs
-        adjusted_ratio = max_length_ratio * 1.1  # More lenient
-    else:  # Medium SVs
-        # Linear scaling between 0.9 and 1.1
-        scale_factor = (min_length - 100) / 9900  # 0 to 1
-        adjusted_ratio = max_length_ratio * (0.9 + scale_factor * 0.2)
+def _get_distance_threshold(sv_type, min_length):
+    """Get distance threshold based on SV type and minimum length."""
+    base_threshold = {
+        "INS": 200,  # More lenient for insertions
+        "DEL": 150,
+        "DUP": 100,
+        "INV": 100,
+    }.get(sv_type, 50)
 
-    if length_ratio > adjusted_ratio:
-        return False
+    # Adjust threshold based on event size
+    if min_length >= 1000:
+        return base_threshold * 2
+    elif min_length >= 500:
+        return base_threshold * 1.5
+    return base_threshold
 
-    # 7. Local pattern analysis
-    # Check if the differences follow a consistent pattern
-    position_pattern = abs(start_diff_ratio - end_diff_ratio)
-    if position_pattern > 0.15:  # Differences should be somewhat consistent
-        return False
 
-    # 8. Enhanced overlap analysis
-    overlap_start = max(event1.start_pos, event2.start_pos)
-    overlap_end = min(event1.end_pos, event2.end_pos)
-
-    if overlap_start <= overlap_end:
-        overlap_length = overlap_end - overlap_start + 1
-        union_start = min(event1.start_pos, event2.start_pos)
-        union_end = max(event1.end_pos, event2.end_pos)
-        union_length = union_end - union_start + 1
-
-        # Basic Jaccard
-        jaccard = overlap_length / union_length
-
-        # Adjust required Jaccard based on consistency scores
-        bp_factor = 0.9 + (bp_consistency * 0.2)  # 0.9 to 1.1
-        size_factor = 0.9 + (min(length1, 10000) / 10000 * 0.2)  # 0.9 to 1.1
-
-        required_jaccard = min_jaccard / (bp_factor * size_factor)
-
-        # Additional check for small SVs
-        if min_length < 100 and jaccard < required_jaccard * 1.1:
-            return False
-
-        return jaccard >= required_jaccard
-
-    return False
+def _get_length_ratio_threshold(sv_type):
+    """Get length ratio threshold based on SV type."""
+    return {
+        "INS": 3.0,  # Very lenient for insertions
+        "DEL": 2.0,  # Somewhat lenient for deletions
+        "DUP": 1.5,
+        "INV": 1.5,
+    }.get(sv_type, 1.3)

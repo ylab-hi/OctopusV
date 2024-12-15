@@ -1,54 +1,105 @@
-def should_merge_tra(event1, event2, delta=50, min_overlap_ratio=0.5, strand_consistency=True):
-    # Check chrom
+def should_merge_tra(event1, event2, delta=100, min_overlap_ratio=0.4, strand_consistency=True):
+    """Determines whether two TRA events should be merged based on comprehensive pattern matching.
+
+    Args:
+        event1: First TRA event
+        event2: Second TRA event
+        delta: Position uncertainty threshold (default: 100bp)
+        min_overlap_ratio: Minimum required overlap ratio
+        strand_consistency: Whether to enforce strand consistency
+    """
+    # Check chromosomes
     if {event1.start_chrom, event1.end_chrom} != {event2.start_chrom, event2.end_chrom}:
         return False
 
-    # Check strand
-    if strand_consistency and not _is_compatible_bnd_pattern(event1.bnd_pattern, event2.bnd_pattern):
+    # Position comparison logic
+    if _should_swap_positions(event1.alt, event2.alt):
+        e2_start = event2.end_pos
+        e2_end = event2.start_pos
+    else:
+        e2_start = event2.start_pos
+        e2_end = event2.end_pos
+
+    # More lenient position checks for TRA
+    start_diff = abs(event1.start_pos - e2_start)
+    end_diff = abs(event1.end_pos - e2_end)
+
+    if start_diff > delta or end_diff > delta:
         return False
 
-    # Calculate breakpoint diff
-    pos1_diff = abs(event1.start_pos - event2.start_pos)
-    pos2_diff = abs(event1.end_pos - event2.end_pos)
-    if pos1_diff > 2 * delta or pos2_diff > 2 * delta:
+    return True
+
+
+def _should_swap_positions(alt1, alt2):
+    """Determine if positions should be swapped based on BND patterns.
+
+    Args:
+        alt1: First BND ALT field
+        alt2: Second BND ALT field
+
+    Returns:
+        bool: True if positions should be swapped
+    """
+    if not alt1 or not alt2:
         return False
 
-    # Calculate overlap similarity
-    overlap1 = max(
-        0,
-        min(event1.start_pos + delta, event2.start_pos + delta)
-        - max(event1.start_pos - delta, event2.start_pos - delta),
-    )
-    overlap2 = max(
-        0, min(event1.end_pos + delta, event2.end_pos + delta) - max(event1.end_pos - delta, event2.end_pos - delta)
-    )
+    pattern1 = _classify_bnd_pattern(alt1)
+    pattern2 = _classify_bnd_pattern(alt2)
 
-    ratio1 = overlap1 / (2 * delta)
-    ratio2 = overlap2 / (2 * delta)
-
-    return ratio1 >= min_overlap_ratio and ratio2 >= min_overlap_ratio
+    return _are_reciprocal_patterns(pattern1, pattern2)
 
 
-def _is_compatible_bnd_pattern(pattern1, pattern2):
-    if pattern1 is None or pattern2 is None:
-        return True  # 如果任一模式缺失，我们假设它们兼容
-    if pattern1 == "<TRA>" and pattern2 == "<TRA>":
-        return True
+def _classify_bnd_pattern(alt):
+    """Classify BND pattern from ALT field.
 
-    def classify_pattern(pattern):
-        if pattern == "<TRA>":
-            return 5  # Special case for <TRA>
-        if pattern.startswith("]") and pattern.endswith("N"):
-            return 1  # ]chr:pos]N
-        if pattern.startswith("N[") and pattern.endswith("["):
-            return 2  # N[chr:pos[
-        if pattern.startswith("N]") and pattern.endswith("]"):
-            return 3  # N]chr:pos]
-        if pattern.startswith("[") and pattern.endswith("N"):
-            return 4  # [chr:pos[N
-        return 0  # Unknown pattern
+    Args:
+        alt: BND ALT field value
 
-    class1 = classify_pattern(pattern1)
-    class2 = classify_pattern(pattern2)
+    Returns:
+        str: Pattern classification
+    """
+    if not alt:
+        return "UNKNOWN"
 
-    return class1 == class2 and class1 != 0
+    # Extract basic pattern structure
+    import re
+    # Remove chromosome and position numbers but keep structure
+    pattern = re.sub(r'chr\d+:\d+', 'chrN:N', alt)
+    pattern = re.sub(r'\d+:\d+', 'N:N', pattern)
+
+    if pattern.startswith(']'):
+        return "RIGHT_TO_LEFT"
+    elif ']' in pattern and pattern.endswith('N'):
+        return "RIGHT_TO_LEFT"
+    elif pattern.startswith('N['):
+        return "LEFT_TO_RIGHT"
+    elif '[' in pattern and pattern.endswith('['):
+        return "LEFT_TO_RIGHT"
+    elif pattern.startswith('N]'):
+        return "RIGHT_TO_RIGHT"
+    elif ']' in pattern and pattern.endswith(']'):
+        return "RIGHT_TO_RIGHT"
+    elif pattern.startswith('['):
+        return "LEFT_TO_LEFT"
+    elif '[' in pattern and pattern.endswith('N'):
+        return "LEFT_TO_LEFT"
+
+    return "UNKNOWN"
+
+
+def _are_reciprocal_patterns(pattern1, pattern2):
+    """Check if two patterns are reciprocal.
+
+    Args:
+        pattern1: First pattern classification
+        pattern2: Second pattern classification
+
+    Returns:
+        bool: True if patterns are reciprocal
+    """
+    reciprocal_pairs = {
+        ("RIGHT_TO_LEFT", "LEFT_TO_RIGHT"),
+        ("RIGHT_TO_RIGHT", "LEFT_TO_LEFT")
+    }
+
+    return (pattern1, pattern2) in reciprocal_pairs or (pattern2, pattern1) in reciprocal_pairs
