@@ -8,6 +8,9 @@ def should_merge_tra(event1, event2, delta=100, min_overlap_ratio=0.4, strand_co
         min_overlap_ratio: Minimum required overlap ratio
         strand_consistency: Whether to enforce strand consistency
     """
+    # Increase default delta for TRA events to better handle tool-specific variations
+    tra_delta = delta * 2  # More relax
+
     # Check chromosomes
     if {event1.start_chrom, event1.end_chrom} != {event2.start_chrom, event2.end_chrom}:
         return False
@@ -24,11 +27,10 @@ def should_merge_tra(event1, event2, delta=100, min_overlap_ratio=0.4, strand_co
     start_diff = abs(event1.start_pos - e2_start)
     end_diff = abs(event1.end_pos - e2_end)
 
-    if start_diff > delta or end_diff > delta:
+    if start_diff > tra_delta or end_diff > tra_delta:
         return False
 
     return True
-
 
 def _should_swap_positions(alt1, alt2):
     """Determine if positions should be swapped based on BND patterns.
@@ -47,7 +49,6 @@ def _should_swap_positions(alt1, alt2):
     pattern2 = _classify_bnd_pattern(alt2)
 
     return _are_reciprocal_patterns(pattern1, pattern2)
-
 
 def _classify_bnd_pattern(alt):
     """Classify BND pattern from ALT field.
@@ -85,7 +86,6 @@ def _classify_bnd_pattern(alt):
         return "LEFT_TO_LEFT"
 
     return "UNKNOWN"
-
 
 def _are_reciprocal_patterns(pattern1, pattern2):
     """Check if two patterns are reciprocal.
