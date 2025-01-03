@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OctopuSV Analysis Report</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .section {
+        margin-bottom: 40px;
+      }
+
+      .figure-container {
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .figure-caption {
+        margin-top: 10px;
+        font-style: italic;
+        color: #666;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f4f4f4;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>OctopusV Analysis Report</h1>
+        <p>Generated on: {{ generation_date }}</p>
+        <p>Sample ID: {{ sample_id }}</p>
+      </div>
+
+      <div class="section">
+        <h2>Summary Statistics</h2>
+        <table>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+          </tr>
+          {% for metric, value in summary_stats.items() %}
+          <tr>
+            <td>{{ metric }}</td>
+            <td>{{ value }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>Structural Variant Distribution</h2>
+        <div class="figure-container">
+          <img src="{{ sv_distribution_plot }}" alt="SV Distribution Plot" />
+          <p class="figure-caption">
+            Distribution of structural variants by type
+          </p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Chromosome Coverage</h2>
+        <div class="figure-container">
+          <img
+            src="{{ chromosome_coverage_plot }}"
+            alt="Chromosome Coverage Plot"
+          />
+          <p class="figure-caption">Coverage distribution across chromosomes</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Size Distribution</h2>
+        <div class="figure-container">
+          <img
+            src="{{ size_distribution_plot }}"
+            alt="Size Distribution Plot"
+          />
+          <p class="figure-caption">
+            Size distribution of detected structural variants
+          </p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Quality Metrics</h2>
+        <div class="figure-container">
+          <img src="{{ quality_metrics_plot }}" alt="Quality Metrics Plot" />
+          <p class="figure-caption">
+            Distribution of quality scores for detected variants
+          </p>
+        </div>
+      </div>
+
+      {% if additional_plots %}
+      <div class="section">
+        <h2>Additional Analysis</h2>
+        {% for plot in additional_plots %}
+        <div class="figure-container">
+          <img src="{{ plot.path }}" alt="{{ plot.title }}" />
+          <p class="figure-caption">{{ plot.description }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </body>
+</html>
