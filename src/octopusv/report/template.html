@@ -1,57 +1,132 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OctopuSV Analysis Report</title>
     <style>
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --accent-color: #e74c3c;
+        --background-color: #f8f9fa;
+        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
       body {
-        font-family: Arial, sans-serif;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
         line-height: 1.6;
         margin: 0;
-        padding: 20px;
+        padding: 0;
+        background-color: var(--background-color);
+        color: var(--primary-color);
       }
 
       .container {
         max-width: 1200px;
         margin: 0 auto;
+        padding: 2rem;
       }
 
       .header {
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: white;
+        border-radius: 10px;
+        box-shadow: var(--card-shadow);
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
       }
 
       .section {
-        margin-bottom: 40px;
+        background: white;
+        margin-bottom: 2rem;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: var(--card-shadow);
+      }
+
+      .section h2 {
+        color: var(--secondary-color);
+        border-bottom: 2px solid var(--secondary-color);
+        padding-bottom: 0.5rem;
+        margin-top: 0;
       }
 
       .figure-container {
-        margin: 20px 0;
+        margin: 2rem 0;
         text-align: center;
       }
 
+      .figure-container img {
+        max-width: 100%;
+        border-radius: 8px;
+        box-shadow: var(--card-shadow);
+        transition: transform 0.3s ease;
+      }
+
+      .figure-container img:hover {
+        transform: scale(1.02);
+      }
+
       .figure-caption {
-        margin-top: 10px;
+        margin-top: 1rem;
         font-style: italic;
         color: #666;
       }
 
       table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
         margin: 20px 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
       }
 
       th,
       td {
-        border: 1px solid #ddd;
-        padding: 8px;
+        padding: 12px 15px;
         text-align: left;
+        border-bottom: 1px solid #ddd;
       }
 
       th {
-        background-color: #f4f4f4;
+        background-color: var(--secondary-color);
+        color: white;
+        font-weight: 600;
+      }
+
+      tr:nth-child(even) {
+        background-color: #f8f9fa;
+      }
+
+      tr:hover {
+        background-color: #f1f4f6;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+        .section {
+          padding: 1rem;
+        }
+        table {
+          display: block;
+          overflow-x: auto;
+        }
       }
     </style>
   </head>

@@ -34,7 +34,7 @@ profile/
 *.o
 *.so
 main.cpp
-
+.vscode
 
 kent
 bin
