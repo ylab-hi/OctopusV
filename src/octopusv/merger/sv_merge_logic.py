@@ -66,7 +66,7 @@ def _get_distance_threshold(sv_type, min_length):
     # Adjust threshold based on event size
     if min_length >= 1000:
         return base_threshold * 2
-    elif min_length >= 500:
+    if min_length >= 500:
         return base_threshold * 1.5
     return base_threshold
 

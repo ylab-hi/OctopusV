@@ -25,23 +25,22 @@ from octopusv.utils.svcf_utils import write_sv_vcf
 
 
 def correct(
-        input_vcf: Path | None = typer.Argument(
-            None, exists=True, dir_okay=False, resolve_path=True, help="Input VCF file to correct."
-        ),
-        output: Path | None = typer.Argument(None, dir_okay=False, resolve_path=True, help="Output file path."),
-        input_option: Path | None = typer.Option(
-            None, "--input-file", "-i", exists=True, dir_okay=False, resolve_path=True,
-            help="Input VCF file to correct."
-        ),
-        output_option: Path | None = typer.Option(
-            None, "--output-file", "-o", dir_okay=False, resolve_path=True, help="Output file path."
-        ),
-        pos_tolerance: int = typer.Option(
-            3,
-            "--pos-tolerance",
-            "-pt",
-            help="Position tolerance for identifying mate BND events, default=3, recommend not to set larger than 5",
-        ),
+    input_vcf: Path | None = typer.Argument(
+        None, exists=True, dir_okay=False, resolve_path=True, help="Input VCF file to correct."
+    ),
+    output: Path | None = typer.Argument(None, dir_okay=False, resolve_path=True, help="Output file path."),
+    input_option: Path | None = typer.Option(
+        None, "--input-file", "-i", exists=True, dir_okay=False, resolve_path=True, help="Input VCF file to correct."
+    ),
+    output_option: Path | None = typer.Option(
+        None, "--output-file", "-o", dir_okay=False, resolve_path=True, help="Output file path."
+    ),
+    pos_tolerance: int = typer.Option(
+        3,
+        "--pos-tolerance",
+        "-pt",
+        help="Position tolerance for identifying mate BND events, default=3, recommend not to set larger than 5",
+    ),
 ):
     """Correct SV events."""
     # Determine input file
@@ -87,23 +86,29 @@ def correct(
     )
 
     # Initialize the EventTransformer with a list of transform strategies for each type of events
-    same_chr_bnd_transformer = SameChrBNDTransformer([
-        BND_to_INV_Converter(),
-        BND_to_DUP_Converter(),
-        BND_to_TRA_Forward_Converter(),
-        BND_to_TRA_Reverse_Converter(),
-    ])
+    same_chr_bnd_transformer = SameChrBNDTransformer(
+        [
+            BND_to_INV_Converter(),
+            BND_to_DUP_Converter(),
+            BND_to_TRA_Forward_Converter(),
+            BND_to_TRA_Reverse_Converter(),
+        ]
+    )
 
-    mate_bnd_pair_transformer = MatePairBNDTransformer([
-        MatePairReciprocalTranslocationToTRAConverter(),
-        MatePairIndependentToTRAConverter(),
-        MatePairMergeToTRAConverter(),
-    ])
+    mate_bnd_pair_transformer = MatePairBNDTransformer(
+        [
+            MatePairReciprocalTranslocationToTRAConverter(),
+            MatePairIndependentToTRAConverter(),
+            MatePairMergeToTRAConverter(),
+        ]
+    )
 
-    special_no_mate_diff_bnd_pair_transformer = SpecialNoMateDiffBNDPairTransformer([
-        SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter(),
-        SpecialNoMateDiffBNDPairIndependentToTRAConverter(),
-    ])
+    special_no_mate_diff_bnd_pair_transformer = SpecialNoMateDiffBNDPairTransformer(
+        [
+            SpecialNoMateDiffBNDPairReciprocalTranslocationToTRAConverter(),
+            SpecialNoMateDiffBNDPairIndependentToTRAConverter(),
+        ]
+    )
 
     single_TRA_transformer = SingleTRATransformer([SingleTRAToTRAConverter()])
     non_bnd_transformer = NonBNDTransformer([NonBNDConverter()])
@@ -119,11 +124,11 @@ def correct(
 
     # Merge all transformed events
     all_transformed_events = (
-            same_chr_bnd_transformed_events
-            + mate_pair_transformed_events
-            + special_no_mate_diff_bnd_pair_transformed_events
-            + single_TRA_transformed_events
-            + non_bnd_transformed_events
+        same_chr_bnd_transformed_events
+        + mate_pair_transformed_events
+        + special_no_mate_diff_bnd_pair_transformed_events
+        + single_TRA_transformed_events
+        + non_bnd_transformed_events
     )
 
     # Write the transformed events to the output file
@@ -243,9 +248,7 @@ def find_special_no_mate_diff_bnd_pair_and_other_single_tra(events, pos_toleranc
             mate_found = False
             for reverse_key in possible_reverse_keys:
                 if reverse_key in event_dict:
-                    special_no_mate_diff_bnd_pair.append(
-                        (event_dict.pop(reverse_key), event)
-                    )
+                    special_no_mate_diff_bnd_pair.append((event_dict.pop(reverse_key), event))
                     mate_found = True
                     break
 

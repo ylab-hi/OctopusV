@@ -37,19 +37,19 @@ class ReportGenerator:
         """
         # Prepare template variables
         template_vars = {
-            'generation_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'sample_id': sample_id,
-            'summary_stats': summary_stats,
-            'sv_distribution_plot': plots.get('sv_distribution_plot', ''),
-            'chromosome_coverage_plot': plots.get('chromosome_coverage_plot', ''),
-            'size_distribution_plot': plots.get('size_distribution_plot', ''),
-            'quality_metrics_plot': plots.get('quality_metrics_plot', ''),
-            'additional_plots': plots.get('additional_plots', [])
+            "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "sample_id": sample_id,
+            "summary_stats": summary_stats,
+            "sv_distribution_plot": plots.get("sv_distribution_plot", ""),
+            "chromosome_coverage_plot": plots.get("chromosome_coverage_plot", ""),
+            "size_distribution_plot": plots.get("size_distribution_plot", ""),
+            "quality_metrics_plot": plots.get("quality_metrics_plot", ""),
+            "additional_plots": plots.get("additional_plots", []),
         }
 
         # Render template
         html_content = self.template.render(**template_vars)
 
         # Write output file
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             f.write(html_content)
