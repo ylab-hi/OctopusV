@@ -68,21 +68,13 @@ def _classify_bnd_pattern(alt):
     pattern = re.sub(r'chr\d+:\d+', 'chrN:N', alt)
     pattern = re.sub(r'\d+:\d+', 'N:N', pattern)
 
-    if pattern.startswith(']'):
+    if pattern.startswith(']') or ']' in pattern and pattern.endswith('N'):
         return "RIGHT_TO_LEFT"
-    elif ']' in pattern and pattern.endswith('N'):
-        return "RIGHT_TO_LEFT"
-    elif pattern.startswith('N['):
+    elif pattern.startswith('N[') or '[' in pattern and pattern.endswith('['):
         return "LEFT_TO_RIGHT"
-    elif '[' in pattern and pattern.endswith('['):
-        return "LEFT_TO_RIGHT"
-    elif pattern.startswith('N]'):
+    elif pattern.startswith('N]') or ']' in pattern and pattern.endswith(']'):
         return "RIGHT_TO_RIGHT"
-    elif ']' in pattern and pattern.endswith(']'):
-        return "RIGHT_TO_RIGHT"
-    elif pattern.startswith('['):
-        return "LEFT_TO_LEFT"
-    elif '[' in pattern and pattern.endswith('N'):
+    elif pattern.startswith('[') or '[' in pattern and pattern.endswith('N'):
         return "LEFT_TO_LEFT"
 
     return "UNKNOWN"

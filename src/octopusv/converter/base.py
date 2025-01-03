@@ -1,5 +1,6 @@
 import logging
 import re
+
 from natsort import natsorted
 
 logging.basicConfig(level=logging.INFO)
@@ -60,7 +61,7 @@ def get_alt_chrom_pos(alt):
 
     except Exception as e:
         logging.info(
-            f"Error parsing ALT field: {alt}, error: {str(e)}"
+            f"Error parsing ALT field: {alt}, error: {e!s}"
         )
         return None, None
 
@@ -114,6 +115,7 @@ def is_SpecialNoMateDiffBndPairReciprocalTranslocation(event1, event2):
 
 def compare_chromosomes(event1, event2):
     """Determine if the chromosome of event1 is smaller than the chromosome of event2 using natural sort order.
+
     Returns:
         bool: True if the chromosome of event1 is smaller or equal to the chromosome of event2, False otherwise.
     """

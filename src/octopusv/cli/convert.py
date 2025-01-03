@@ -1,5 +1,6 @@
-from pathlib import Path
 import logging
+from pathlib import Path
+
 import typer
 
 from octopusv.converter.base import get_alt_chrom_pos
@@ -161,7 +162,7 @@ def find_mate_bnd_events(events, pos_tolerance=3):
                 event_dict[key_for_searching] = event
 
         except (TypeError, ValueError) as e:
-            logging.info(f"Error processing event: {str(e)}")
+            logging.info(f"Error processing event: {e!s}")
             continue
 
     return mate_bnd_pairs
@@ -209,7 +210,7 @@ def find_no_mate_events(events, pos_tolerance=3):
                 event_dict[key].append(event)
 
         except (TypeError, ValueError) as e:
-            logging.info(f"Error processing event: {str(e)}")
+            logging.info(f"Error processing event: {e!s}")
             continue
 
     return [single_event for event_list in event_dict.values() for single_event in event_list]
@@ -252,7 +253,7 @@ def find_special_no_mate_diff_bnd_pair_and_other_single_tra(events, pos_toleranc
                 event_dict[key] = event
 
         except (TypeError, ValueError) as e:
-            logging.info(f"Error processing event: {str(e)}")
+            logging.info(f"Error processing event: {e!s}")
             continue
 
     other_single_TRA = list(event_dict.values())
