@@ -1,215 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OctopuSV Analysis Report</title>
     <style>
-      :root {
-        --primary-color: #2c3e50;
-        --secondary-color: #3498db;
-        --accent-color: #e74c3c;
-        --background-color: #f8f9fa;
-        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-
-      body {
-        font-family: "Segoe UI", Roboto, Arial, sans-serif;
-        line-height: 1.6;
-        margin: 0;
-        padding: 0;
-        background-color: var(--background-color);
-        color: var(--primary-color);
-      }
-
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem;
-      }
-
-      .header {
-        text-align: center;
-        margin-bottom: 3rem;
-        padding: 2rem;
-        background: linear-gradient(
-          135deg,
-          var(--primary-color),
-          var(--secondary-color)
-        );
-        color: white;
-        border-radius: 10px;
-        box-shadow: var(--card-shadow);
-      }
-
-      .header h1 {
-        margin: 0;
-        font-size: 2.5rem;
-        font-weight: 700;
-      }
-
-      .section {
-        background: white;
-        margin-bottom: 2rem;
-        padding: 2rem;
-        border-radius: 10px;
-        box-shadow: var(--card-shadow);
-      }
-
-      .section h2 {
-        color: var(--secondary-color);
-        border-bottom: 2px solid var(--secondary-color);
-        padding-bottom: 0.5rem;
-        margin-top: 0;
-      }
-
-      .figure-container {
-        margin: 2rem 0;
-        text-align: center;
-      }
-
-      .figure-container img {
-        max-width: 100%;
-        border-radius: 8px;
-        box-shadow: var(--card-shadow);
-        transition: transform 0.3s ease;
-      }
-
-      .figure-container img:hover {
-        transform: scale(1.02);
-      }
-
-      .figure-caption {
-        margin-top: 1rem;
-        font-style: italic;
-        color: #666;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        margin: 20px 0;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: var(--card-shadow);
-      }
-
-      th,
-      td {
-        padding: 12px 15px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-      }
-
-      th {
-        background-color: var(--secondary-color);
-        color: white;
-        font-weight: 600;
-      }
-
-      tr:nth-child(even) {
-        background-color: #f8f9fa;
-      }
-
-      tr:hover {
-        background-color: #f1f4f6;
-      }
-
-      @media (max-width: 768px) {
+         :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #f8f9fa;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--primary-color);
+        }
+        
         .container {
-          padding: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient( 135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 1rem;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
         .section {
-          padding: 1rem;
+            background: white;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
         }
+        
+        .section h2 {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+        
+        .figure-container {
+            margin: 2rem 0;
+            text-align: center;
+        }
+        
+        .figure-container img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease;
+        }
+        
+        .figure-container img:hover {
+            transform: scale(1.02);
+        }
+        
+        .figure-caption {
+            margin-top: 1rem;
+            font-style: italic;
+            color: #666;
+        }
+        
         table {
-          display: block;
-          overflow-x: auto;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
         }
-      }
+        
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #f1f4f6;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            .section {
+                padding: 1rem;
+            }
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
     </style>
-  </head>
+</head>
 
-  <body>
+<body>
     <div class="container">
-      <div class="header">
-        <h1>OctopusV Analysis Report</h1>
-        <p>Generated on: {{ generation_date }}</p>
-        <p>Sample ID: {{ sample_id }}</p>
-      </div>
-
-      <div class="section">
-        <h2>Summary Statistics</h2>
-        <table>
-          <tr>
-            <th>Metric</th>
-            <th>Value</th>
-          </tr>
-          {% for metric, value in summary_stats.items() %}
-          <tr>
-            <td>{{ metric }}</td>
-            <td>{{ value }}</td>
-          </tr>
-          {% endfor %}
-        </table>
-      </div>
-
-      <div class="section">
-        <h2>Structural Variant Distribution</h2>
-        <div class="figure-container">
-          <img src="{{ sv_distribution_plot }}" alt="SV Distribution Plot" />
-          <p class="figure-caption">
-            Distribution of structural variants by type
-          </p>
+        <div class="header">
+            <!-- Change logo to base64 embedded image -->
+            <img src="./logo.png" alt="OctopuSV Logo" class="logo" />
+            <h1>OctopusV Analysis Report</h1>
+            <p>Generated on: {{ generation_date }}</p>
+            <p>Sample ID: {{ sample_id }}</p>
         </div>
-      </div>
 
-      <div class="section">
-        <h2>Chromosome Coverage</h2>
-        <div class="figure-container">
-          <img
-            src="{{ chromosome_coverage_plot }}"
-            alt="Chromosome Coverage Plot"
-          />
-          <p class="figure-caption">Coverage distribution across chromosomes</p>
-        </div>
-      </div>
 
-      <div class="section">
-        <h2>Size Distribution</h2>
-        <div class="figure-container">
-          <img
-            src="{{ size_distribution_plot }}"
-            alt="Size Distribution Plot"
-          />
-          <p class="figure-caption">
-            Size distribution of detected structural variants
-          </p>
+        <div class="section">
+            <h2>Structural Variant Distribution</h2>
+            <div class="figure-container">
+                <img src="data:image/png;base64,{{ sv_distribution_plot_base64 }}" alt="SV Distribution Plot" />
+                <p class="figure-caption">Distribution of structural variants by type</p>
+            </div>
         </div>
-      </div>
 
-      <div class="section">
-        <h2>Quality Metrics</h2>
-        <div class="figure-container">
-          <img src="{{ quality_metrics_plot }}" alt="Quality Metrics Plot" />
-          <p class="figure-caption">
-            Distribution of quality scores for detected variants
-          </p>
+        <div class="section">
+            <h2>Chromosome Coverage</h2>
+            <div class="figure-container">
+                <img src="data:image/png;base64,{{ chromosome_coverage_plot_base64 }}" alt="Chromosome Coverage Plot" />
+                <p class="figure-caption">Coverage distribution across chromosomes</p>
+            </div>
         </div>
-      </div>
 
-      {% if additional_plots %}
-      <div class="section">
-        <h2>Additional Analysis</h2>
-        {% for plot in additional_plots %}
-        <div class="figure-container">
-          <img src="{{ plot.path }}" alt="{{ plot.title }}" />
-          <p class="figure-caption">{{ plot.description }}</p>
+        <div class="section">
+            <h2>Size Distribution</h2>
+            <div class="figure-container">
+                <img src="data:image/png;base64,{{ size_distribution_plot_base64 }}" alt="Size Distribution Plot" />
+                <p class="figure-caption">Size distribution of detected structural variants</p>
+            </div>
         </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
-  </body>
+
+        <div class="section">
+            <h2>Quality Metrics</h2>
+            <div class="figure-container">
+                <img src="data:image/png;base64,{{ quality_metrics_plot_base64 }}" alt="Quality Metrics Plot" />
+                <p class="figure-caption">Distribution of quality scores for detected variants</p>
+            </div>
+        </div>
+
+        {% if additional_plots %}
+        <div class="section">
+            <h2>Additional Analysis</h2>
+            {% for plot in additional_plots %}
+            <div class="figure-container">
+                <img src="data:image/png;base64,{{ plot.base64_data }}" alt="{{ plot.title }}" />
+                <p class="figure-caption">{{ plot.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+</body>
+
 </html>
