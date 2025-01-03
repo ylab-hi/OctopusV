@@ -104,6 +104,7 @@ octopusv plot -i stats.txt -o output_prefix
 ```
 
 This will create:
+
 - `output_prefix_chromosome_distribution.png`: SV distribution across chromosomes
 
 <p align="center">
@@ -162,21 +163,25 @@ octopusv svcf2vcf -i variants.svcf -o variants.vcf
 We welcome contributions! Here's how you can help:
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/ylab-hi/octopusV.git
    ```
 
 2. Create a feature branch:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 3. Install development dependencies:
+
    ```bash
    poetry install
    ```
 
 4. Make your changes and ensure all checks pass:
+
    ```bash
    pre-commit run -a
    ```
@@ -190,6 +195,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contact
 
 For questions and feedback:
+
 - GitHub Issues: [https://github.com/ylab-hi/octopusV/issues](https://github.com/ylab-hi/octopusV/issues)
 - Email: [qingxiang.guo@northwestern.edu]
 - Email: [yangyang.li@northwestern.edu]

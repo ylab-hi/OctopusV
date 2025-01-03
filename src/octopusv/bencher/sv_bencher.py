@@ -127,10 +127,7 @@ class SVBencher:
 
             # Check reciprocal overlap
             overlap = self._calculate_overlap(truth_event, call_event)
-            if overlap < self.reciprocal_overlap:
-                return False
-
-            return True
+            return not overlap < self.reciprocal_overlap
 
         except AttributeError as e:
             self.logger.warning(f"Error comparing events: {e!s}")

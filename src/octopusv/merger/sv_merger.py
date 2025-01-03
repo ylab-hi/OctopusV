@@ -172,9 +172,7 @@ class SVMerger:
             support_count = len(set(event.source_file.split(",")))
             if min_support is not None and support_count < min_support:
                 return False
-            if max_support is not None and support_count > max_support:
-                return False
-            return True
+            return not (max_support is not None and support_count > max_support)
 
         tra_filtered = [event for event in tra_events if within_range(event)]
         other_filtered = [event for event in other_events if within_range(event)]

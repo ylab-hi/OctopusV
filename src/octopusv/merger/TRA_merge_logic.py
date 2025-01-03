@@ -27,10 +27,8 @@ def should_merge_tra(event1, event2, delta=100, min_overlap_ratio=0.4, strand_co
     start_diff = abs(event1.start_pos - e2_start)
     end_diff = abs(event1.end_pos - e2_end)
 
-    if start_diff > tra_delta or end_diff > tra_delta:
-        return False
+    return not (start_diff > tra_delta or end_diff > tra_delta)
 
-    return True
 
 def _should_swap_positions(alt1, alt2):
     """Determine if positions should be swapped based on BND patterns.
@@ -50,6 +48,7 @@ def _should_swap_positions(alt1, alt2):
 
     return _are_reciprocal_patterns(pattern1, pattern2)
 
+
 def _classify_bnd_pattern(alt):
     """Classify BND pattern from ALT field.
 
@@ -64,20 +63,22 @@ def _classify_bnd_pattern(alt):
 
     # Extract basic pattern structure
     import re
-    # Remove chromosome and position numbers but keep structure
-    pattern = re.sub(r'chr\d+:\d+', 'chrN:N', alt)
-    pattern = re.sub(r'\d+:\d+', 'N:N', pattern)
 
-    if pattern.startswith(']') or ']' in pattern and pattern.endswith('N'):
+    # Remove chromosome and position numbers but keep structure
+    pattern = re.sub(r"chr\d+:\d+", "chrN:N", alt)
+    pattern = re.sub(r"\d+:\d+", "N:N", pattern)
+
+    if pattern.startswith("]") or ("]" in pattern and pattern.endswith("N")):
         return "RIGHT_TO_LEFT"
-    elif pattern.startswith('N[') or '[' in pattern and pattern.endswith('['):
+    if pattern.startswith("N[") or ("[" in pattern and pattern.endswith("[")):
         return "LEFT_TO_RIGHT"
-    elif pattern.startswith('N]') or ']' in pattern and pattern.endswith(']'):
+    if pattern.startswith("N]") or ("]" in pattern and pattern.endswith("]")):
         return "RIGHT_TO_RIGHT"
-    elif pattern.startswith('[') or '[' in pattern and pattern.endswith('N'):
+    if pattern.startswith("[") or ("[" in pattern and pattern.endswith("N")):
         return "LEFT_TO_LEFT"
 
     return "UNKNOWN"
+
 
 def _are_reciprocal_patterns(pattern1, pattern2):
     """Check if two patterns are reciprocal.
@@ -89,9 +90,6 @@ def _are_reciprocal_patterns(pattern1, pattern2):
     Returns:
         bool: True if patterns are reciprocal
     """
-    reciprocal_pairs = {
-        ("RIGHT_TO_LEFT", "LEFT_TO_RIGHT"),
-        ("RIGHT_TO_RIGHT", "LEFT_TO_LEFT")
-    }
+    reciprocal_pairs = {("RIGHT_TO_LEFT", "LEFT_TO_RIGHT"), ("RIGHT_TO_RIGHT", "LEFT_TO_LEFT")}
 
     return (pattern1, pattern2) in reciprocal_pairs or (pattern2, pattern1) in reciprocal_pairs
