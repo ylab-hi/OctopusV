@@ -4,6 +4,16 @@ from pathlib import Path
 from jinja2 import Template
 
 
+import base64
+
+def image_to_base64(image_path):
+    with open(image_path, "rb") as image_file:
+        try:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+        except UnicodeDecodeError:
+            # Try decoding with 'latin-1' if UTF-8 fails
+            return base64.b64encode(image_file.read()).decode('latin-1')
+
 class ReportGenerator:
     """Generate HTML report using Jinja2 template."""
 
@@ -36,19 +46,26 @@ class ReportGenerator:
                 }
         """
         # Prepare template variables
-        template_vars = {
+
+        # When preparing template data:
+        template_data = {
             "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "sample_id": sample_id,
             "summary_stats": summary_stats,
-            "sv_distribution_plot": plots.get("sv_distribution_plot", ""),
-            "chromosome_coverage_plot": plots.get("chromosome_coverage_plot", ""),
-            "size_distribution_plot": plots.get("size_distribution_plot", ""),
-            "quality_metrics_plot": plots.get("quality_metrics_plot", ""),
-            "additional_plots": plots.get("additional_plots", []),
+            'logo_base64': image_to_base64('path/to/logo.png'),
+            'sv_distribution_plot_base64': image_to_base64('path/to/sv_plot.png'),
+            "chromosome_coverage_plot_base64": plots.get("chromosome_coverage_plot", ""),
+            "size_distribution_plot_base64": plots.get("size_distribution_plot", ""),
+            "quality_metrics_plot_base64": plots.get("quality_metrics_plot", ""),
+            'additional_plots': [{
+                'title': plot.title,
+                'description': plot.description,
+                'base64_data': image_to_base64(plot.path)
+            } for plot in plots]
         }
 
         # Render template
-        html_content = self.template.render(**template_vars)
+        html_content = self.template.render(**template_data)
 
         # Write output file
         with open(output_path, "w") as f:
