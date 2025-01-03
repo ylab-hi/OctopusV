@@ -18,7 +18,7 @@ class ReportGenerator:
 
     def generate(self, output_path, sample_id, summary_stats, plots):
         """Generate HTML report.
-        
+
         Args:
             output_path: Path to save HTML report
             sample_id: Sample identifier

@@ -25,10 +25,7 @@ class UpSetPlotter:
         """Shorten file names if they exceed the maximum length."""
         shortened_names = []
         for name in file_names:
-            if len(name) > max_length:
-                shortened = name[:15] + "..." + name[-10:]
-            else:
-                shortened = name
+            shortened = name[:15] + "..." + name[-10:] if len(name) > max_length else name
             shortened_names.append(shortened)
         return shortened_names
 
@@ -36,7 +33,7 @@ class UpSetPlotter:
         """Calculate all possible intersections and their sizes."""
         intersections = {}
         for event in self.merged_events:
-            event_sources = set([os.path.basename(s) for s in event.source_file.split(",")])
+            event_sources = {os.path.basename(s) for s in event.source_file.split(",")}
             source_key = tuple(sorted(event_sources))
             intersections[source_key] = intersections.get(source_key, 0) + 1
         return intersections
@@ -45,7 +42,7 @@ class UpSetPlotter:
         """Calculate the total number of events in each input file."""
         file_totals = {file: 0 for file in self.input_files}
         for event in self.merged_events:
-            event_sources = set([os.path.basename(s) for s in event.source_file.split(",")])
+            event_sources = {os.path.basename(s) for s in event.source_file.split(",")}
             for file in event_sources:
                 if file in file_totals:
                     file_totals[file] += 1

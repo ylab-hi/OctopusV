@@ -84,7 +84,7 @@ class TypePlotter:
             autopct="%1.1f%%",
             pctdistance=0.85,
             startangle=90,
-            wedgeprops=dict(width=0.5, edgecolor="white", linewidth=2),
+            wedgeprops={"width": 0.5, "edgecolor": "white", "linewidth": 2},
         )
 
         # Style percentage labels
