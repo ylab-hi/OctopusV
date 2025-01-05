@@ -1,10 +1,9 @@
+import base64
 from datetime import datetime
 from pathlib import Path
 
 from jinja2 import Template
 
-
-import base64
 
 def image_to_base64(image_path):
     with open(image_path, "rb") as image_file:
