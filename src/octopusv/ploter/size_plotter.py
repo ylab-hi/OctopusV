@@ -30,7 +30,7 @@ class SizePlotter:
                         size_distribution[size_range] = count
         return size_distribution
 
-    def plot(self, output_prefix):
+    def plot(self, output_prefix, *, save_svg=True):
         """Create and save the SV size distribution plot."""
         if not self.data:
             logging.error("No data to plot")
@@ -83,5 +83,7 @@ class SizePlotter:
         # Adjust layout and save
         plt.tight_layout()
         plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches="tight")
-        plt.savefig(f"{output_prefix}.svg", format="svg", bbox_inches="tight")
+
+        if save_svg:
+            plt.savefig(f"{output_prefix}.svg", format="svg", bbox_inches="tight")
         plt.close()

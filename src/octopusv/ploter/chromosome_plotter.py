@@ -74,7 +74,7 @@ class ChromosomePlotter:
         logging.debug(f"Parsed chromosome data: {chromosome_data}")
         return chromosome_data
 
-    def plot(self, output_prefix):
+    def plot(self, output_prefix, *, save_svg=True):
         """Create and save the chromosome distribution plot."""
         if not self.data:
             logging.error("No data to plot")
@@ -137,7 +137,10 @@ class ChromosomePlotter:
 
         # Save plots with high quality
         plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches="tight", facecolor="white")
-        plt.savefig(f"{output_prefix}.svg", bbox_inches="tight", facecolor="white")
+
+        if save_svg:
+            plt.savefig(f"{output_prefix}.svg", bbox_inches="tight", facecolor="white")
+
         plt.close()
 
         logging.info(f"Plot saved as {output_prefix}.png and {output_prefix}.svg")

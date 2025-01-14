@@ -139,7 +139,7 @@
         <div class="header">
             <!-- Change logo to base64 embedded image -->
             <img src="./logo.png" alt="OctopuSV Logo" class="logo" />
-            <h1>OctopusV Analysis Report</h1>
+            <h1>OctopuSV Analysis Report</h1>
             <p>Generated on: {{ generation_date }}</p>
             <p>Sample ID: {{ sample_id }}</p>
         </div>
@@ -166,14 +166,6 @@
             <div class="figure-container">
                 <img src="data:image/png;base64,{{ size_distribution_plot_base64 }}" alt="Size Distribution Plot" />
                 <p class="figure-caption">Size distribution of detected structural variants</p>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>Quality Metrics</h2>
-            <div class="figure-container">
-                <img src="data:image/png;base64,{{ quality_metrics_plot_base64 }}" alt="Quality Metrics Plot" />
-                <p class="figure-caption">Distribution of quality scores for detected variants</p>
             </div>
         </div>
 
