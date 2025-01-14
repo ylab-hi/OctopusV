@@ -55,7 +55,7 @@ class TypePlotter:
                 ordered_data[sv_type] = values
         return ordered_data
 
-    def plot(self, output_prefix):
+    def plot(self, output_prefix, *, save_svg=True):
         """Create and save the SV type distribution plot."""
         if not self.data:
             logging.error("No data to plot")
@@ -115,5 +115,7 @@ class TypePlotter:
 
         # Save plots
         plt.savefig(f"{output_prefix}.png", dpi=300, bbox_inches="tight", facecolor="white")
-        plt.savefig(f"{output_prefix}.svg", bbox_inches="tight", facecolor="white")
+
+        if save_svg:
+            plt.savefig(f"{output_prefix}.svg", bbox_inches="tight", facecolor="white")
         plt.close()

@@ -83,6 +83,7 @@ def merge(
         "--upsetr-output",
         help="Output path for UpSet plot. If not provided, will use output_file basename with _upset.png suffix.",
     ),
+
 ):
     """Merge multiple SVCF files based on specified strategy."""
     # Combine input files from arguments and options
