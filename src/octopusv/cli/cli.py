@@ -29,7 +29,6 @@ app.command()(correct)  # Command to initiate convert functionality.
 app.command()(merge)  # Command to initiate merge functionality.
 app.command(name="benchmark")(bench)  # Command to initiate bench functionality.
 app.command()(stat)  # Command to initiate stat functionality.
-app.command()(plot)  # Command to initiate plot functionality.
 app.command()(svcf2vcf)
 app.command()(svcf2bed)
 app.command()(svcf2bedpe)
