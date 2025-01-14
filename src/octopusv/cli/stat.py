@@ -21,7 +21,8 @@ def stat(
     if report:
         typer.echo("Generating HTML report...")
         report_generator = ReportGenerator()
-        report_generator.generate(input_file, output_file.with_suffix(".html"), sample_id=input_file.stem)
+        summary_stats = sv_stater.export_html(output_file)
+        report_generator.generate(input_file, output_file.with_suffix(".html"), sample_id=input_file.stem,  summary_stats=summary_stats)
         typer.echo("Report generated.")
 
     typer.echo(f"Analysis results written to {output_file}")

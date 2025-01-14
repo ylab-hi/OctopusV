@@ -131,6 +131,66 @@
                 overflow-x: auto;
             }
         }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: var(--secondary-color);
+            transition: width 0.3s ease;
+        }
+        
+        .metric-table {
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        .metric-table td {
+            padding: 0.5rem;
+        }
+        
+        .metric-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+        }
     </style>
 </head>
 
@@ -144,6 +204,112 @@
             <p>Sample ID: {{ sample_id }}</p>
         </div>
 
+
+        <div class="section">
+            <h2>Input Information</h2>
+            <div class="metric-table">
+                <table>
+                    <tr>
+                        <td>Input File</td>
+                        <td>{{ input_file }}</td>
+                    </tr>
+                    <tr>
+                        <td>Output File</td>
+                        <td>{{ output_file }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>SV Type Distribution</h2>
+            <div class="stats-grid">
+                {% for type, (count, percentage) in sv_types.items() %}
+                <div class="stat-card">
+                    <div class="stat-label">{{ type }}</div>
+                    <div class="stat-value">{{ count }}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ percentage }}%"></div>
+                    </div>
+                    <div class="stat-label">{{ percentage }}%</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Size Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total SVs</div>
+                    <div class="stat-value">{{ total_svs }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Size Range</div>
+                    <div class="stat-value">{{ min_size }} - {{ max_size }} bp</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Mean Size</div>
+                    <div class="stat-value">{{ mean_size|round(2) }} bp</div>
+                </div>
+            </div>
+
+            <h3>Size Distribution</h3>
+            <div class="stats-grid">
+                {% for range, count in size_distribution.items() %}
+                <div class="stat-card">
+                    <div class="stat-label">{{ range }}</div>
+                    <div class="stat-value">{{ count }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Quality Metrics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Average QUAL</div>
+                    <div class="stat-value">{{ avg_qual|round(2) }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Average Read Support</div>
+                    <div class="stat-value">{{ avg_read_support|round(2) }}</div>
+                </div>
+            </div>
+
+            <h3>Filter Status</h3>
+            <div class="stats-grid">
+                {% for status, (count, percentage) in filter_status.items() %}
+                <div class="stat-card">
+                    <div class="stat-label">{{ status }}</div>
+                    <div class="stat-value">{{ count }}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ percentage }}%"></div>
+                    </div>
+                    <div class="stat-label">{{ percentage }}%</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Genotype Distribution</h2>
+            <div class="stats-grid">
+                {% for genotype, (count, percentage) in genotype_dist.items() %}
+                <div class="stat-card">
+                    <div class="stat-label">{{ genotype }}</div>
+                    <div class="stat-value">{{ count }}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ percentage }}%"></div>
+                    </div>
+                    <div class="stat-label">{{ percentage }}%</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- figure -->
         {% if sv_distribution_plot_base64 %}
         <div class="section">
             <h2>Structural Variant Distribution</h2>

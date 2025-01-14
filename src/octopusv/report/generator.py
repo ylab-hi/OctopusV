@@ -86,7 +86,7 @@ class ReportGenerator:
         return result
 
 
-    def generate(self, input_file, output_path, sample_id):
+    def generate(self, input_file, output_path, sample_id, summary_stats):
         """Generate HTML report.
 
         Args:
@@ -115,7 +115,7 @@ class ReportGenerator:
             "chromosome_coverage_plot_base64": plots.get("chromosome_coverage_plot"),
             'sv_distribution_plot_base64': plots.get("type_plot"),
             "size_distribution_plot_base64": plots.get("size_distribution_plot"),
-        }
+            **summary_stats}
 
         # Render template
         html_content = self.template.render(**template_data)
