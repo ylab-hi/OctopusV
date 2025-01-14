@@ -112,9 +112,9 @@ class ReportGenerator:
             "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "sample_id": sample_id,
             "logo_path": load_logo(),
-            "chromosome_coverage_plot_base64": plots.get("chromosome_coverage_plot", ""),
-            'sv_distribution_plot_base64': plots.get("type_plot", ""),
-            "size_distribution_plot_base64": plots.get("size_distribution_plot", ""),
+            "chromosome_coverage_plot_base64": plots.get("chromosome_coverage_plot"),
+            'sv_distribution_plot_base64': plots.get("type_plot"),
+            "size_distribution_plot_base64": plots.get("size_distribution_plot"),
         }
 
         # Render template

@@ -144,7 +144,7 @@
             <p>Sample ID: {{ sample_id }}</p>
         </div>
 
-
+        {% if sv_distribution_plot_base64 %}
         <div class="section">
             <h2>Structural Variant Distribution</h2>
             <div class="figure-container">
@@ -152,7 +152,7 @@
                 <p class="figure-caption">Distribution of structural variants by type</p>
             </div>
         </div>
-
+        {% endif %} {% if chromosome_coverage_plot_base64 %}
         <div class="section">
             <h2>Chromosome Coverage</h2>
             <div class="figure-container">
@@ -160,7 +160,7 @@
                 <p class="figure-caption">Coverage distribution across chromosomes</p>
             </div>
         </div>
-
+        {% endif %} {% if size_distribution_plot_base64 %}
         <div class="section">
             <h2>Size Distribution</h2>
             <div class="figure-container">
@@ -168,8 +168,7 @@
                 <p class="figure-caption">Size distribution of detected structural variants</p>
             </div>
         </div>
-
-        {% if additional_plots %}
+        {% endif %} {% if additional_plots %}
         <div class="section">
             <h2>Additional Analysis</h2>
             {% for plot in additional_plots %}
