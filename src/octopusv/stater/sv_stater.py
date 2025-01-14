@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from .chromosome_analyzer import ChromosomeAnalyzer
 from .genotype_analyzer import GenotypeAnalyzer
 from .qc_analyzer import QCAnalyzer
@@ -20,7 +22,7 @@ class SVStater:
         self.results["genotype"] = GenotypeAnalyzer(self.input_file).analyze()
 
     def write_results(self, output_file):
-        with open(output_file, "w") as f:
+        with Path.open(output_file, "w") as f:
             f.write("OctopusV report\n")
             f.write("-" * 40 + "\n\n")
 
