@@ -20,6 +20,13 @@ def load_template() -> Path:
         return template_path / "template.html"
     raise FileNotFoundError("Could not locate template directory")
 
+def load_logo() -> Path:
+    """Load logo for report generation."""
+    logo_path = Path(sys.modules[__PACKAGE_NAME__].__file__)
+    if logo_path.parent is not None:
+        logo_path = logo_path.parent / "report"
+        return logo_path / "logo.png"
+    raise FileNotFoundError("Could not locate logo directory")
 
 def image_to_base64(image_path):
     """Convert image to base64 string."""
@@ -52,17 +59,26 @@ class ReportGenerator:
 
         # generate three temperory files
         with tempfile.TemporaryDirectory() as tmpdirname:
-            chromsome_plot = f"{tmpdirname}/chromosome_distribution.png"
-            type_plot = f"{tmpdirname}/sv_types.png"
-            size_plot = f"{tmpdirname}/sv_sizes.png"
+            chromosome_plot_prefix = f"{tmpdirname}/chromosome_distribution"
+            type_plot_prefix = f"{tmpdirname}/sv_types"
+            size_plot_prefix = f"{tmpdirname}/sv_sizes"
 
-            chromosome_plotter.plot(chromsome_plot)
-            type_plotter.plot(type_plot)
-            size_plotter.plot(size_plot)
+            chromosome_plotter.plot(chromosome_plot_prefix, save_svg=False)
+            type_plotter.plot(type_plot_prefix, save_svg=False)
+            size_plotter.plot(size_plot_prefix, save_svg=False)
 
-            result['chromosome_coverage_plot'] = image_to_base64(chromsome_plot)
-            result['size_distribution_plot'] = image_to_base64(size_plot)
-            result['type_plot'] = image_to_base64(type_plot)
+            chromosome_plot_path = f"{chromosome_plot_prefix}.png"
+            type_plot_path = f"{type_plot_prefix}.png"
+            size_plot_path = f"{size_plot_prefix}.png"
+
+            if Path(chromosome_plot_path).exists():
+                result['chromosome_coverage_plot'] = image_to_base64(chromosome_plot_path)
+
+            if Path(size_plot_path).exists():
+                result['size_distribution_plot'] = image_to_base64(size_plot_path)
+
+            if Path(type_plot_path).exists():
+                result['type_plot'] = image_to_base64(type_plot_path)
 
         if upset_plot:
             result['upset_plot'] = image_to_base64(upset_plot)
@@ -95,14 +111,10 @@ class ReportGenerator:
         template_data = {
             "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "sample_id": sample_id,
+            "logo_path": load_logo(),
             "chromosome_coverage_plot_base64": plots.get("chromosome_coverage_plot", ""),
             'sv_distribution_plot_base64': plots.get("type_plot", ""),
             "size_distribution_plot_base64": plots.get("size_distribution_plot", ""),
-            'additional_plots': [{
-                'title': plot.title,
-                'description': plot.description,
-                'base64_data': image_to_base64(plot.path)
-            } for plot in plots]
         }
 
         # Render template
