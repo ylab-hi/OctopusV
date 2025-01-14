@@ -86,4 +86,5 @@ class SizePlotter:
 
         if save_svg:
             plt.savefig(f"{output_prefix}.svg", format="svg", bbox_inches="tight")
+
         plt.close()
