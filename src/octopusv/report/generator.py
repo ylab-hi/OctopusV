@@ -20,6 +20,7 @@ def load_template() -> Path:
         return template_path / "template.html"
     raise FileNotFoundError("Could not locate template directory")
 
+
 def load_logo() -> Path:
     """Load logo for report generation."""
     logo_path = Path(sys.modules[__PACKAGE_NAME__].__file__)
@@ -28,14 +29,16 @@ def load_logo() -> Path:
         return logo_path / "logo.png"
     raise FileNotFoundError("Could not locate logo directory")
 
+
 def image_to_base64(image_path):
     """Convert image to base64 string."""
-    with Path.open(image_path, "rb") as image_file:
+    with Path(image_path).open("rb") as image_file:
         try:
-            return base64.b64encode(image_file.read()).decode('utf-8')
+            return base64.b64encode(image_file.read()).decode("utf-8")
         except UnicodeDecodeError:
             # Try decoding with 'latin-1' if UTF-8 fails
-            return base64.b64encode(image_file.read()).decode('latin-1')
+            return base64.b64encode(image_file.read()).decode("latin-1")
+
 
 class ReportGenerator:
     """Generate HTML report using Jinja2 template."""
@@ -72,19 +75,18 @@ class ReportGenerator:
             size_plot_path = f"{size_plot_prefix}.png"
 
             if Path(chromosome_plot_path).exists():
-                result['chromosome_coverage_plot'] = image_to_base64(chromosome_plot_path)
+                result["chromosome_coverage_plot"] = image_to_base64(chromosome_plot_path)
 
             if Path(size_plot_path).exists():
-                result['size_distribution_plot'] = image_to_base64(size_plot_path)
+                result["size_distribution_plot"] = image_to_base64(size_plot_path)
 
             if Path(type_plot_path).exists():
-                result['type_plot'] = image_to_base64(type_plot_path)
+                result["type_plot"] = image_to_base64(type_plot_path)
 
         if upset_plot:
-            result['upset_plot'] = image_to_base64(upset_plot)
+            result["upset_plot"] = image_to_base64(upset_plot)
 
         return result
-
 
     def generate(self, input_file, output_path, sample_id, summary_stats):
         """Generate HTML report.
@@ -113,9 +115,10 @@ class ReportGenerator:
             "sample_id": sample_id,
             "logo_path": load_logo(),
             "chromosome_coverage_plot_base64": plots.get("chromosome_coverage_plot"),
-            'sv_distribution_plot_base64': plots.get("type_plot"),
+            "sv_distribution_plot_base64": plots.get("type_plot"),
             "size_distribution_plot_base64": plots.get("size_distribution_plot"),
-            **summary_stats}
+            **summary_stats,
+        }
 
         # Render template
         html_content = self.template.render(**template_data)
