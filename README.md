@@ -85,15 +85,31 @@ octopusv benchmark \
 
 ### 4. Generate Statistics
 
-Analyze SV characteristics:
+Analyze SV characteristics with comprehensive statistics and visualizations:
 
 ```bash
-# Basic statistics
+# Basic statistics output to text file
 octopusv stat -i variants.svcf -o stats.txt
 
 # With size filters
 octopusv stat -i variants.svcf -o stats.txt --min-size 50 --max-size 10000
+
+# Generate comprehensive HTML report with visualizations
+octopusv stat -i variants.svcf -o stats.txt --report
+
+# Generate only plots
+octopusv plot stats.txt -o plots
 ```
+
+The `--report` option generates an interactive HTML report that includes:
+- Summary statistics for all SV types
+- SV type distribution visualization
+- Size distribution analysis
+- Chromosome coverage plots
+- Quality metrics and genotype information
+
+![HTML Report Example](imgs/html_example.png)
+
 
 ### 5. Create Visualizations
 
