@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "octopusv"
 version = "0.1.0"
-description = "sv merger"
-authors = ["Your Name <you@example.com>"]
+description = "OctopusV: Advanced Structural Variant Analysis Toolkit"
+authors = ["Qingxiang Guo <qingxiang.guo@northwestern.edu>", "Yangyang Li <yangyang.li@northwestern.edu>"]
 license = "MIT"
 readme = "README.md"
 
