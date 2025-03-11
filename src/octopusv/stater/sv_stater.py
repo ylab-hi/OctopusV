@@ -51,45 +51,149 @@ class SVStater:
         result["input_file"] = self.input_file
         result["output_file"] = output_stat
 
+        # Parse SV types
         result['sv_types'] = {}
         for line in self.results["type"].strip().split("\n")[1:]:
-            key, value = line.split(":")
-            value_1, value_2 = value.strip().split(" ")
-            value_2 = float(value_2[1:-2])
-            result['sv_types'][key.strip()] = (int(value_1), value_2)
+            if ":" in line:
+                key, value = line.split(":")
+                parts = value.strip().split()
+                if len(parts) >= 2 and "(" in parts[1]:
+                    try:
+                        count = int(parts[0])
+                        percent = float(parts[1][1:-2])  # Remove percentage sign and parentheses
+                        result['sv_types'][key.strip()] = (count, percent)
+                    except (ValueError, IndexError):
+                        continue
 
+        # Parse size distribution
         lines = self.results["size"].strip().split("\n")
-        result["total_svs"] = int(lines[0].split(":")[1].strip())
-        result["min_size"] = int(lines[1].split(":")[1].strip().split()[0])
-        result["max_size"] = int(lines[2].split(":")[1].strip().split()[0])
-        result["mean_size"] = float(lines[3].split(":")[1].strip().split()[0])
-        result["median_size"] = float(lines[4].split(":")[1].strip().split()[0])
-        result['std_dev'] = float(lines[5].split(":")[1].strip().split()[0])
+        try:
+            result["total_svs"] = int(lines[0].split(":")[1].strip())
+            result["min_size"] = int(lines[1].split(":")[1].strip().split()[0])
+            result["max_size"] = int(lines[2].split(":")[1].strip().split()[0])
+            result["mean_size"] = float(lines[3].split(":")[1].strip().split()[0])
+            result["median_size"] = float(lines[4].split(":")[1].strip().split()[0])
+            result['std_dev'] = float(lines[5].split(":")[1].strip().split()[0])
+        except (IndexError, ValueError):
+            # Set default values
+            result["total_svs"] = 0
+            result["min_size"] = self.min_size
+            result["max_size"] = self.max_size or 0
+            result["mean_size"] = 0.0
+            result["median_size"] = 0.0
+            result['std_dev'] = 0.0
 
+        # Parse size distribution details
         result['size_distribution'] = {}
         for line in lines[8:]:
-            key, value = line.split(":")
-            result["size_distribution"][key.strip()] = int(value.strip())
+            if ":" in line:
+                try:
+                    key, value = line.split(":")
+                    result["size_distribution"][key.strip()] = int(value.strip())
+                except (ValueError, IndexError):
+                    continue
 
+        # Parse QC results
         lines = self.results['qc'].strip().split("\n")
-        result['avg_qual'] = float(lines[2].split(":")[1].strip())
 
-        result["filter_status"] = {}
-        pass_info = lines[10].split(":")[1].strip().split()
-        result["filter_status"]["PASS"] = (pass_info[0], float(pass_info[1][1:-2]))
-        hom_ref_info = lines[11].split(":")[1].strip().split()
-        result["filter_status"]["hom_ref"] = (hom_ref_info[0], float(hom_ref_info[1][1:-2]))
-        not_fully_covered_info = lines[12].split(":")[1].strip().split()
-        result["filter_status"]["not_fully_covered"] = (not_fully_covered_info[0], float(not_fully_covered_info[1][1:-2]))
+        # Safely get average quality value
+        avg_qual_idx = -1
+        for i, line in enumerate(lines):
+            if "Average QUAL:" in line:
+                avg_qual_idx = i
+                break
 
-        result['avg_read_support'] = float(lines[16].split(":")[1].strip())
+        if avg_qual_idx >= 0:
+            try:
+                result['avg_qual'] = float(lines[avg_qual_idx].split(":")[1].strip())
+            except (ValueError, IndexError):
+                result['avg_qual'] = 0.0
+        else:
+            result['avg_qual'] = 0.0
 
+        # Initialize filter status
+        result["filter_status"] = {
+            "PASS": ("0", 0.0),
+            "hom_ref": ("0", 0.0),
+            "not_fully_covered": ("0", 0.0)
+        }
 
+        # Find filter status section
+        filter_idx = -1
+        for i, line in enumerate(lines):
+            if "Filter Status:" in line:
+                filter_idx = i
+                break
+
+        # Parse filter status information
+        if filter_idx >= 0:
+            filter_lines = []
+            for i in range(filter_idx + 1, len(lines)):
+                if lines[i].strip() and ":" in lines[i]:
+                    filter_lines.append(lines[i])
+                elif lines[i].strip() == "":  # Empty line indicates end of section
+                    break
+
+            # Process filter status
+            for line in filter_lines:
+                try:
+                    status, value = line.split(":", 1)
+                    status = status.strip()
+                    value_parts = value.strip().split()
+
+                    if len(value_parts) >= 1:
+                        count = value_parts[0]
+                        percent = 0.0
+
+                        if len(value_parts) >= 2 and "(" in value_parts[1]:
+                            try:
+                                percent = float(value_parts[1][1:-2])  # Remove parentheses and percentage sign
+                            except ValueError:
+                                percent = 0.0
+
+                        # Update or add status
+                        result["filter_status"][status] = (count, percent)
+                except (ValueError, IndexError):
+                    continue
+
+        # Safely get average read support
+        read_support_idx = -1
+        for i, line in enumerate(lines):
+            if "Average Read Support:" in line:
+                read_support_idx = i
+                break
+
+        if read_support_idx >= 0:
+            try:
+                value = lines[read_support_idx].split(":")[1].strip()
+                # Check if it contains percentage
+                if " " in value and "(" in value:
+                    value = value.split()[0]  # Only take the first part (number)
+                result['avg_read_support'] = float(value)
+            except (ValueError, IndexError):
+                result['avg_read_support'] = 0.0
+        else:
+            result['avg_read_support'] = 0.0
+
+        # Parse genotype distribution
         lines = self.results['genotype'].strip().split("\n")
         result["genotype_dist"] = {}
+
         for line in lines[1:]:
-            key, value = line.split(":")
-            result["genotype_dist"][key.strip()] = (int(value.strip().split()[0]), float(value.strip().split()[1][1:-2]))
+            if ":" in line:
+                try:
+                    key, value = line.split(":")
+                    key = key.strip()
+                    value = value.strip()
+
+                    if " " in value and "(" in value:
+                        parts = value.split()
+                        count = int(parts[0])
+                        percent = float(parts[1][1:-2])  # Remove parentheses and percentage sign
+                        result["genotype_dist"][key] = (count, percent)
+                    else:
+                        result["genotype_dist"][key] = (int(value), 0.0)
+                except (ValueError, IndexError):
+                    continue
 
         return result
-
