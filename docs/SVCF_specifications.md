@@ -1,14 +1,16 @@
-# The Structural Variant Call Format (SVCF) Version 1.0 Specification
+# SVCF: A Customized VCF Format for Structural Variants
 
 ## 1. Introduction
 
-The Structural Variant Call Format (SVCF) is a text file format for representing structural variant (SV) calls. It is based on the [Variant Call Format (VCF) Version 4.2](https://samtools.github.io/hts-specs/VCFv4.2.pdf).
+SVCF is simply a customized version of the [Variant Call Format (VCF) Version 4.2](https://samtools.github.io/hts-specs/VCFv4.2.pdf) adapted for working with structural variants (SVs). This is not a new format standard, but merely our internal implementation with minor adjustments to better handle structural variant data.
 
-SVCF shares much of the same structure as VCF, with meta-information lines, a header line, and then data lines containing information about structural variants. The key differences lie in the representation of the structural variants and additional optional fields to provide more details about each variant. One of the main goals of SVCF is to provide a more intuitive, unified format that can be seamlessly integrated into the SVoctopus software for various operations including merging, statistical analysis, and benchmarking.
+This document describes how we use the standard VCF format with some custom fields and conventions to support structural variant analysis. The customization primarily adds specific fields for representing structural variants while maintaining full compatibility with standard VCF tools. 
+
+These adaptations were created to improve integration with the SVoctopus software and facilitate operations such as merging, statistical analysis, and benchmarking of structural variants.
 
 ## 2. File Structure
 
-The SVCF file is structured as follows:
+Our customized VCF follows the standard VCF structure:
 
 - **Meta-information lines**: Start with "##" and provide metadata about the file (e.g., format version, reference used).
 - **Header line**: Starts with a single "#" and lists all the fields that will appear in the body of the file.
@@ -17,7 +19,7 @@ The SVCF file is structured as follows:
 ## 3. An Example
 
 ```plaintext
-##fileformat=SVCFv1.0
+##fileformat=VCFv4.2
 ##fileDate=2023-11-07|11:32:51AM|CDT|-0500
 ##source=octopusV
 ##contig=<ID=chr1,length=248956422>
@@ -128,7 +130,7 @@ The FORMAT field includes:
 
 ### SVTYPE Convention
 
-Within the SVCF specification, the `SVTYPE` field is restricted to five canonical types of structural variants:
+Within our customized VCF format, the `SVTYPE` field is restricted to five canonical types of structural variants:
 
 - `DUP`: Duplication, a segment of DNA that is duplicated on the genome.
 - `INV`: Inversion, a segment of DNA that is inverted in the genome.
