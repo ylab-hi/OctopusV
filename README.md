@@ -229,15 +229,14 @@ For questions and feedback:
 - Email: yangyang.li@northwestern.edu
 
 
-## Citation
+## 📄 Citation
 
-If you use OctopusV in your research, please cite:
+If you use **OctopusV** or **TentacleSV**, please cite:
 
-Guo Q, Li Y, Wang T, Ramakrishnan A, Yang R. OctopusV and TentacleSV: a one-stop toolkit
-for multi-sample, cross-platform structural variant comparison and analysis. bioRxiv 2025.03.24.645012;
-doi: https://doi.org/10.1101/2025.03.24.645012
+> Guo Q, Li Y, Wang T, Ramakrishnan A, Yang R. *OctopusV and TentacleSV: a one-stop toolkit for multi-sample, cross-platform structural variant comparison and analysis*. bioRxiv. 2025. doi: [10.1101/2025.03.24.645012](https://doi.org/10.1101/2025.03.24.645012)
 
-BibTeX format:
+## 📚 BibTeX
+
 ```bibtex
 @article{guo2025octopusv,
   title={OctopusV and TentacleSV: a one-stop toolkit for multi-sample, cross-platform structural variant comparison and analysis},
@@ -245,7 +244,7 @@ BibTeX format:
   journal={bioRxiv},
   year={2025},
   publisher={Cold Spring Harbor Laboratory},
-  doi={10.1101/2025.03.24.645012}
+  doi={10.1101/2025.03.24.645012},
+  url={https://www.biorxiv.org/content/10.1101/2025.03.24.645012v1}
 }
-
-[Read the preprint on bioRxiv](https://www.biorxiv.org/content/10.1101/2025.03.24.645012v1.full.pdf+html)
+```
